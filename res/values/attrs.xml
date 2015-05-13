@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="setting_view">
+        <attr name="view_mode" format="enum">
+            <enum name="text" value="0"/>
+            <enum name="toggle" value="1"/>
+        </attr>
+        <attr name="mainText" format="string"></attr>
+        <attr name="subText" format="string"></attr>
+    </declare-styleable>
+</resources>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.zhr.findcomic"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <include layout="@layout/setting_header_layout"/>
+	
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/red"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/screen_orientation"
+        style="@style/setting_textview"
+        android:padding="5dp"
+        android:layout_marginBottom="0dp"
+        custom:view_mode="text"
+        custom:mainText="阅读漫画时屏幕方向"
+        custom:subText="横屏"/>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/vertical_read_mode"
+        style="@style/setting_textview"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:padding="5dp"
+        custom:view_mode="text"
+        custom:mainText="竖屏阅读模式"
+        custom:subText="横向翻页(左右滑动)"/>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/pageover_volume"
+        style="@style/setting_textview"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:padding="5dp"
+        custom:view_mode="toggle"
+        custom:mainText="使用音量键翻页"/>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/hide_virtual_key"
+        style="@style/setting_textview"
+        android:layout_marginTop="0dp"
+        android:padding="5dp"
+        custom:view_mode="toggle"
+        custom:mainText="隐藏虚拟按键(Android4.4+支持)"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/show_time_battery"
+        style="@style/setting_textview"
+        android:layout_marginBottom="0dp"
+        android:padding="5dp"
+        custom:view_mode="toggle"
+        custom:mainText="阅读时右下角显示时间电量"/>
+
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/keep_scrren_on"
+        style="@style/setting_textview"
+        android:layout_marginTop="0dp"
+        android:padding="5dp"
+        custom:view_mode="toggle"
+        custom:mainText="阅读时保持屏幕常亮"/>    
+    
+</LinearLayout>

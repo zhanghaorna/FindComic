@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:background="@color/silver_gray"
+        android:text="@string/setting"/>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/red"/>
+    
+    <TextView
+        android:id="@+id/soft_setting"
+        style="@style/setting_textview"      
+        android:drawableLeft="@drawable/setting_s"        
+        android:text="@string/soft_setting"/>
+    
+    <TextView 
+        android:id="@+id/local_comic"
+        style="@style/setting_textview"
+        android:drawableLeft="@drawable/localcomic_s"
+        android:text="@string/local_comic"/>
+    
+    <TextView 
+        android:id="@+id/check_update"
+        style="@style/setting_textview"
+        android:drawableLeft="@drawable/update_s"
+        android:text="@string/check_update"
+        />
+    
+    <TextView 
+        android:id="@+id/about_find_comic"
+        style="@style/setting_textview"
+        android:drawableLeft="@drawable/info_s"
+        android:text="@string/about_find_comic"
+        />
+
+</LinearLayout>

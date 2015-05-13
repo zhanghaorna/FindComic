@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">FindComic</string>
+    
+    <string name="homepage">首页</string>
+    <string name="recommend">推荐</string>
+    <string name="find_comic">找漫画</string>
+    <string name="setting">设置</string>
+    
+    <string name="soft_setting">软件设置</string>
+    <string name="local_comic">本地漫画</string>
+    <string name="check_update">检测升级</string>
+	<string name="about_find_comic">关于找漫画</string>
+	
+	<string name="read_setting">阅读设置</string>
+	<string name="continue_read">继续观看</string>
+	
+</resources>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+   <RelativeLayout
+    	android:layout_width="match_parent"
+    	android:layout_height="wrap_content" 
+    	android:layout_margin="10dp"
+    	android:layout_gravity="center_vertical">
+    	<ImageView
+        	android:id="@+id/back"
+        	android:layout_alignParentLeft="true"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:src="@drawable/icon_back"/>
+        <TextView
+            android:layout_marginLeft="10dp" 
+            android:id="@+id/path"
+            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/back"
+            android:gravity="center"/>
+	</RelativeLayout>
+	
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/red"/>
+    
+    <RelativeLayout
+        android:id="@+id/last_read" 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_gravity="center_vertical">
+        <Button 
+            android:id="@+id/continue_read"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_alignParentRight="true"
+            android:padding="10dp"
+            android:text="@string/continue_read"
+            android:background="@drawable/button_background_selector"/>
+        <TextView
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/continue_read" 
+            android:id="@+id/last_read_path"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:ellipsize="end"/>
+    </RelativeLayout>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"/>
+    
+    <ListView 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/file_listview"></ListView>
+	
+</LinearLayout>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:toggle="http://schemas.android.com/apk/com.zhr.findcomic"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    >
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/main_text"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:padding="10dp"/>
+    <com.zcw.togglebutton.ToggleButton
+        android:id="@+id/setting_toggle"
+		android:layout_width="54dp"
+        android:layout_height="35dp"        
+        android:layout_alignParentRight="true"
+        android:padding="10dp"/>
+</RelativeLayout>

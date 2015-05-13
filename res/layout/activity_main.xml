@@ -1,0 +1,64 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <LinearLayout
+        android:id="@+id/main_tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:background="@color/silver_gray">
+		<TextView
+		    android:id="@+id/main_homepage" 
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/homepage"
+            style="@style/main_tab_textview"
+            android:drawableTop="@drawable/icon_tab_home_selector"/>
+        <TextView 
+            android:id="@+id/main_recommmend"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/recommend"
+			style="@style/main_tab_textview"
+            android:drawableTop="@drawable/icon_tab_recommend_selector"/>
+        <TextView
+            android:id="@+id/main_search" 
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/find_comic"
+            style="@style/main_tab_textview"
+            android:drawableTop="@drawable/icon_tab_search_selector"/>
+        <TextView
+            android:id="@+id/main_more" 
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/setting"
+            style="@style/main_tab_textview"
+            android:drawableTop="@drawable/icon_tab_more_selector"/>                
+    </LinearLayout>
+    
+    <TextView
+        android:id="@+id/footer_divide_line" 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@id/main_tab_layout"
+        android:background="@color/black"/>
+    
+    <FrameLayout 
+        android:id="@+id/main_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></FrameLayout>
+
+</RelativeLayout>

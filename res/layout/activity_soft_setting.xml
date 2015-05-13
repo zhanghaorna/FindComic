@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.zhr.findcomic"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+    
+    <include layout="@layout/setting_header_layout"/>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/red"/>
+    
+    <com.zhr.customview.SettingTextView
+        style="@style/setting_textview"
+        android:id="@+id/read_setting"
+        android:padding="5dp"
+        android:layout_marginBottom="0dp"
+        custom:view_mode="text"
+        custom:mainText="阅读设置"
+        custom:subText=">"/>
+    
+	<TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@color/black"/>
+	
+	<com.zhr.customview.SettingTextView
+        style="@style/setting_textview"
+        android:id="@+id/notify_setting"
+        android:padding="5dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        custom:view_mode="text"
+        custom:mainText="通知设置"
+        custom:subText=">"/>
+	
+	<TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@color/black"/>
+	
+	<com.zhr.customview.SettingTextView
+        style="@style/setting_textview"
+        android:id="@+id/night_mode"
+        android:padding="5dp"
+        android:layout_marginTop="0dp"
+        custom:view_mode="toggle"
+        custom:mainText="夜间模式"
+        />
+	
+	<com.zhr.customview.SettingTextView
+        style="@style/setting_textview"
+        android:id="@+id/alert_download_dir"
+        android:padding="5dp"
+        android:layout_marginBottom="0dp"
+        custom:view_mode="text"
+        custom:mainText="修改下载目录"
+        />
+	
+	<TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@color/black"/>
+	
+	<com.zhr.customview.SettingTextView
+        style="@style/setting_textview"
+        android:id="@+id/clear_cache"
+        android:padding="5dp"
+        android:layout_marginTop="0dp"
+        custom:view_mode="text"
+        custom:mainText="清除缓存"
+        />
+
+</LinearLayout>
+    
+</ScrollView>
+
