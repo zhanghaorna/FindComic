@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 import java.util.Collections;
 import java.util.HashMap;

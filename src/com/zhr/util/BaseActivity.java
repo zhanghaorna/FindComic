@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -19,20 +20,22 @@ import android.widget.TextView;
  */
 public class BaseActivity extends Activity{
 	
-	private WindowManager mWindowManager;
-	private WindowManager.LayoutParams lp;
+	protected WindowManager mWindowManager;
+	protected WindowManager.LayoutParams lp;
 	private TextView coverView;
 	private boolean isAddView = false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+
+		
 		mWindowManager = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
 		lp = new WindowManager.LayoutParams(  
 				WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,  
                 WindowManager.LayoutParams.TYPE_APPLICATION,  
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
-                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_FULLSCREEN,  
                 PixelFormat.TRANSLUCENT);
 		coverView = new TextView(this);
 		//背景设为透明黑色

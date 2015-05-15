@@ -60,7 +60,9 @@ public class LoadAndDisplayTask implements Runnable{
 				else
 				{
 					bitmap = BitmapFactory.decodeFile(imagePath,options);
-					options.inSampleSize = calculateInSampleSize(options, 800, 480);
+					//Bitmap宽高都大于2000进行压缩
+					if(options.outHeight > 2000&&options.outWidth > 2000)
+						options.inSampleSize = calculateInSampleSize(options, 480, 800);
 					options.inJustDecodeBounds = false;
 					bitmap = BitmapFactory.decodeFile(imagePath,options);
 					if(isCache && cache != null)
@@ -96,8 +98,8 @@ public class LoadAndDisplayTask implements Runnable{
 	    // Raw height and width of image  
 	    final int height = options.outHeight;  
 	    final int width = options.outWidth;  
-	    int inSampleSize = 1;  
-	  
+	    int inSampleSize = 1;
+	    
 	    //先根据宽度进行缩小  
 	    while (width / inSampleSize > reqWidth) {  
 	        inSampleSize++;  

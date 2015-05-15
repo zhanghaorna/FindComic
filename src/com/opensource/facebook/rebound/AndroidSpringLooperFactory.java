@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 import android.annotation.TargetApi;
 import android.os.Build;

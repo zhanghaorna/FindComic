@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 public class SimpleSpringListener implements SpringListener {
   public void onSpringUpdate(Spring spring) {

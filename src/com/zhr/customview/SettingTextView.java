@@ -1,9 +1,6 @@
 package com.zhr.customview;
 
 
-import com.zcw.togglebutton.ToggleButton;
-import com.zcw.togglebutton.ToggleButton.OnToggleChanged;
-import com.zhr.findcomic.R;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -16,6 +13,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.opensource.zcw.togglebutton.ToggleButton;
+import com.opensource.zcw.togglebutton.ToggleButton.OnToggleChanged;
+import com.zhr.findcomic.R;
 
 /**
  * @author zhr

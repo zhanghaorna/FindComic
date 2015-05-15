@@ -13,7 +13,7 @@
         android:textSize="14sp"
         android:gravity="center"
         android:padding="10dp"/>
-    <com.zcw.togglebutton.ToggleButton
+    <com.opensource.zcw.togglebutton.ToggleButton
         android:id="@+id/setting_toggle"
 		android:layout_width="54dp"
         android:layout_height="35dp"        

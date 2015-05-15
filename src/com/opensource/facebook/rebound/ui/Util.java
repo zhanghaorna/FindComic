@@ -1,4 +1,4 @@
-package com.facebook.rebound.ui;
+package com.opensource.facebook.rebound.ui;
 
 import android.content.res.Resources;
 import android.util.TypedValue;

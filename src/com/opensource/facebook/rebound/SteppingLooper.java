@@ -7,7 +7,7 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 public class SteppingLooper extends SpringLooper {
 

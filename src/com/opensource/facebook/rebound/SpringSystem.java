@@ -1,4 +1,4 @@
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 /**
  * This is a wrapper for BaseSpringSystem that provides the convenience of automatically providing

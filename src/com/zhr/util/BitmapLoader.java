@@ -47,9 +47,11 @@ public class BitmapLoader
 		handler = new Handler();
 	}
 	
-	public void loadImageNoCache(ImageView imageView,String path)
+	
+	
+	public void loadImageNoCache(ImageView imageView,String path,boolean thumbnail)
 	{
-		loadImage(imageView, path, null,false,true,false);
+		loadImage(imageView, path, null,false,thumbnail,false);
 	}
 	
 	public void loadImage(ImageView imageView,String path,LruCache<String, Bitmap> cache)

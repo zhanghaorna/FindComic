@@ -1,4 +1,4 @@
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 /**
  * Helper math util to convert tension & friction values from the Origami design tool to values that

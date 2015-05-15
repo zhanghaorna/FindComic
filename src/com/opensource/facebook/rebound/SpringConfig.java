@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 /**
  * Data structure for storing spring configuration.

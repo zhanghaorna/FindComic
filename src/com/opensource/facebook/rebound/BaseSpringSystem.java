@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 import java.util.ArrayList;
 import java.util.Collection;

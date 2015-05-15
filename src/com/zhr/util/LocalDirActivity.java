@@ -3,11 +3,13 @@ package com.zhr.util;
 import java.io.File;
 import java.io.FileFilter;
 
+import com.zhr.comic.ComicReadActivity;
 import com.zhr.findcomic.R;
 
 import android.R.integer;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.util.LruCache;
@@ -104,6 +106,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 		file_listView.setOnItemClickListener(this);
 		file_listView.setOnScrollListener(this);
 		
+		
 	}
 
 	public void onClick(View v) {
@@ -178,7 +181,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 			{
 				Log.d("File", files[position].getAbsolutePath());
 				BitmapLoader.getInstance().loadImageNoCache(holder.iconView,
-						files[position].getAbsolutePath());
+						files[position].getAbsolutePath(),true);
 			}
 			else {
 				holder.iconView.setImageResource(R.drawable.local_dir);
@@ -197,6 +200,16 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		if (files[position].getName().endsWith(".jpg")||files[position].getName().endsWith(".png")) {
+			Intent intent = new Intent(this,ComicReadActivity.class);
+			String[] picPaths = new String[files.length];
+			for(int i = 0;i < files.length;i++)
+				picPaths[i] = files[i].getAbsolutePath();
+			intent.putExtra("picPaths", picPaths);
+			intent.putExtra("position", position);
+			startActivity(intent);
+			return;
+		}
 		currentFile = files[position];
 		files = currentFile.listFiles(fileFilter);
 		adapter.notifyDataSetChanged();
@@ -230,7 +243,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 			{
 				View convertView = view.getChildAt(i);
 				BitmapLoader.getInstance().loadImageNoCache(((DirBaseAdapter.ViewHolder)convertView.getTag()).iconView,
-						files[first + i].getAbsolutePath());
+						files[first + i].getAbsolutePath(),true);
 				
 			}
 			break;

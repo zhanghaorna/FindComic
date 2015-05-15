@@ -1,4 +1,4 @@
-package com.zcw.togglebutton;
+package com.opensource.zcw.togglebutton;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -13,11 +13,11 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.facebook.rebound.SimpleSpringListener;
-import com.facebook.rebound.Spring;
-import com.facebook.rebound.SpringConfig;
-import com.facebook.rebound.SpringSystem;
-import com.facebook.rebound.SpringUtil;
+import com.opensource.facebook.rebound.SimpleSpringListener;
+import com.opensource.facebook.rebound.Spring;
+import com.opensource.facebook.rebound.SpringConfig;
+import com.opensource.facebook.rebound.SpringSystem;
+import com.opensource.facebook.rebound.SpringUtil;
 import com.zhr.findcomic.R;
 
 /**

@@ -25,7 +25,7 @@
         <activity 
             android:name="com.zhr.findcomic.WelcomeActivity"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Light.NoTitleBar">
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -47,7 +47,7 @@
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
         <activity 
             android:name="com.zhr.comic.ComicReadActivity"
-            android:theme="@android:style/Theme.Light.NoTitleBar"></activity>                 
+            android:theme="@android:style/Theme.Light"></activity>                 
     </application>
 
 </manifest>

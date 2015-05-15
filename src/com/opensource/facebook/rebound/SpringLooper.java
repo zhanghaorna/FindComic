@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 /**
  * The spring looper is an interface for implementing platform-dependent run loops.

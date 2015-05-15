@@ -8,7 +8,7 @@
  *
  */
 
-package com.facebook.rebound;
+package com.opensource.facebook.rebound;
 
 /**
  * SpringSystemListener provides an interface for listening to events before and after each Physics

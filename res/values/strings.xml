@@ -16,4 +16,6 @@
 	<string name="read_setting">阅读设置</string>
 	<string name="continue_read">继续观看</string>
 	
+	<string name="hint">提示</string>
+	<string name="share">分享</string>
 </resources>

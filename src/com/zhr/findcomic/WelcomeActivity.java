@@ -2,6 +2,7 @@ package com.zhr.findcomic;
 
 import com.zhr.setting.AppSetting;
 import com.zhr.util.BitmapLoader;
+import com.zhr.util.Util;
 
 import android.app.Activity;
 import android.content.Intent;
