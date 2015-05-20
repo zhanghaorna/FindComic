@@ -1,6 +1,6 @@
 package com.zhr.findcomic;
 
-import com.zhr.mianpage.MainPageFragment;
+import com.zhr.mainpage.MainPageFragment;
 import com.zhr.recommend.RecommendFragment;
 import com.zhr.searchcomic.SearchComicFragment;
 import com.zhr.setting.SettingFragment;

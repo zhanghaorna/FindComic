@@ -7,6 +7,7 @@ import com.zhr.findcomic.R;
 import com.zhr.util.BaseActivity;
 
 
+
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,7 +25,8 @@ public class ReadSettingActivity extends BaseActivity implements OnIndexChange,O
 		,OnClickListener
 {
 	private SettingTextView screen_orientation;
-	private SettingTextView vertical_read_mode;
+	private SettingTextView vertical_page_turn_orientation;
+	private SettingTextView vertical_page_turn_hand;
 	private SettingTextView pageOver_volume;
 	private SettingTextView hide_virtual_key;
 	private SettingTextView show_time_battery;
@@ -35,7 +37,8 @@ public class ReadSettingActivity extends BaseActivity implements OnIndexChange,O
 	private ImageView back;
 	
 	private String[] orientations = new String[]{"横屏","竖屏"};
-	private String[] read_modes = new String[]{"横向翻页(左右滑动)","竖向翻页(上下滑动)"};
+	private String[] page_turn_orientations = new String[]{"横向翻页(左右滑动)","竖向翻页(上下滑动)"};
+	private String[] page_turn_hands = new String[]{"左手翻页","右手翻页"};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,11 +63,17 @@ public class ReadSettingActivity extends BaseActivity implements OnIndexChange,O
 				.getScreen_orientation());
 		screen_orientation.setOnIndexChange(this);
 		
-		vertical_read_mode = (SettingTextView)findViewById(R.id.vertical_read_mode);
-		vertical_read_mode.addChooseItems(read_modes);
-		vertical_read_mode.setCurrentIndex(AppSetting.getInstance(getApplicationContext())
-				.getMode_in_vertical());
-		vertical_read_mode.setOnIndexChange(this);
+		vertical_page_turn_orientation = (SettingTextView)findViewById(R.id.vertical_page_turn_orientation);
+		vertical_page_turn_orientation.addChooseItems(page_turn_orientations);
+		vertical_page_turn_orientation.setCurrentIndex(AppSetting.getInstance(getApplicationContext())
+				.getPage_turn_orientation());
+		vertical_page_turn_orientation.setOnIndexChange(this);
+		
+		vertical_page_turn_hand = (SettingTextView)findViewById(R.id.vertical_page_turn_hand);
+		vertical_page_turn_hand.addChooseItems(page_turn_hands);
+		vertical_page_turn_hand.setCurrentIndex(AppSetting.getInstance(getApplicationContext())
+				.getPage_turn_hand());
+		vertical_page_turn_hand.setOnIndexChange(this);
 		
 		pageOver_volume = (SettingTextView)findViewById(R.id.pageover_volume);
 		pageOver_volume.setToggleStatus(AppSetting.getInstance(getApplicationContext())
@@ -98,8 +107,11 @@ public class ReadSettingActivity extends BaseActivity implements OnIndexChange,O
 		case R.id.screen_orientation:
 			AppSetting.getInstance(getApplicationContext()).setScreenOrientation(index);
 			break;
-		case R.id.vertical_read_mode:
-			AppSetting.getInstance(getApplicationContext()).setModeInVertical(index);
+		case R.id.vertical_page_turn_orientation:
+			AppSetting.getInstance(getApplicationContext()).setPage_turn_orientation(index);
+			break;
+		case R.id.vertical_page_turn_hand:
+			AppSetting.getInstance(getApplicationContext()).setPage_turn_hand(index);
 			break;
 		default:
 			break;

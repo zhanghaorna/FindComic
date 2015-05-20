@@ -29,7 +29,7 @@
         android:layout_marginRight="10dp"/>
     
     <com.zhr.customview.SettingTextView
-        android:id="@+id/vertical_read_mode"
+        android:id="@+id/vertical_page_turn_orientation"
         style="@style/setting_textview"
         android:layout_marginTop="0dp"
         android:layout_marginBottom="0dp"
@@ -37,6 +37,23 @@
         custom:view_mode="text"
         custom:mainText="竖屏阅读模式"
         custom:subText="横向翻页(左右滑动)"/>
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"/>
+    
+    <com.zhr.customview.SettingTextView
+        android:id="@+id/vertical_page_turn_hand"
+        style="@style/setting_textview"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:padding="5dp"
+        custom:view_mode="text"
+        custom:mainText="竖屏翻页模式"
+        custom:subText="左手翻页"/>
     
     <TextView 
         android:layout_width="match_parent"

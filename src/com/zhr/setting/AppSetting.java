@@ -1,5 +1,7 @@
 package com.zhr.setting;
 
+import com.zhr.findcomic.R;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -13,8 +15,15 @@ public class AppSetting {
 
 	public static final String PREFS_NAME = "pref_app_setting";
 	
+	public static final String[] page_turn_orientations = new String[]{"横向翻页","纵向翻页"};
+	public static final int[] page_turn_orientation_src = new int[]{R.drawable.reader_port_mode_h,R.drawable.reader_port_mode_v};
+	public static final String[] page_turn_hands = new String[]{"左手翻页","右手翻页"};
+	public static final int[] page_turn_hand_src = new int[]{R.drawable.reader_left_hand_mode,R.drawable.reader_right_hand_mode};
+	
+	
 	private final String SCREEN_ORIENTATION = "screen_orientation";
-	private final String MODE_IN_VETICAL = "mode_in_vertical";
+	private final String PAGE_TURN_ORIENTATION = "page_turn_orientation";
+	private final String PAGE_TURN_HAND = "page_turn_mode";
 	private final String PAGEOVER_BY_VOLUME = "pageOver_by_volume";
 	private final String HIDE_VIRTUAL_KEY = "hide_virtual_key";
 	private final String SHOW_TIME_BATTERY = "show_time_battery";
@@ -23,11 +32,14 @@ public class AppSetting {
 	
 	private static AppSetting instance = null;
 	
+
 	//屏幕方向
 	//横屏or竖屏
 	private int screen_orientation;
 	//竖屏阅读模式 从左往右or从上往下
-	private int mode_in_vertical;
+	private int page_turn_orientation;
+	//竖屏左手翻页or右手翻页
+	private int page_turn_hand;
 	//音量键翻页
 	private boolean pageOver_by_volume;
 	//隐藏虚拟按键
@@ -66,9 +78,37 @@ public class AppSetting {
 		screen_orientation = orientation;
 	}
 	
-	public void setModeInVertical(int mode)
+	public void setScreenOrientation()
 	{
-		mode_in_vertical = mode;
+		if(screen_orientation == HORIZONTAL_ORIENTATION)
+			screen_orientation = VERTICAL_ORIENTATION;
+		else
+			screen_orientation = HORIZONTAL_ORIENTATION;
+	}
+	
+	public void setPage_turn_hand(int page_turn_hand) {
+		this.page_turn_hand = page_turn_hand;
+	}
+	
+	public void changePage_turn_hand()
+	{
+		if(page_turn_hand == LEFT_HAND)
+			page_turn_hand = RIGHT_HAND;
+		else
+			page_turn_hand = LEFT_HAND;
+	}
+
+	public void setPage_turn_orientation(int page_turn_orientation) {
+		this.page_turn_orientation = page_turn_orientation;
+	}
+	
+	public void changePage_turn_orientation()
+	{
+		if(page_turn_orientation == MODE_IN_VERTICAL_LEFT_RIGHT)
+			page_turn_orientation = MODE_IN_VERTICAL_UP_DOWN;
+		else {
+			page_turn_orientation = MODE_IN_VERTICAL_LEFT_RIGHT;
+		}
 	}
 	
 	public void setPageOverByVolume(boolean pageOver)
@@ -100,7 +140,8 @@ public class AppSetting {
 	public void commitAllAlter()
 	{
 		setting.edit().putInt(SCREEN_ORIENTATION, screen_orientation);
-		setting.edit().putInt(MODE_IN_VETICAL, mode_in_vertical);
+		setting.edit().putInt(PAGE_TURN_ORIENTATION, page_turn_orientation);
+		setting.edit().putInt(PAGE_TURN_HAND, page_turn_hand);
 		setting.edit().putBoolean(PAGEOVER_BY_VOLUME, pageOver_by_volume);
 		setting.edit().putBoolean(HIDE_VIRTUAL_KEY, hide_virtual_key);
 		setting.edit().putBoolean(SHOW_TIME_BATTERY, show_time_battery);
@@ -113,7 +154,8 @@ public class AppSetting {
 	{
 		setting = context.getSharedPreferences(PREFS_NAME, 0);
 		screen_orientation = setting.getInt(SCREEN_ORIENTATION, HORIZONTAL_ORIENTATION);
-		mode_in_vertical = setting.getInt(MODE_IN_VETICAL, MODE_IN_VERTICAL_LEFT_RIGHT);
+		page_turn_orientation = setting.getInt(PAGE_TURN_ORIENTATION, MODE_IN_VERTICAL_LEFT_RIGHT);
+		page_turn_hand = setting.getInt(PAGE_TURN_HAND, LEFT_HAND);
 		pageOver_by_volume = setting.getBoolean(PAGEOVER_BY_VOLUME, false);
 		hide_virtual_key = setting.getBoolean(HIDE_VIRTUAL_KEY, false);
 		
@@ -128,9 +170,14 @@ public class AppSetting {
 	public int getScreen_orientation() {
 		return screen_orientation;
 	}
-
-	public int getMode_in_vertical() {
-		return mode_in_vertical;
+	
+	public int getPage_turn_hand() {
+		return page_turn_hand;
+	}
+	
+	
+	public int getPage_turn_orientation() {
+		return page_turn_orientation;
 	}
 
 
@@ -164,6 +211,9 @@ public class AppSetting {
 	
 	public final static int MODE_IN_VERTICAL_LEFT_RIGHT = 0;
 	public final static int MODE_IN_VERTICAL_UP_DOWN = 1;
+	
+	public final static int LEFT_HAND = 0;
+	public final static int RIGHT_HAND = 1;
 	
 	 
 }

@@ -69,7 +69,7 @@ public class BitmapLoader
 							boolean asyn,boolean thumbnail,boolean isCache)
 	{
 		LoadAndDisplayTask task = new LoadAndDisplayTask(imageView, path, cache, thumbnail, handler,isCache);
-		if(asyn)
+		if(!asyn)
 		{
 			task.run();
 		}

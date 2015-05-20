@@ -18,4 +18,10 @@
 	
 	<string name="hint">提示</string>
 	<string name="share">分享</string>
+	<string name="landscape">横屏</string>
+	<string name="portrait">竖屏</string>
+	<string name="landscape_page">横向翻页</string>
+	<string name="portrait_page">纵向翻页</string>
+	<string name="left_page">左手翻页</string>
+	<string name="right_page">右手翻页</string>
 </resources>

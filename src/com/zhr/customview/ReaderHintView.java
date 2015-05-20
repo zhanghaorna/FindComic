@@ -16,6 +16,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
 import com.zhr.findcomic.R;
+import com.zhr.setting.AppSetting;
 
 /**
  * @author zhr
@@ -26,11 +27,7 @@ import com.zhr.findcomic.R;
 public class ReaderHintView extends View implements OnTouchListener,OnClickListener{
 
 	private Paint paint = new Paint();
-	private PorterDuffXfermode mode; 
-	
-	public static final boolean LEFT_HAND = false;
-	public static final boolean RIGHT_HAND = true;
-	
+		
 	private int screen_orientation;
 	
 	private int click_x,click_y;
@@ -44,14 +41,13 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 	private int space;
 	//整个view的rect
 	private Rect rect;
-	//mode默认为左手模式，左边显示下一页
-	private boolean handMode;
+	//mode默认为左手模式为0，左边显示下一页
+	private int handMode;
 	
 	private OnTouchClick onTouchClickListener;
 	
 	public ReaderHintView(Context context,int orientation) {
 		super(context);
-		mode = new PorterDuffXfermode(Mode.CLEAR);
 		leftPath = new Path();
 		middlePath = new Path();
 		rightPath = new Path();
@@ -60,7 +56,7 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 		rect = new Rect();
 		rect.left = 0;
 		rect.top = 0;
-		handMode = false;
+		handMode = 0;
 		show = false;
 		screen_orientation = orientation;
 		setBackgroundColor(getResources().getColor(R.color.transparent));
@@ -86,9 +82,9 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 		onTouchClickListener = onTouchClick;
 	}
 	
-	public void setHandMode(boolean mode)
+	public void setHandMode(int handMode)
 	{
-		handMode = mode;
+		this.handMode = handMode;
 	}
 
 	@Override
@@ -169,7 +165,7 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 			paint.setTextAlign(Paint.Align.CENTER);
 			paint.setTextSize(50);
 			canvas.drawText("菜单", getWidth() / 2, getHeight() / 2, paint);
-			if(handMode == LEFT_HAND)
+			if(handMode == AppSetting.LEFT_HAND)
 			{
 				canvas.drawText("下一页", getWidth() / 6, getHeight() / 2, paint);
 				canvas.drawText("上一页", getWidth() * 5/6, getHeight() / 2, paint);
@@ -215,7 +211,7 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 				if((click_x < getWidth() * 2/3&&click_y < getHeight() * 1/5)||
 						(click_x < getWidth() * 1/3&&click_y < getHeight()&&click_y > getHeight() * 1/5))
 				{
-					if(handMode == LEFT_HAND)
+					if(handMode == AppSetting.LEFT_HAND)
 						onTouchClickListener.onNextPageClick();
 					else {
 						onTouchClickListener.onPrePageClick();
@@ -228,10 +224,10 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 				}
 				else
 				{
-					if(handMode == RIGHT_HAND)
-						onTouchClickListener.onNextPageClick();
-					else {
+					if(handMode == AppSetting.LEFT_HAND)
 						onTouchClickListener.onPrePageClick();
+					else {
+						onTouchClickListener.onNextPageClick();
 					}
 				}
 				return true;
