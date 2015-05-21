@@ -69,7 +69,14 @@
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
         <activity 
             android:name="com.zhr.comic.ComicReadActivity"
-            android:theme="@android:style/Theme.Light"></activity>                 
+            android:screenOrientation="nosensor"
+            android:theme="@android:style/Theme.Light"
+            ></activity> 
+            
+        <meta-data
+            android:name="UMENG_APPKEY"
+            android:value="5555d4cd67e58e3e2e0051ce" >
+        </meta-data>
     </application>
 
 </manifest>

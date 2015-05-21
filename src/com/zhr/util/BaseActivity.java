@@ -57,7 +57,7 @@ public class BaseActivity extends Activity{
 		super.onPause();
 		if(isAddView)
 		{
-			mWindowManager.removeView(coverView);
+			mWindowManager.removeViewImmediate(coverView);
 			isAddView = false;
 		}
 

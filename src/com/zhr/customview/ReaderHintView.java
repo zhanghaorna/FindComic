@@ -1,15 +1,12 @@
 package com.zhr.customview;
 
-import android.R.integer;
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PorterDuff.Mode;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -208,29 +205,49 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 			{
 				if(onTouchClickListener == null)
 					return false;
-				if((click_x < getWidth() * 2/3&&click_y < getHeight() * 1/5)||
-						(click_x < getWidth() * 1/3&&click_y < getHeight()&&click_y > getHeight() * 1/5))
+				onTouchClickListener.onClick();
+				if(screen_orientation == Configuration.ORIENTATION_PORTRAIT)
 				{
-					if(handMode == AppSetting.LEFT_HAND)
-						onTouchClickListener.onNextPageClick();
-					else {
+					if((click_x < getWidth() * 2/3&&click_y < getHeight() * 1/5)||
+							(click_x < getWidth() * 1/3&&click_y < getHeight()&&click_y > getHeight() * 1/5))
+					{
+						if(handMode == AppSetting.LEFT_HAND)
+							onTouchClickListener.onNextPageClick();
+						else {
+							onTouchClickListener.onPrePageClick();
+						}
+					}
+					else if(click_x <  getWidth() * 2/3&&click_x > getWidth() * 1/3
+								&&click_y > getHeight() * 1/5&&click_y < getHeight() * 4/5)
+					{
+						onTouchClickListener.onMenuClick();
+					}
+					else
+					{
+						if(handMode == AppSetting.LEFT_HAND)
+							onTouchClickListener.onPrePageClick();
+						else {
+							onTouchClickListener.onNextPageClick();
+						}
+					}
+					return true;
+				}
+				else if(screen_orientation == Configuration.ORIENTATION_LANDSCAPE)
+				{
+					if(click_x < getWidth()&&click_y < getHeight() / 3)
+					{
 						onTouchClickListener.onPrePageClick();
 					}
-				}
-				else if(click_x <  getWidth() * 2/3&&click_x > getWidth() * 1/3
-							&&click_y > getHeight() * 1/5&&click_y < getHeight() * 4/5)
-				{
-					onTouchClickListener.onMenuClick();
-				}
-				else
-				{
-					if(handMode == AppSetting.LEFT_HAND)
-						onTouchClickListener.onPrePageClick();
+					else if(click_x > getWidth() / 3 + space&&click_x < getWidth() * 2/3 - space
+							&&click_y > getHeight() / 3 + space)
+					{
+						onTouchClickListener.onMenuClick();
+					}
 					else {
 						onTouchClickListener.onNextPageClick();
 					}
+					return true;
 				}
-				return true;
 			}
 			break;
 		default:
@@ -244,6 +261,7 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 		void onNextPageClick();
 		void onPrePageClick();
 		void onMenuClick();
+		void onClick();
 	}
 
 	@Override

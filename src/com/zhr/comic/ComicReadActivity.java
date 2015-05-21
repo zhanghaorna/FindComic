@@ -1,8 +1,10 @@
 package com.zhr.comic;
 
 
+import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.controller.UMServiceFactory;
 import com.umeng.socialize.controller.UMSocialService;
+import com.umeng.socialize.media.UMImage;
 import com.umeng.socialize.sso.SinaSsoHandler;
 import com.zhr.customview.ComicPageView;
 import com.zhr.customview.ReaderHintView;
@@ -14,8 +16,11 @@ import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -83,11 +88,18 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
+				AppSetting.HORIZONTAL_ORIENTATION)
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		else {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		}
 		setContentView(R.layout.activity_comic_read);
-		
+
 		preData();
 		initView();
 		initData();
+		
 	}
 	
 	private void preData()
@@ -109,6 +121,10 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		else {
 			mLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
 		}
+		
+		if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
+				AppSetting.HORIZONTAL_ORIENTATION)
+			mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		
 		
 		mPopWindowHolder = new PopWindowHolder();
@@ -140,6 +156,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		//配置友盟分享相关设置
 		mController.getConfig().setSsoHandler(new SinaSsoHandler());
 		
+		
 	}
 	
 	
@@ -154,24 +171,21 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				imageView = (ComicPageView)itemView.findViewById(R.id.comic_picture);
 				imageView.setLayoutParams(new FrameLayout.LayoutParams(
 						Util.getScreenWidth(ComicReadActivity.this),
-						Util.getScreenHeight(ComicReadActivity.this)));
-				
-			}
-			
+						Util.getScreenHeight(ComicReadActivity.this)));				
+			}			
 		}
 
-		@Override
 		public int getItemCount() {
 			return picPaths == null ? 0 : picPaths.length;
 		}
 
-		@Override
 		public void onBindViewHolder(PicViewHolder holder, int poistion) {
 			holder.imageView.setPageNum(poistion + 1);
 			if(!isScroll)
 				BitmapLoader.getInstance().loadImage(holder.imageView,
-						picPaths[poistion], null, true, false, false);
+						picPaths[poistion], true, false, false);
 			viewPosition = poistion;
+			Log.d("Comic", "" + poistion);
 
 		}
 
@@ -185,12 +199,12 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
+		Log.d("Comic", "onResume");
 		mAdapter.notifyItemChanged(viewPosition);
+		
 		if(readerHintView != null)
 			mWindowManager.addView(readerHintView, lp);
-		
 		
 	}
 	
@@ -198,16 +212,26 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
+		Log.d("Comic", "onPause");
 		if(readerHintView != null)
-			mWindowManager.removeView(readerHintView);
+		{
+			//不能使用removeview(异步的方法)，activity已被销毁了，但view还没有被remove掉
+			//导致activity leaked问题，使用removeViewImmediate(同步)
+			mWindowManager.removeViewImmediate(readerHintView);
+		}
+		if(mPopWindowHolder.isShowing())
+		{
+			mPopWindowHolder.dismiss(); 
+		}
+
 		AppSetting.getInstance(getApplicationContext()).commitAllAlter();
 	}
 	
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		Log.d("Comic", "onDestory");
-		
+		mController.dismissShareBoard();
+		Log.d("Comic", "onDestory");		
 	}
 		
 	@Override
@@ -231,23 +255,23 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		
 		public PopWindowHolder()
 		{
-			View topView = getLayoutInflater().inflate(R.layout.popupwindow_top_in_v,rootView,false);
+			View topView = getLayoutInflater().inflate(R.layout.popupwindow_top,rootView,false);
 			topWindow = new PopupWindow(topView,LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT,false);
-			topWindow.setOutsideTouchable(true);
 			topWindow.setTouchable(true);
-			topWindow.setBackgroundDrawable(new BitmapDrawable(getResources()));
 			topWindow.setOnDismissListener(this);
 			topWindow.setAnimationStyle(R.style.popupwindow_top_anim);
 			setupTopWindowListener(topWindow.getContentView());
-			
-			View bottomView = getLayoutInflater().inflate(R.layout.popupwindow_bottom_in_v,rootView,false);
+			View bottomView = null;
+			if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+				bottomView = getLayoutInflater().inflate(R.layout.popupwindow_bottom_in_v,rootView,false);
+			else {
+				bottomView = getLayoutInflater().inflate(R.layout.popupwindow_bottom_in_h,rootView,false);
+			}
 			bottomWindow = new PopupWindow(bottomView,LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT,false);
-			bottomWindow.setOutsideTouchable(true);
 			bottomWindow.setTouchable(true);
 			bottomWindow.setAnimationStyle(R.style.popupwindow_bottom_anim);
-			bottomWindow.setBackgroundDrawable(new BitmapDrawable(getResources()));
 			setupBottomWindowListener(bottomWindow.getContentView());
 		}
 		//设置topWindow监听
@@ -264,7 +288,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			TextView share = (TextView)view.findViewById(R.id.share);
 			share.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
-					
+					mController.getConfig().setPlatforms(SHARE_MEDIA.SINA);
+					mController.setShareMedia(new UMImage(ComicReadActivity.this, picPaths[viewPosition]));
+					mController.openShare(ComicReadActivity.this, false);
 				}
 			});
 			
@@ -301,6 +327,33 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					mLayoutManager.scrollToPosition(progress);
 				}
 			});
+			//屏幕阅读方向
+			TextView turn_screen_orientation = (TextView)view.findViewById(R.id.landscape);
+			set_screen_orientation(turn_screen_orientation);
+			turn_screen_orientation.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					dismiss();
+					AppSetting.getInstance(getApplicationContext()).changeScreenOrientation();
+					if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
+								AppSetting.VERTICAL_ORIENTATION)
+						setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+					else {
+						setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+					}
+				}
+			});
+			
+			//设置
+			TextView setting = (TextView)view.findViewById(R.id.setting);
+			setting.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					Intent intent = new Intent(ComicReadActivity.this,ReadSettingActivity.class);
+					startActivity(intent);
+					overridePendingTransition(R.anim.slide_right_in, R.anim.slide_left_out);
+				}
+			});
+			if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+				return;
 			//翻页方向
 			TextView page_turn_orientation = (TextView)view.findViewById(R.id.page_turn_orientation);
 			set_page_orientation(page_turn_orientation);
@@ -331,16 +384,25 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					readerHintView.showHint();
 				}
 			});
-			//设置
-			TextView setting = (TextView)view.findViewById(R.id.setting);
-			setting.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					Intent intent = new Intent(ComicReadActivity.this,ReadSettingActivity.class);
-					startActivity(intent);
-					overridePendingTransition(R.anim.slide_right_in, R.anim.slide_left_out);
-				}
-			});
+
 			
+		}
+		//设置横屏or竖屏阅读
+		private void set_screen_orientation(TextView textView)
+		{
+			if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() == 
+					AppSetting.VERTICAL_ORIENTATION)
+			{
+				textView.setText(AppSetting.screen_orientations[AppSetting.HORIZONTAL_ORIENTATION]);
+				textView.setCompoundDrawablesWithIntrinsicBounds(null,
+						getResources().getDrawable(AppSetting.screen_orientations_src[AppSetting.HORIZONTAL_ORIENTATION]), null, null);
+			}
+			else
+			{
+				textView.setText(AppSetting.screen_orientations[AppSetting.VERTICAL_ORIENTATION]);
+				textView.setCompoundDrawablesWithIntrinsicBounds(null,
+						getResources().getDrawable(AppSetting.screen_orientations_src[AppSetting.VERTICAL_ORIENTATION]), null, null);
+			}
 		}
 		//popupwindow设置翻页方向
 		private void set_page_orientation(TextView textView)
@@ -411,6 +473,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			//recyclerView中的子view要通过它的LayoutManager寻找到，然后在调用自身的getChildViewHolder
 			//找到自己的viewHolder
 			case OnScrollListener.SCROLL_STATE_IDLE:
+				Log.d("Comic", "scroll stop");
 				isScroll = false;
 				int first = mLayoutManager.findFirstVisibleItemPosition();
 				int last = mLayoutManager.findLastVisibleItemPosition();
@@ -420,7 +483,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					vHolder = (PictureAdapter.PicViewHolder) recyclerView.getChildViewHolder(
 							mLayoutManager.findViewByPosition(i));
 					BitmapLoader.getInstance().loadImage(vHolder.imageView,
-							picPaths[i], null, true, false, false);
+							picPaths[i], true, false, false);
 				}
 				mPopWindowHolder.getSeekBar().setProgress(mLayoutManager.findFirstVisibleItemPosition());
 				break;
@@ -514,8 +577,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	}
 
 	//下一页被点击
-	public void onNextPageClick() {
-		
+	public void onNextPageClick() {		
 		int page = mLayoutManager.findFirstVisibleItemPosition();
 		if(page < picPaths.length - 1)
 			mLayoutManager.smoothScrollToPosition(mRecyclerView, null, ++page);
@@ -534,12 +596,22 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		if(!mPopWindowHolder.isShowing()&&!dismiss)
 		{
 			mPopWindowHolder.show();
+
 		}
 		
-		if(dismiss)
-			dismiss = false;
+	}
+
+	@Override
+	public void onClick() {
+		dismiss = false;
+		if(mPopWindowHolder.isShowing())
+		{
+			mPopWindowHolder.dismiss(); 
+			dismiss = true;
+		}
 
 	}
+	
 
 
 

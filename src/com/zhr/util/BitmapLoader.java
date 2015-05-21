@@ -51,24 +51,24 @@ public class BitmapLoader
 	
 	public void loadImageNoCache(ImageView imageView,String path,boolean thumbnail)
 	{
-		loadImage(imageView, path, null,false,thumbnail,false);
+		loadImage(imageView, path,false,thumbnail,false);
 	}
 	
-	public void loadImage(ImageView imageView,String path,LruCache<String, Bitmap> cache)
+	public void loadImage(ImageView imageView,String path)
 	{
-		loadImage(imageView, path, cache, true);
+		loadImage(imageView, path, true);
 	}
 	
-	public void loadImage(ImageView imageView,String path,LruCache<String, Bitmap> cache,
+	public void loadImage(ImageView imageView,String path,
 							boolean asyn)
 	{
-		loadImage(imageView, path, cache,asyn,false,true);
+		loadImage(imageView, path,asyn,false,true);
 	}
 	
-	public void loadImage(ImageView imageView,String path,LruCache<String, Bitmap> cache,
+	public void loadImage(ImageView imageView,String path,
 							boolean asyn,boolean thumbnail,boolean isCache)
 	{
-		LoadAndDisplayTask task = new LoadAndDisplayTask(imageView, path, cache, thumbnail, handler,isCache);
+		LoadAndDisplayTask task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,isCache);
 		if(!asyn)
 		{
 			task.run();

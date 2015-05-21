@@ -20,17 +20,15 @@ public class LoadAndDisplayTask implements Runnable{
 	private boolean thumbnail;
 	private boolean isCache;
 	private Handler handler;
-	private LruCache<String, Bitmap> cache;
 	
 	private Bitmap bitmap = null;
 	
-	public LoadAndDisplayTask(ImageView targetView,String imagePath,LruCache<String, Bitmap> cache
+	public LoadAndDisplayTask(ImageView targetView,String imagePath
 			,boolean thumbnail,Handler handler,boolean isCache)
 	{
 		this.targetView = targetView;
 		this.imagePath = imagePath;
 		this.thumbnail = thumbnail;
-		this.cache = cache;
 		this.isCache = isCache;
 		
 		this.handler = handler;
@@ -41,9 +39,9 @@ public class LoadAndDisplayTask implements Runnable{
 	public void run() {
 		try 
 		{
-			//获取内存是否有缓存
-			if(cache != null)
-				bitmap = cache.get(imagePath);
+			//获取内存是否有缓存,应该是全局的缓存
+//			if(cache != null)
+//				bitmap = cache.get(imagePath);
 			if(bitmap == null||bitmap.isRecycled())
 			{
 				BitmapFactory.Options options = new BitmapFactory.Options();
@@ -54,8 +52,8 @@ public class LoadAndDisplayTask implements Runnable{
 					options.inSampleSize = calculateInSampleSize(options, 40, 40);
 					options.inJustDecodeBounds = false;
 					bitmap = BitmapFactory.decodeFile(imagePath,options);
-					if(isCache && cache != null)
-						cache.put(imagePath, bitmap);
+//					if(isCache && cache != null)
+//						cache.put(imagePath, bitmap);
 				}
 				else
 				{
@@ -65,11 +63,11 @@ public class LoadAndDisplayTask implements Runnable{
 						options.inSampleSize = calculateInSampleSize(options, 480, 800);
 					options.inJustDecodeBounds = false;
 					bitmap = BitmapFactory.decodeFile(imagePath,options);
-					if(isCache && cache != null)
-						cache.put(imagePath, bitmap);
+//					if(isCache && cache != null)
+//						cache.put(imagePath, bitmap);
 				}
 			}
-			if(bitmap != null)
+			if(bitmap != null&&targetView != null)
 			{
 				if(Thread.currentThread() != Looper.getMainLooper().getThread())
 					handler.post(new Runnable() {

@@ -15,6 +15,8 @@ public class AppSetting {
 
 	public static final String PREFS_NAME = "pref_app_setting";
 	
+	public static final String[] screen_orientations = new String[]{"横屏","竖屏"};
+	public static final int[] screen_orientations_src = new int[]{R.drawable.land_mode,R.drawable.port_mode};
 	public static final String[] page_turn_orientations = new String[]{"横向翻页","纵向翻页"};
 	public static final int[] page_turn_orientation_src = new int[]{R.drawable.reader_port_mode_h,R.drawable.reader_port_mode_v};
 	public static final String[] page_turn_hands = new String[]{"左手翻页","右手翻页"};
@@ -78,7 +80,7 @@ public class AppSetting {
 		screen_orientation = orientation;
 	}
 	
-	public void setScreenOrientation()
+	public void changeScreenOrientation()
 	{
 		if(screen_orientation == HORIZONTAL_ORIENTATION)
 			screen_orientation = VERTICAL_ORIENTATION;
