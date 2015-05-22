@@ -1,11 +1,16 @@
 package com.zhr.util;
 
+import com.zhr.comic.ComicReadActivity;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.util.LruCache;
+import android.text.Layout;
 import android.util.Log;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
 /**
@@ -60,9 +65,12 @@ public class LoadAndDisplayTask implements Runnable{
 					bitmap = BitmapFactory.decodeFile(imagePath,options);
 					//Bitmap宽高都大于2000进行压缩
 					if(options.outHeight > 2000&&options.outWidth > 2000)
-						options.inSampleSize = calculateInSampleSize(options, 480, 800);
+						options.inSampleSize = calculateInSampleSize(options, 720, 
+								1280);
 					options.inJustDecodeBounds = false;
 					bitmap = BitmapFactory.decodeFile(imagePath,options);
+//					bitmap = Bitmap.createBitmap(bitmap, 0, 0, targetView.getMeasuredWidth()
+//							,targetView.getMeasuredHeight()); 
 //					if(isCache && cache != null)
 //						cache.put(imagePath, bitmap);
 				}
@@ -70,9 +78,11 @@ public class LoadAndDisplayTask implements Runnable{
 			if(bitmap != null&&targetView != null)
 			{
 				if(Thread.currentThread() != Looper.getMainLooper().getThread())
-					handler.post(new Runnable() {
-						
+					handler.post(new Runnable() {						
 						public void run() {
+//							FrameLayout.LayoutParams params = (LayoutParams) targetView.getLayoutParams();
+//							params.height = (int) (params.width * bitmap.getHeight() / (float)bitmap.getWidth());
+//							targetView.setLayoutParams(params);	
 							targetView.setImageBitmap(bitmap);
 						}
 					});

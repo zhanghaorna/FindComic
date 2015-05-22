@@ -4,8 +4,10 @@
     <color name="gray">#CCCCCC</color>
     <color name="blue">#0000FF</color><!--蓝色 -->  
     <color name="white">#FFFFFF</color><!--白色 -->  
+    
     <color name="tran_white">#b0FFFFFF</color>  <!-- 半透明白色 -->
-    <color name="tran_black">#99000000</color>  <!-- 半透明黑色 -->
+    <color name="tran_black">#AA000000</color>  <!-- 半透明黑色 -->
+    <color name="half_tran_black">#20000000</color>
     
     <color name="tran_green">#4428FF28</color> <!-- 半透明绿色 -->
     

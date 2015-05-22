@@ -5,20 +5,16 @@ import java.io.FileFilter;
 
 import com.zhr.comic.ComicReadActivity;
 import com.zhr.findcomic.R;
+import com.zhr.setting.AppSetting;
 
-import android.R.integer;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver.OnScrollChangedListener;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
@@ -27,8 +23,8 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author zhr
@@ -40,9 +36,12 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				,OnItemClickListener,OnScrollListener
 {
 
+	public static final int LAST_READ = 0;
+	
 	private ImageView back;
-	private RelativeLayout last_readLayout;
 	private TextView file_pathView;
+	
+	private TextView last_readView;
 	private Button continue_read;
 	//初始化时图片有错位现象，由于Listview初始化多次调用getView导致(由于listview高度设为wrap_content,需要
 	//在屏幕控件加载完全后才知道显示多少行数据，因此listview会尝试进行计算view高度),将listview设为固定高度或
@@ -57,6 +56,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 	private File currentFile;
 	//文件过滤器，只保留文件夹或者以.jpg,.png
 	private FileFilter fileFilter;
+	private FileFilter picFilter;
 	
 	private DirBaseAdapter adapter;
 	
@@ -72,10 +72,19 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 	
 	private void initData()
 	{
-		fileFilter = new FileFilter() {
-			
+		fileFilter = new FileFilter() {			
 			public boolean accept(File pathname) {
 				if(pathname.isDirectory()||pathname.getName().endsWith(".png")
+						||pathname.getName().endsWith(".jpg"))
+				{
+					return true;
+				}
+				return false;
+			}
+		};
+		picFilter = new FileFilter() {
+			public boolean accept(File pathname) {
+				if(pathname.getName().endsWith(".png")
 						||pathname.getName().endsWith(".jpg"))
 				{
 					return true;
@@ -99,14 +108,17 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 		file_pathView = (TextView)findViewById(R.id.path);
 		file_pathView.setText(currentFile.getAbsolutePath());
 		
-		last_readLayout = (RelativeLayout)findViewById(R.id.last_read);
 		
 		file_listView = (ListView)findViewById(R.id.file_listview);
 		file_listView.setAdapter(adapter);
 		file_listView.setOnItemClickListener(this);
 		file_listView.setOnScrollListener(this);
 		
+		last_readView = (TextView)findViewById(R.id.last_read_path);
+		last_readView.setText(AppSetting.getInstance(getApplicationContext()).getLastReadLocal());
 		
+		continue_read = (Button)findViewById(R.id.continue_read);
+		continue_read.setOnClickListener(this);
 	}
 
 	public void onClick(View v) {
@@ -115,11 +127,55 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 			finish();
 			overridePendingTransition(R.anim.slide_left_in, R.anim.slide_right_out);
 			break;
-
+		case R.id.continue_read:
+			if(file_pathView.getText().toString().equals(""))
+				Toast.makeText(getBaseContext(), "你还没有阅读过本地漫画", Toast.LENGTH_SHORT).show();
+			else
+			{
+				File file = new File(AppSetting.getInstance(getApplicationContext()).getLastReadLocal());
+				if(file.exists()&&(file.getAbsolutePath().endsWith(".jpg")||
+						file.getAbsolutePath().endsWith(".png")))
+				{
+					Intent intent = new Intent(this,ComicReadActivity.class);
+					File parentFile = file.getParentFile();
+					File[] tempFiles = parentFile.listFiles(picFilter);
+					String[] picPaths = new String[tempFiles.length];
+					int index = 0;
+					for(int i = 0;i < tempFiles.length;i++)
+					{
+						picPaths[i] = files[i].getAbsolutePath();
+						if(tempFiles[i].getAbsolutePath().equals(file.getAbsolutePath()))
+						{
+							index = i;
+						}
+					}
+					intent.putExtra("picPaths", picPaths);
+					intent.putExtra("position", index);
+					intent.putExtra("dirName", tempFiles[index].getParentFile().getName());
+					startActivityForResult(intent, LAST_READ);
+				}
+				else {
+					Toast.makeText(getBaseContext(), "漫画文件已不存在", Toast.LENGTH_SHORT).show();
+				}
+			}
 		default:
 			break;
 		}
 		
+	}
+	
+	//获取position保存上次阅读的地方
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == LAST_READ)
+		{
+			if(resultCode == RESULT_OK)
+			{
+				String path = data.getStringExtra("last_read_path");
+				if(path != null)
+					AppSetting.getInstance(getApplicationContext()).setLastReadLocal(path);
+				last_readView.setText(AppSetting.getInstance(getApplicationContext()).getLastReadLocal());
+			}
+		}
 	}
 	
 	private class DirBaseAdapter extends BaseAdapter
@@ -207,7 +263,8 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				picPaths[i] = files[i].getAbsolutePath();
 			intent.putExtra("picPaths", picPaths);
 			intent.putExtra("position", position);
-			startActivity(intent);
+			intent.putExtra("dirName", files[position].getParentFile().getName());
+			startActivityForResult(intent, LAST_READ);
 			return;
 		}
 		currentFile = files[position];

@@ -31,6 +31,7 @@ public class AppSetting {
 	private final String SHOW_TIME_BATTERY = "show_time_battery";
 	private final String KEEP_SCREEN_ON = "keep_screen_on";
 	private final String NIGHT_MODE = "night_mode";
+	private final String LAST_READ_LOCAL = "last_read_local";
 	
 	private static AppSetting instance = null;
 	
@@ -55,6 +56,8 @@ public class AppSetting {
 	
 	//夜间模式
 	private boolean night_mode;
+	//本地阅读上次位置
+	private String last_read_local;
 	
 	//下载文件路径
 	private String downloadFile;
@@ -138,6 +141,12 @@ public class AppSetting {
 		night_mode = on;
 	}
 	
+	public void setLastReadLocal(String path)
+	{
+		last_read_local = path;
+		setting.edit().putString(LAST_READ_LOCAL, last_read_local).apply();
+	}
+	
 	
 	public void commitAllAlter()
 	{
@@ -165,9 +174,9 @@ public class AppSetting {
 		keep_screen_on = setting.getBoolean(KEEP_SCREEN_ON, true);
 		night_mode = setting.getBoolean(NIGHT_MODE, false);
 		
+		last_read_local = setting.getString(LAST_READ_LOCAL, "");		
 	}
-	
-	
+		
 	
 	public int getScreen_orientation() {
 		return screen_orientation;
@@ -206,7 +215,11 @@ public class AppSetting {
 	public boolean isNight_mode() {
 		return night_mode;
 	}
-
+	
+	public String getLastReadLocal()
+	{
+		return last_read_local;
+	}
 
 	public final static int HORIZONTAL_ORIENTATION = 0;
 	public final static int VERTICAL_ORIENTATION = 1;

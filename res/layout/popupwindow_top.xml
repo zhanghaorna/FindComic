@@ -17,8 +17,10 @@
         android:layout_width="0dp"
         android:layout_weight="4"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:gravity="center"
+        android:ellipsize="start"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:gravity="left|center"
         android:layout_gravity="center"/>   
     <TextView
         android:id="@+id/share"

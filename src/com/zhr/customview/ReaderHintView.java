@@ -1,19 +1,27 @@
 package com.zhr.customview;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.zhr.findcomic.R;
 import com.zhr.setting.AppSetting;
+import com.zhr.util.Util;
 
 /**
  * @author zhr
@@ -21,10 +29,10 @@ import com.zhr.setting.AppSetting;
  * @date 2015年5月13日
  * @description
  */
-public class ReaderHintView extends View implements OnTouchListener,OnClickListener{
+public class ReaderHintView extends RelativeLayout implements OnTouchListener,OnClickListener{
 
 	private Paint paint = new Paint();
-		
+	private Context context;
 	private int screen_orientation;
 	
 	private int click_x,click_y;
@@ -41,10 +49,16 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 	//mode默认为左手模式为0，左边显示下一页
 	private int handMode;
 	
+	private SimpleDateFormat sDateFormat;
+	
+	private TextView statusView;
+	
 	private OnTouchClick onTouchClickListener;
 	
 	public ReaderHintView(Context context,int orientation) {
 		super(context);
+		this.context = context;
+		
 		leftPath = new Path();
 		middlePath = new Path();
 		rightPath = new Path();
@@ -56,11 +70,40 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 		handMode = 0;
 		show = false;
 		screen_orientation = orientation;
+		
+		sDateFormat = new SimpleDateFormat("HH:mm");
+		
 		setBackgroundColor(getResources().getColor(R.color.transparent));
 		setOnTouchListener(this);
 		setOnClickListener(this);
+		
+		statusView = new TextView(context);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		statusView.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(
+				R.drawable.reader_setting), null, null, null);
+		statusView.setBackgroundColor(getResources().getColor(R.color.half_tran_black));
+		statusView.setGravity(Gravity.CENTER_VERTICAL);
+		statusView.setTextColor(getResources().getColor(R.color.white));
+		statusView.setOnClickListener(this);
+		addView(statusView, params);
 	}
 	
+	public void setStatusText(int battery,String page)
+	{	
+		String time = sDateFormat.format(new Date());
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(page);
+		buffer.append(" ");
+		buffer.append(time);
+		buffer.append(" ");
+		buffer.append(Util.getNetWorkStatus(context));
+		buffer.append(" ");
+		buffer.append("电量:" + battery + "%");	
+		statusView.setText(buffer.toString());
+	}
 	
 	public void showHint()
 	{
@@ -266,7 +309,11 @@ public class ReaderHintView extends View implements OnTouchListener,OnClickListe
 
 	@Override
 	public void onClick(View v) {
-		
+		if(v == statusView)
+		{
+			onTouchClickListener.onClick();
+			onTouchClickListener.onMenuClick();
+		}
 		
 	}
 

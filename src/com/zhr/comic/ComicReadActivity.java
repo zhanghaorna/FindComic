@@ -16,15 +16,15 @@ import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Util;
 
-import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -64,10 +64,13 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private RecyclerView mRecyclerView;
 	//RecyclerView是否在滑动，滑动就不加载图片
 	private boolean isScroll;
+	//判断是否是用户滑动seekbar,由于滑动停止后会设置seekbar的值，导致屏幕页面的跳转
+	private boolean isSeekbarTouch;
 	
 	private PictureAdapter mAdapter;
 	private LinearLayoutManager mLayoutManager;
 	
+	private String dirName;
 	private String[] picPaths;
 	private int filePosition;
 	private int viewPosition;
@@ -75,8 +78,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private PopWindowHolder mPopWindowHolder;
 	private boolean dismiss;
 	
-	private ReaderHintView readerHintView;
-
+	private ReaderHintView readerHintView;	
+	//剩余电量
+	private int battery;
 	
 	//开源服务
 	//友盟分享
@@ -106,6 +110,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	{
 		Intent intent = getIntent();
 		picPaths = intent.getStringArrayExtra("picPaths");
+		dirName = intent.getStringExtra("dirName");
+		if(dirName == null)
+			dirName = "";
 		if(picPaths == null||picPaths.length == 0)
 			picPaths = new String[]{""};
 		filePosition = intent.getIntExtra("position", 0);
@@ -125,7 +132,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
 				AppSetting.HORIZONTAL_ORIENTATION)
 			mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-		
+
 		
 		mPopWindowHolder = new PopWindowHolder();
 	}
@@ -158,7 +165,43 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		
 		
 	}
-	
+	//当用户点击设置，重新返回Activity应用设置
+	private void changeSetting()
+	{
+		if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+		{
+			if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
+					AppSetting.VERTICAL_ORIENTATION)
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);			
+		}
+		else
+		{
+			if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
+					AppSetting.HORIZONTAL_ORIENTATION)
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			else 
+			{
+				if(AppSetting.getInstance(getApplicationContext()).getPage_turn_orientation() ==
+						AppSetting.MODE_IN_VERTICAL_LEFT_RIGHT)
+				{
+					mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+				}
+				else {
+					mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+				}
+				
+				if(AppSetting.getInstance(getApplicationContext()).getPage_turn_hand() ==
+						AppSetting.LEFT_HAND)
+				{
+					readerHintView.setHandMode(AppSetting.LEFT_HAND);
+				}
+				else
+				{
+					readerHintView.setHandMode(AppSetting.RIGHT_HAND);
+				}
+			}				
+		}		
+	}
 	
 	private class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.PicViewHolder>
 	{
@@ -171,7 +214,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				imageView = (ComicPageView)itemView.findViewById(R.id.comic_picture);
 				imageView.setLayoutParams(new FrameLayout.LayoutParams(
 						Util.getScreenWidth(ComicReadActivity.this),
-						Util.getScreenHeight(ComicReadActivity.this)));				
+						Util.getImageHeight(ComicReadActivity.this)));				
 			}			
 		}
 
@@ -197,52 +240,6 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		}
 	}
 	
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Log.d("Comic", "onResume");
-		mAdapter.notifyItemChanged(viewPosition);
-		
-		if(readerHintView != null)
-			mWindowManager.addView(readerHintView, lp);
-		
-	}
-	
-	@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-		Log.d("Comic", "onPause");
-		if(readerHintView != null)
-		{
-			//不能使用removeview(异步的方法)，activity已被销毁了，但view还没有被remove掉
-			//导致activity leaked问题，使用removeViewImmediate(同步)
-			mWindowManager.removeViewImmediate(readerHintView);
-		}
-		if(mPopWindowHolder.isShowing())
-		{
-			mPopWindowHolder.dismiss(); 
-		}
-
-		AppSetting.getInstance(getApplicationContext()).commitAllAlter();
-	}
-	
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		mController.dismissShareBoard();
-		Log.d("Comic", "onDestory");		
-	}
-		
-	@Override
-	public boolean dispatchTouchEvent(MotionEvent ev) {
-		super.dispatchTouchEvent(ev);
-		if(readerHintView.dispatchTouchEvent(ev))
-		{
-			return true;
-		}
-		return false;
-	}
 	
 	//将所有popupwindow写在一起，方便管理
 	private class PopWindowHolder implements OnDismissListener
@@ -281,9 +278,15 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			back.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					dismiss();
+					Intent intent = new Intent();
+					intent.putExtra("last_read_path", picPaths[viewPosition]);
+					setResult(RESULT_OK,intent);					
 					finish();
 				}
 			});
+			
+			TextView title =  (TextView)view.findViewById(R.id.title);
+			title.setText(dirName);
 			
 			TextView share = (TextView)view.findViewById(R.id.share);
 			share.setOnClickListener(new OnClickListener() {
@@ -318,13 +321,14 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				}
 				
 				public void onStartTrackingTouch(SeekBar seekBar) {
-					
+					isSeekbarTouch = true;
 				}
 				
 				public void onProgressChanged(SeekBar seekBar, int progress,
 						boolean fromUser) {
 					page_hint.setText((progress  + 1) + "/" + picPaths.length);
-					mLayoutManager.scrollToPosition(progress);
+					if(isSeekbarTouch)
+						mLayoutManager.scrollToPosition(progress);
 				}
 			});
 			//屏幕阅读方向
@@ -445,6 +449,11 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			return this.pageSeekBar;
 		}
 		
+		public TextView getPageHint()
+		{
+			return this.page_hint;
+		}
+		
 		public void dismiss()
 		{
 			topWindow.dismiss();
@@ -473,7 +482,6 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			//recyclerView中的子view要通过它的LayoutManager寻找到，然后在调用自身的getChildViewHolder
 			//找到自己的viewHolder
 			case OnScrollListener.SCROLL_STATE_IDLE:
-				Log.d("Comic", "scroll stop");
 				isScroll = false;
 				int first = mLayoutManager.findFirstVisibleItemPosition();
 				int last = mLayoutManager.findLastVisibleItemPosition();
@@ -485,7 +493,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					BitmapLoader.getInstance().loadImage(vHolder.imageView,
 							picPaths[i], true, false, false);
 				}
+				isSeekbarTouch = false;
 				mPopWindowHolder.getSeekBar().setProgress(mLayoutManager.findFirstVisibleItemPosition());
+				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 				break;
 			case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
 				isScroll = true;
@@ -573,11 +583,31 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	            outRect.set(0, 0, mDivider.getIntrinsicWidth(), 0);
 	        }
 	    }
-	 
 	}
-
+	
+	//电量改变监听器，获取手机电量
+	private BroadcastReceiver batteryChangeReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction()))
+			{
+				int level = intent.getIntExtra("level", 0);
+				int scale = intent.getIntExtra("scale", 100);
+				battery = level * 100 / scale;
+				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+			}
+			else if(Intent.ACTION_TIME_TICK.equals(intent.getAction()))
+			{
+				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+			}
+		}
+	};
+	
+	//滑动体验不好，可以改为滑动一定距离
 	//下一页被点击
 	public void onNextPageClick() {		
+		Log.d("Comic", "next page");
 		int page = mLayoutManager.findFirstVisibleItemPosition();
 		if(page < picPaths.length - 1)
 			mLayoutManager.smoothScrollToPosition(mRecyclerView, null, ++page);
@@ -585,6 +615,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 	//上一页被点击
 	public void onPrePageClick() {
+		Log.d("Comic", "pre page");
 		int page = mLayoutManager.findLastVisibleItemPosition();
 		if(page > 0)
 			mLayoutManager.smoothScrollToPosition(mRecyclerView, null, --page);
@@ -603,16 +634,72 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 
 	@Override
 	public void onClick() {
+		readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 		dismiss = false;
 		if(mPopWindowHolder.isShowing())
 		{
 			mPopWindowHolder.dismiss(); 
 			dismiss = true;
 		}
-
 	}
 	
-
-
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.d("Comic", "onResume");
+		changeSetting();
+		mAdapter.notifyItemChanged(viewPosition);
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+		intentFilter.addAction(Intent.ACTION_TIME_TICK);
+		registerReceiver(batteryChangeReceiver, intentFilter);
+		if(readerHintView != null)
+			mWindowManager.addView(readerHintView, lp);
+		
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Log.d("Comic", "onPause");
+		if(readerHintView != null)
+		{
+			//不能使用removeview(异步的方法)，activity已被销毁了，但view还没有被remove掉
+			//导致activity leaked问题，使用removeViewImmediate(同步)
+			mWindowManager.removeViewImmediate(readerHintView);
+		}
+		if(mPopWindowHolder.isShowing())
+		{
+			mPopWindowHolder.dismiss(); 
+		}
+		unregisterReceiver(batteryChangeReceiver);
+		AppSetting.getInstance(getApplicationContext()).commitAllAlter();
+	}
+	
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		mController.dismissShareBoard();
+		Log.d("Comic", "onDestory");		
+	}
+		
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+		super.dispatchTouchEvent(ev);
+		if(readerHintView.dispatchTouchEvent(ev))
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Intent intent = new Intent();
+		intent.putExtra("last_read_path", picPaths[viewPosition]);
+		setResult(RESULT_OK,intent);	
+		super.onBackPressed();
+	}
 
 }

@@ -2,9 +2,13 @@ package com.zhr.util;
 
 import com.zhr.findcomic.R.color;
 
+import android.R.integer;
 import android.R.string;
 import android.content.Context;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.PowerManager;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -26,9 +30,7 @@ public class Util {
 	}
 	
 	public static int getScreenWidth(Context context)
-	{
-		
-		
+	{		
 		WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		Display display = windowManager.getDefaultDisplay();
 		Point point = new Point();
@@ -36,6 +38,22 @@ public class Util {
 		return point.x;	
 	}
 	
+	
+	public static int getImageHeight(Context context)
+	{
+		WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		Display display = windowManager.getDefaultDisplay();
+		Point point = new Point();
+		display.getSize(point);
+		if(point.x > point.y)
+		{
+			return (int) (point.x * point.x / (float)point.y);
+		}
+		else
+		{
+			return point.y;
+		}
+	}
 	
 	public static int px2dip(Context context, float pxValue) {
 	    final float scale = context.getResources().getDisplayMetrics().density;
@@ -46,4 +64,14 @@ public class Util {
 	    final float scale = context.getResources().getDisplayMetrics().density;
 	    return (int) (dpValue * scale + 0.5f);
 	}
+	
+	public static String getNetWorkStatus(Context context)
+	{
+		ConnectivityManager cManager = (ConnectivityManager)context.getSystemService(
+				Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = cManager.getActiveNetworkInfo();
+		return networkInfo.getTypeName();
+	}
+	
+
 }
