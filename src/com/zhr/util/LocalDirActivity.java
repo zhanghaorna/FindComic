@@ -149,6 +149,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 							index = i;
 						}
 					}
+					Log.d("Comic", picPaths[index]);
 					intent.putExtra("picPaths", picPaths);
 					intent.putExtra("position", index);
 					intent.putExtra("dirName", tempFiles[index].getParentFile().getName());

@@ -2,8 +2,11 @@ package com.zhr.setting;
 
 import com.zhr.findcomic.R;
 
+import android.R.integer;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.support.v4.util.LruCache;
 
 /**
  * @author zhr
@@ -61,6 +64,8 @@ public class AppSetting {
 	
 	//下载文件路径
 	private String downloadFile;
+	//全局的缓存，主要用来存放Bitmap
+	private LruCache<String, Bitmap> cache;
 	
 	
 	public synchronized static AppSetting getInstance(Context context)
@@ -74,7 +79,25 @@ public class AppSetting {
 	
 	private AppSetting()
 	{
-		
+		int maxMemory = (int) (Runtime.getRuntime().maxMemory()/1024);
+		cache = new LruCache<String, Bitmap>(maxMemory / 8)
+				{
+					protected int sizeOf(String key, Bitmap value) {
+						return value.getByteCount()/1024;
+					};
+					
+					@Override
+					protected void entryRemoved(boolean evicted, String key,
+							Bitmap oldValue, Bitmap newValue) {
+						// TODO Auto-generated method stub
+						oldValue.recycle();
+					}
+				};
+	}
+	
+	public LruCache<String, Bitmap> getCache()
+	{
+		return this.cache;
 	}
 	
 	//此处不用commit,由于commit是同步，apply是异步

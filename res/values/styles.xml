@@ -20,7 +20,7 @@
     
     <style name="main_tab_textview">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@drawable/text_mian_tab_color</item>            
+        <item name="android:textColor">@drawable/text_tab_color</item>            
         <item name="android:gravity">center</item>   
     </style>
     
@@ -58,6 +58,16 @@
     <style name="popupwindow_bottom_anim">
         <item name="android:windowEnterAnimation">@anim/slide_down_in</item>
         <item name="android:windowExitAnimation">@anim/slide_down_out</item>
+    </style>
+    
+    <style name="navi_textview">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@drawable/text_tab_color</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:padding">10dp</item>
     </style>
 
 </resources>

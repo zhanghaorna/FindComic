@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,15 +37,33 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 
 	private Fragment[] fragments;
 	private int current_fragment = 0;
+	private int last_fragment = 0;
+	
 	private FragmentManager fragmentManager;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		initView();
-		initData();
-		
+		if(savedInstanceState == null)
+			initData();
+		else {
+			Fragment fragment1 = getSupportFragmentManager().findFragmentByTag("0");
+			Fragment fragment2 = getSupportFragmentManager().findFragmentByTag("1");
+			Fragment fragment3 = getSupportFragmentManager().findFragmentByTag("2");
+			Fragment fragment4 = getSupportFragmentManager().findFragmentByTag("3");
+			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+			transaction.show(fragment1);
+			if(fragment2 != null)
+				transaction.hide(fragment2);
+			if(fragment3 != null)
+				transaction.hide(fragment3);
+			if(fragment4 != null)
+				transaction.hide(fragment4);
+			transaction.commit();
+		}
 
 	}
 	
@@ -75,21 +94,34 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 	{
 		fragmentManager = getSupportFragmentManager();
 		fragments = new Fragment[4];
+
 		fragments[current_fragment] = getCurrentFragment(current_fragment);
-	
+		
+		
 		if(fragments[current_fragment] != null)
 		{
-			fragmentManager.beginTransaction().add(R.id.main_container,fragments[current_fragment]).commit();
+			fragmentManager.beginTransaction().add(R.id.main_container,fragments[current_fragment],"" + current_fragment).commit();
 		}
 		
 	}
 	
 	private void replaceFragment(int index)
 	{
+		boolean isAdd = false;
+		if(fragments[index] != null)
+			isAdd = true;
 		fragments[index] = getCurrentFragment(index);
 		if(fragments[index] != null)
 		{
-			fragmentManager.beginTransaction().replace(R.id.main_container,fragments[index]).commit();
+			if(isAdd)
+			{
+				fragmentManager.beginTransaction().hide(fragments[last_fragment]).show(fragments[current_fragment]).commit();
+			}
+			else {
+				fragmentManager.beginTransaction().hide(fragments[last_fragment]).add(R.id.main_container, fragments[current_fragment],"" + current_fragment).commit();
+			}
+			
+
 		}
 	}
 	
@@ -123,6 +155,7 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 			homePageTextView.setSelected(true);
 			if(current_fragment == 0)
 				return;
+			last_fragment = current_fragment;
 			current_fragment = 0;
 			replaceFragment(current_fragment);
 			break;
@@ -131,6 +164,7 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 			recommendTextView.setSelected(true);
 			if(current_fragment == 1)
 				return ;
+			last_fragment = current_fragment;
 			current_fragment = 1;
 			replaceFragment(current_fragment);
 			break;
@@ -139,6 +173,7 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 			searchTextView.setSelected(true);
 			if(current_fragment == 2)
 				return;
+			last_fragment = current_fragment;
 			current_fragment = 2;
 			replaceFragment(current_fragment);
 			break;
@@ -147,6 +182,7 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 			moreTextView.setSelected(true);
 			if(current_fragment == 3)
 				return ;
+			last_fragment = current_fragment;
 			current_fragment = 3;
 			replaceFragment(current_fragment);
 			break;

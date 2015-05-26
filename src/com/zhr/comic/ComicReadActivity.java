@@ -646,7 +646,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.d("Comic", "onResume");
+//		Log.d("Comic", "onResume");
 		changeSetting();
 		mAdapter.notifyItemChanged(viewPosition);
 		IntentFilter intentFilter = new IntentFilter();
@@ -662,7 +662,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		Log.d("Comic", "onPause");
+//		Log.d("Comic", "onPause");
 		if(readerHintView != null)
 		{
 			//不能使用removeview(异步的方法)，activity已被销毁了，但view还没有被remove掉
@@ -681,7 +681,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		mController.dismissShareBoard();
-		Log.d("Comic", "onDestory");		
+//		Log.d("Comic", "onDestory");		
 	}
 		
 	@Override

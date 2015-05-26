@@ -56,7 +56,8 @@
         android:layout_above="@id/main_tab_layout"
         android:background="@color/black"/>
     
-    <FrameLayout 
+    <FrameLayout
+        android:layout_above="@id/footer_divide_line" 
         android:id="@+id/main_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></FrameLayout>

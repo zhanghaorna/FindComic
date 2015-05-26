@@ -32,35 +32,38 @@
         android:layout_height="1dp"
         android:background="@color/red"/>
     
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/last_read" 
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:orientation="horizontal">
-        <TextView 
+        android:layout_height="50dp"
+        android:layout_margin="5dp">
+        <TextView
+            android:id="@+id/had_read"
+            android:layout_alignParentLeft="true" 
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="@string/had_read"
             android:padding="10dp"
             android:gravity="center"/>
-       	<TextView
-            android:id="@+id/last_read_path"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:gravity="center"
-            android:ellipsize="start"
-            android:layout_gravity="center_vertical"/>
-        <Button 
+        <Button
+            android:layout_alignParentRight="true" 
             android:id="@+id/continue_read"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:textColor="@color/white"
             android:padding="10dp"
             android:text="@string/continue_read"
             android:background="@drawable/button_background_selector"/>
-    </LinearLayout>
+        <TextView
+            android:layout_toLeftOf="@id/continue_read"
+            android:layout_toRightOf="@id/had_read"
+            android:id="@+id/last_read_path"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:singleLine="true"
+            android:gravity="left|center_vertical"
+            android:ellipsize="start"/>
+    </RelativeLayout>
     
     <TextView 
         android:layout_width="match_parent"

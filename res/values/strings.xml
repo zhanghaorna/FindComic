@@ -25,4 +25,7 @@
 	<string name="portrait_page">纵向翻页</string>
 	<string name="left_page">左手翻页</string>
 	<string name="right_page">右手翻页</string>
+	
+	<string name="dmzj">动漫之家</string>
+	<string name="dm123">动漫fans</string>
 </resources>
