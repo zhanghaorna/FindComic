@@ -3,6 +3,8 @@ package com.zhr.util;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.zhr.setting.AppSetting;
+
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
@@ -68,7 +70,25 @@ public class BitmapLoader
 	public void loadImage(ImageView imageView,String path,
 							boolean asyn,boolean thumbnail,boolean isCache)
 	{
-		LoadAndDisplayTask task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,isCache);
+		LoadAndDisplayTask task = null;
+		//获取内存是否有缓存,应该是全局的缓存
+		if(AppSetting.getInstance() != null)
+		{
+			LruCache<String, Bitmap> cache = AppSetting.getInstance().getCache();
+			Bitmap bitmap = null;
+			if(cache != null)
+				bitmap = cache.get(path);
+			if(bitmap != null&&!bitmap.isRecycled())
+			{
+				if(bitmap.isRecycled())
+					Log.d("Comic", "isRecycle");
+				task = new LoadAndDisplayTask(imageView, bitmap, handler);
+			}
+
+			
+		}
+		if(task == null)
+			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,isCache);
 		if(!asyn)
 		{
 			task.run();

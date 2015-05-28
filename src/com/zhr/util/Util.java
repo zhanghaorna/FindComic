@@ -1,14 +1,15 @@
 package com.zhr.util;
 
-import com.zhr.findcomic.R.color;
 
-import android.R.integer;
-import android.R.string;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.PowerManager;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -19,6 +20,7 @@ import android.view.WindowManager;
  * @description
  */
 public class Util {
+	
 	
 	public static int getScreenHeight(Context context)
 	{
@@ -71,6 +73,36 @@ public class Util {
 				Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = cManager.getActiveNetworkInfo();
 		return networkInfo.getTypeName();
+	}
+	
+	public static boolean isNetWorkConnect(Context context)
+	{
+		ConnectivityManager cManager = (ConnectivityManager)context.getSystemService(
+				Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = cManager.getActiveNetworkInfo();
+		return networkInfo.isConnected();
+	}
+	
+	public static Date stringToDate(String date) throws ParseException
+	{
+		return stringToDate(date, "yyyy-MM-dd HH:mm");
+	}
+	
+	public static Date stringToDate(String date,String format) throws ParseException
+	{
+		DateFormat dateFormat = new SimpleDateFormat(format);
+		return dateFormat.parse(date);		
+	}
+	
+	public static String dateToString(Date date)
+	{
+		return dateToString(date, "yyyy-MM-dd HH:mm");
+	}
+	
+	public static String dateToString(Date date,String format)
+	{
+		DateFormat dateFormat = new SimpleDateFormat(format);
+		return dateFormat.format(date);
 	}
 	
 

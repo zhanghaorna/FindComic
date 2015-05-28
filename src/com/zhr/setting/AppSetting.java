@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
+import android.util.Log;
 
 /**
  * @author zhr
@@ -77,22 +78,16 @@ public class AppSetting {
 		return instance;
 	}
 	
+	public static AppSetting getInstance()
+	{
+		if(instance == null)
+			throw new IllegalStateException("You must call getInstance(Context context) before");
+		return instance;
+	}
+	
 	private AppSetting()
 	{
-		int maxMemory = (int) (Runtime.getRuntime().maxMemory()/1024);
-		cache = new LruCache<String, Bitmap>(maxMemory / 8)
-				{
-					protected int sizeOf(String key, Bitmap value) {
-						return value.getByteCount()/1024;
-					};
-					
-					@Override
-					protected void entryRemoved(boolean evicted, String key,
-							Bitmap oldValue, Bitmap newValue) {
-						// TODO Auto-generated method stub
-						oldValue.recycle();
-					}
-				};
+
 	}
 	
 	public LruCache<String, Bitmap> getCache()
@@ -198,6 +193,22 @@ public class AppSetting {
 		night_mode = setting.getBoolean(NIGHT_MODE, false);
 		
 		last_read_local = setting.getString(LAST_READ_LOCAL, "");		
+		
+		int maxMemory = (int) (Runtime.getRuntime().maxMemory()/1024);
+		Log.d("Comic","maxMemory:" + maxMemory / 1024 + "MB");
+		cache = new LruCache<String, Bitmap>(maxMemory / 8)
+				{
+					protected int sizeOf(String key, Bitmap value) {
+						return value.getByteCount()/1024;
+					};
+					
+					@Override
+					protected void entryRemoved(boolean evicted, String key,
+							Bitmap oldValue, Bitmap newValue) {
+						// TODO Auto-generated method stub
+						oldValue.recycle();
+					}
+				};
 	}
 		
 	

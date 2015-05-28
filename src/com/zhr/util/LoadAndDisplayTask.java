@@ -14,6 +14,7 @@ import com.zhr.setting.AppSetting;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.support.v4.util.LruCache;
 import android.text.Layout;
@@ -47,18 +48,24 @@ public class LoadAndDisplayTask implements Runnable{
 		this.handler = handler;
 	}
 	
+	public LoadAndDisplayTask(ImageView targetView,Bitmap bitmap,Handler handler)
+	{
+		this.targetView = targetView;
+		this.bitmap = bitmap;
+		this.handler = handler;
+		this.isCache = false;
+	}
 	
 	
 	public void run() {
 		try 
 		{
-			//获取内存是否有缓存,应该是全局的缓存
-			if(AppSetting.getInstance(targetView.getContext()) != null)
-				bitmap = AppSetting.getInstance(targetView.getContext()).getCache().get(imagePath);
 			if(bitmap == null||bitmap.isRecycled())
 			{	//从网络获取图片
 				if(imagePath.startsWith("http://")&&targetView != null)
-				{
+				{	
+					//采用同步方法，因为这里已经在一个线程中，不能再异步调用
+					//Log一直报警告，说强制采用同步方法
 					SyncHttpClient client = new SyncHttpClient();
 					client.get(imagePath, new BinaryHttpResponseHandler() {
 						
@@ -71,8 +78,7 @@ public class LoadAndDisplayTask implements Runnable{
 									100);
 							options.inJustDecodeBounds = false;
 							bitmap = BitmapFactory.decodeByteArray(arg2, 0, arg2.length);
-							loadImage();
-							
+							loadImage();							
 						}
 						
 						@Override
@@ -83,7 +89,7 @@ public class LoadAndDisplayTask implements Runnable{
 					});
 				}
 				//从本地获取图片
-				else 
+				else if(imagePath != "")
 				{
 					BitmapFactory.Options options = new BitmapFactory.Options();
 					options.inJustDecodeBounds = true;
@@ -108,8 +114,8 @@ public class LoadAndDisplayTask implements Runnable{
 					}
 					loadImage();
 				}
-				if(isCache&&AppSetting.getInstance(targetView.getContext()) != null)
-					AppSetting.getInstance(targetView.getContext()).getCache().put(imagePath, bitmap);
+				if(isCache&&AppSetting.getInstance() != null)
+					AppSetting.getInstance().getCache().put(imagePath, bitmap);
 			}
 			//有缓存就直接加载
 			else
@@ -126,15 +132,16 @@ public class LoadAndDisplayTask implements Runnable{
 	
 	private void loadImage()
 	{
-		if(bitmap != null&&targetView != null)
+		if(bitmap != null&&!bitmap.isRecycled()&&targetView != null)
 		{
 			if(Thread.currentThread() != Looper.getMainLooper().getThread())
 				handler.post(new Runnable() {						
 					public void run() {
 //						FrameLayout.LayoutParams params = (LayoutParams) targetView.getLayoutParams();
 //						params.height = (int) (params.width * bitmap.getHeight() / (float)bitmap.getWidth());
-//						targetView.setLayoutParams(params);	
-						targetView.setImageBitmap(bitmap);
+//						targetView.setLayoutParams(params);
+						if(bitmap != null&&!bitmap.isRecycled())
+							targetView.setImageBitmap(bitmap);
 					}
 				});
 			else 

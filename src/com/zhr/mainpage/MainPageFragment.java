@@ -159,19 +159,19 @@ public class MainPageFragment extends Fragment implements OnClickListener,
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-//		case R.id.dmzj:
-//			if(viewPager.getCurrentItem() == 0)
-//				return;
-//			cancelAllSelect();
-//			naviViews[0].setSelected(true);
-//			viewPager.setCurrentItem(0);
-//			break;
-//		case R.id.dm123:
-//			if(viewPager.getCurrentItem() == 1)
-//				return;
-//			cancelAllSelect();
-//			naviViews[1].setSelected(true);
-//			viewPager.setCurrentItem(1);
+		case R.id.dmzj:
+			if(viewPager.getCurrentItem() == 0)
+				return;
+			cancelAllSelect();
+			naviViews[0].setSelected(true);
+			viewPager.setCurrentItem(0);
+			break;
+		case R.id.dm123:
+			if(viewPager.getCurrentItem() == 1)
+				return;
+			cancelAllSelect();
+			naviViews[1].setSelected(true);
+			viewPager.setCurrentItem(1);
 		default:
 			break;
 		}

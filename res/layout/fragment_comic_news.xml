@@ -7,10 +7,10 @@
         android:id="@+id/pull_to_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ListView 
+        <com.zhr.customview.LoadMoreListView 
             android:id="@+id/news_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white"></ListView>
+            android:background="@color/white"/>
     </com.opensource.yalantis.phoenix.PullToRefreshView>
 </LinearLayout>

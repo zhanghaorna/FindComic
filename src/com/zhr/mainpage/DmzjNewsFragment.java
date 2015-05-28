@@ -2,6 +2,7 @@ package com.zhr.mainpage;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,13 +16,30 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.opensource.yalantis.phoenix.PullToRefreshView;
 import com.opensource.yalantis.phoenix.PullToRefreshView.OnRefreshListener;
+import com.zhr.customview.LoadMoreListView;
+import com.zhr.customview.LoadMoreListView.IRefreshListener;
+import com.zhr.database.DBNewsHelper;
 import com.zhr.findcomic.R;
+import com.zhr.sqlitedao.News;
 import com.zhr.util.BitmapLoader;
 
 
+
+
+
+
+
+
+
+
+import com.zhr.util.Constants;
+import com.zhr.util.Util;
+
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -41,21 +59,22 @@ import android.widget.Toast;
  * @date 2015年5月24日
  * @description
  */
-public class DmzjNewsFragment extends Fragment implements OnScrollListener{
+public class DmzjNewsFragment extends Fragment implements IRefreshListener{
 	
 	public static final String URL = "http://acg.178.com/";
 	
 	private PullToRefreshView mPullToRefreshView;
-	private ListView mListView;
+	private LoadMoreListView mListView;
 	private NewsAdapter mAdapter;
 	private boolean isBusy;
 	private int visibleItemCount;
 	
-	private ArrayList<NewsItem> newsItems = new ArrayList<NewsItem>();
+	private ArrayList<News> newsItems = new ArrayList<News>();
 	
 	private String timeRegex = "\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}";
 	
 	private AsyncHttpClient client;
+	private static Handler handler;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -75,12 +94,14 @@ public class DmzjNewsFragment extends Fragment implements OnScrollListener{
 	private void initView()
 	{
 		mPullToRefreshView = (PullToRefreshView)getView().findViewById(R.id.pull_to_refresh);
-		mListView = (ListView)getView().findViewById(R.id.news_listview);
+		mListView = (LoadMoreListView)getView().findViewById(R.id.news_listview);
 		mAdapter = new NewsAdapter();
 		mListView.setAdapter(mAdapter);
+		mListView.setIRefreshListener(this);
 		mPullToRefreshView.setOnRefreshListener(new OnRefreshListener() {
 			public void onRefresh() {
-//				loadNewsFromInternet();				
+//				loadNewsFromInternet();
+				mPullToRefreshView.setRefreshing(false);
 			}
 		});		
 		mPullToRefreshView.setRefreshing(true);
@@ -89,8 +110,19 @@ public class DmzjNewsFragment extends Fragment implements OnScrollListener{
 	//从网络获取数据
 	private void initData()
 	{
+		handler = new Handler();
 		client = new AsyncHttpClient();
-		loadNewsFromInternet();
+		loadFromDatabase();
+		if(Util.isNetWorkConnect(getActivity()))
+			loadNewsFromInternet();
+	}
+	
+	private void loadFromDatabase()
+	{
+		newsItems = (ArrayList<News>) DBNewsHelper.getInstance(getActivity()).queryNews();
+		if(newsItems == null)
+			newsItems = new ArrayList<News>();
+		mAdapter.notifyDataSetChanged();
 	}
 	
 	private void loadNewsFromInternet()
@@ -100,28 +132,40 @@ public class DmzjNewsFragment extends Fragment implements OnScrollListener{
 				if(status == 200)
 				{
 					Pattern pattern = Pattern.compile(timeRegex);
+					DateFormat dateFormat = new DateFormat();
 					Document doc = Jsoup.parse(new String(response));
 					Elements elements = doc.select("body > div.bg > div.wrapper.ie6png > div.container > div.left > div.news_box");
 					for(Element element:elements)
 					{
-						NewsItem item = new NewsItem();
+						News item = new News();
 						item.setTag(element.select("div.title > span").text());
 						item.setTitle(element.select("div.title > a").attr("title"));
 						item.setContentUrl(URL + element.select("div.title > a").attr("href"));
 						String time = element.select("div.title_data").text();
 						Matcher matcher = pattern.matcher(time);
-						if(matcher.find())
-							item.setTime(matcher.group());
-						item.setImageUrl(element.select("div.newspic > a > img").attr("src"));
+						try
+						{
+							if(matcher.find())
+							{								
+								item.setTime(Util.stringToDate(matcher.group()));
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						item.setImagePath(element.select("div.newspic > a > img").attr("src"));
+						item.setFrom(Constants.DMZJ);
 						newsItems.add(item);
+//						DBNewsHelper.getInstance(getActivity()).saveNews(item);
 					}
-					mPullToRefreshView.setRefreshing(false);
-					mAdapter.notifyDataSetChanged();
-
+					handler.post(new Runnable() {
+						public void run() {
+							mPullToRefreshView.setRefreshing(false);
+							mAdapter.notifyDataSetChanged();							
+						}
+					});
 				}				
 			}
 			
-			@Override
 			public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
 				Toast.makeText(getActivity(), "新闻加载失败", Toast.LENGTH_SHORT).show();
 				mPullToRefreshView.setRefreshing(false);
@@ -168,10 +212,10 @@ public class DmzjNewsFragment extends Fragment implements OnScrollListener{
 			}
 			holder.title.setText(newsItems.get(position).getTitle());
 			holder.tag.setText(newsItems.get(position).getTag());
-			holder.time.setText(newsItems.get(position).getTime());
+			holder.time.setText(Util.dateToString(newsItems.get(position).getTime()));
 			holder.image.setImageDrawable(getResources().getDrawable(R.drawable.loading));
-			BitmapLoader.getInstance().loadImage(holder.image, newsItems.get(position).getImageUrl(),
-					true, false, false);
+			BitmapLoader.getInstance().loadImage(holder.image, newsItems.get(position).getImagePath(),
+					true, false, true);
 			return convertView;
 		}
 		
@@ -186,35 +230,46 @@ public class DmzjNewsFragment extends Fragment implements OnScrollListener{
 	}
 
 	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-		switch (scrollState) {
-		case OnScrollListener.SCROLL_STATE_IDLE:
-			isBusy = false;
-			int first = view.getFirstVisiblePosition();
-			for(int i = 0;i < visibleItemCount;i++)
-			{
-				View convertView = view.getChildAt(i);
-				BitmapLoader.getInstance().loadImage(((NewsAdapter.ViewHolder)convertView.getTag()).image,
-						newsItems.get(i).getImageUrl(),true);
-				
+	public void onload() {
+		handler.postDelayed(new Runnable() {
+			
+			@Override
+			public void run() {
+				mListView.loadCompleted();
 			}
-			break;
-		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-			isBusy = true;
-			break;
-		case OnScrollListener.SCROLL_STATE_FLING:
-			isBusy = true;
-			break;
-		default:
-			break;
-		}
-		
+		}, 1500);
 	}
 
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		this.visibleItemCount = visibleItemCount;
-		
-	}
+//	@Override
+//	public void onScrollStateChanged(AbsListView view, int scrollState) {
+//		switch (scrollState) {
+//		case OnScrollListener.SCROLL_STATE_IDLE:
+//			isBusy = false;
+////			int first = view.getFirstVisiblePosition();
+////			for(int i = 0;i < visibleItemCount;i++)
+////			{
+////				View convertView = view.getChildAt(i);
+////				BitmapLoader.getInstance().loadImage(((NewsAdapter.ViewHolder)convertView.getTag()).image,
+////						newsItems.get(i).getImageUrl(),true);
+////				
+////			}
+//			break;
+//		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+//			isBusy = true;
+//			break;
+//		case OnScrollListener.SCROLL_STATE_FLING:
+//			isBusy = true;
+//			break;
+//		default:
+//			break;
+//		}
+//		
+//	}
+//
+//	@Override
+//	public void onScroll(AbsListView view, int firstVisibleItem,
+//			int visibleItemCount, int totalItemCount) {
+//		this.visibleItemCount = visibleItemCount;
+//		
+//	}
 }
