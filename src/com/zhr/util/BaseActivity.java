@@ -35,7 +35,7 @@ public class BaseActivity extends Activity{
 				WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,  
                 WindowManager.LayoutParams.TYPE_APPLICATION,  
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
-                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_FULLSCREEN,  
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  
                 PixelFormat.TRANSLUCENT);
 		coverView = new TextView(this);
 		//背景设为透明黑色
