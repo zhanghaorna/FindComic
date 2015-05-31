@@ -1,5 +1,6 @@
 package com.zhr.findcomic;
 
+import com.zhr.database.DBNewsHelper;
 import com.zhr.setting.AppSetting;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Util;
@@ -25,6 +26,10 @@ public class WelcomeActivity extends Activity{
 		//初始化系统设置
 		AppSetting.getInstance(getApplicationContext());
 		BitmapLoader.getInstance();
+		//确保存放缓存的文件夹存在
+		Util.createFile();
+		//初始化数据库
+		DBNewsHelper.getInstance(getApplicationContext()).deleteAllNews();
 		
 		Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {

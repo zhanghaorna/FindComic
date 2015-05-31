@@ -13,9 +13,9 @@
             style="@style/navi_textview"
             android:text="@string/dmzj"/>
         <com.zhr.customview.NaviView
-            android:id="@+id/dm123"
+            android:id="@+id/msite"
             style="@style/navi_textview"
-            android:text="@string/dm123"/>
+            android:text="@string/msite"/>
     </com.zhr.customview.NaviLayout>
     <TextView 
         android:layout_width="match_parent"

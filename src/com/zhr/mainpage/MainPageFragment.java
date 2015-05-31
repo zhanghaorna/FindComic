@@ -70,7 +70,7 @@ public class MainPageFragment extends Fragment implements OnClickListener,
 		
 		naviViews = new NaviView[2];
 		naviViews[0] = (NaviView)getView().findViewById(R.id.dmzj);
-		naviViews[1] = (NaviView)getView().findViewById(R.id.dm123);
+		naviViews[1] = (NaviView)getView().findViewById(R.id.msite);
 		naviViews[0].setSelected(true);
 		naviViews[0].setOffset(1,true);
 		for(int i = 0;i < naviViews.length;i++)
@@ -101,7 +101,7 @@ public class MainPageFragment extends Fragment implements OnClickListener,
 				break;
 			case 1:
 				if(newsFragments[arg0] == null)
-					newsFragments[arg0] = new Dm123NewsFragment();
+					newsFragments[arg0] = new MSiteNewsFragment();
 				break;
 			default:
 				break;
@@ -166,7 +166,7 @@ public class MainPageFragment extends Fragment implements OnClickListener,
 			naviViews[0].setSelected(true);
 			viewPager.setCurrentItem(0);
 			break;
-		case R.id.dm123:
+		case R.id.msite:
 			if(viewPager.getCurrentItem() == 1)
 				return;
 			cancelAllSelect();

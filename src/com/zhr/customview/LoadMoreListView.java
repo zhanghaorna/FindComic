@@ -58,7 +58,7 @@ public class LoadMoreListView extends ListView implements OnScrollListener{
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		this.scrollState = scrollState;
-		Log.d("Comic", "visible" + lastVisibleItem + " total" + totalItem);
+//		Log.d("Comic", "visible" + lastVisibleItem + " total" + totalItem);
 		if(lastVisibleItem == totalItem)
 		{
 			if(!isLoading)

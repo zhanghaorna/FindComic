@@ -39,7 +39,6 @@ public class BitmapLoader
 	
 	private BitmapLoader()
 	{
-		
 		if(Thread.currentThread() != Looper.getMainLooper().getThread())
 		{
 			Log.d(LOG_TAG, "不能在子线程中实例化BitmapAsynLoader");

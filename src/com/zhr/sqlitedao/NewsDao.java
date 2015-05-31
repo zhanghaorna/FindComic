@@ -27,9 +27,10 @@ public class NewsDao extends AbstractDao<News, Long> {
         public final static Property Tag = new Property(1, String.class, "tag", false, "TAG");
         public final static Property Time = new Property(2, java.util.Date.class, "time", false, "TIME");
         public final static Property Title = new Property(3, String.class, "title", false, "TITLE");
-        public final static Property ImagePath = new Property(4, String.class, "imagePath", false, "IMAGE_PATH");
-        public final static Property From = new Property(5, String.class, "from", false, "FROM");
-        public final static Property ContentUrl = new Property(6, String.class, "contentUrl", false, "CONTENT_URL");
+        public final static Property Summary = new Property(4, String.class, "summary", false, "SUMMARY");
+        public final static Property ImagePath = new Property(5, String.class, "imagePath", false, "IMAGE_PATH");
+        public final static Property From = new Property(6, String.class, "from", false, "FROM");
+        public final static Property ContentUrl = new Property(7, String.class, "contentUrl", false, "CONTENT_URL");
     };
 
 
@@ -46,12 +47,13 @@ public class NewsDao extends AbstractDao<News, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'NEWS' (" + //
                 "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'TAG' TEXT NOT NULL ," + // 1: tag
+                "'TAG' TEXT," + // 1: tag
                 "'TIME' INTEGER NOT NULL ," + // 2: time
                 "'TITLE' TEXT NOT NULL ," + // 3: title
-                "'IMAGE_PATH' TEXT," + // 4: imagePath
-                "'FROM' TEXT NOT NULL ," + // 5: from
-                "'CONTENT_URL' TEXT NOT NULL );"); // 6: contentUrl
+                "'SUMMARY' TEXT," + // 4: summary
+                "'IMAGE_PATH' TEXT," + // 5: imagePath
+                "'FROM' TEXT NOT NULL ," + // 6: from
+                "'CONTENT_URL' TEXT NOT NULL );"); // 7: contentUrl
     }
 
     /** Drops the underlying database table. */
@@ -69,16 +71,25 @@ public class NewsDao extends AbstractDao<News, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
-        stmt.bindString(2, entity.getTag());
+ 
+        String tag = entity.getTag();
+        if (tag != null) {
+            stmt.bindString(2, tag);
+        }
         stmt.bindLong(3, entity.getTime().getTime());
         stmt.bindString(4, entity.getTitle());
  
+        String summary = entity.getSummary();
+        if (summary != null) {
+            stmt.bindString(5, summary);
+        }
+ 
         String imagePath = entity.getImagePath();
         if (imagePath != null) {
-            stmt.bindString(5, imagePath);
+            stmt.bindString(6, imagePath);
         }
-        stmt.bindString(6, entity.getFrom());
-        stmt.bindString(7, entity.getContentUrl());
+        stmt.bindString(7, entity.getFrom());
+        stmt.bindString(8, entity.getContentUrl());
     }
 
     /** @inheritdoc */
@@ -92,12 +103,13 @@ public class NewsDao extends AbstractDao<News, Long> {
     public News readEntity(Cursor cursor, int offset) {
         News entity = new News( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.getString(offset + 1), // tag
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // tag
             new java.util.Date(cursor.getLong(offset + 2)), // time
             cursor.getString(offset + 3), // title
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // imagePath
-            cursor.getString(offset + 5), // from
-            cursor.getString(offset + 6) // contentUrl
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // summary
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // imagePath
+            cursor.getString(offset + 6), // from
+            cursor.getString(offset + 7) // contentUrl
         );
         return entity;
     }
@@ -106,12 +118,13 @@ public class NewsDao extends AbstractDao<News, Long> {
     @Override
     public void readEntity(Cursor cursor, News entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setTag(cursor.getString(offset + 1));
+        entity.setTag(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setTime(new java.util.Date(cursor.getLong(offset + 2)));
         entity.setTitle(cursor.getString(offset + 3));
-        entity.setImagePath(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setFrom(cursor.getString(offset + 5));
-        entity.setContentUrl(cursor.getString(offset + 6));
+        entity.setSummary(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setImagePath(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setFrom(cursor.getString(offset + 6));
+        entity.setContentUrl(cursor.getString(offset + 7));
      }
     
     /** @inheritdoc */

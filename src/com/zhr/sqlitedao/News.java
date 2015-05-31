@@ -7,12 +7,12 @@ package com.zhr.sqlitedao;
 public class News {
 
     private Long id;
-    /** Not-null value. */
     private String tag;
     /** Not-null value. */
     private java.util.Date time;
     /** Not-null value. */
     private String title;
+    private String summary;
     private String imagePath;
     /** Not-null value. */
     private String from;
@@ -26,11 +26,12 @@ public class News {
         this.id = id;
     }
 
-    public News(Long id, String tag, java.util.Date time, String title, String imagePath, String from, String contentUrl) {
+    public News(Long id, String tag, java.util.Date time, String title, String summary, String imagePath, String from, String contentUrl) {
         this.id = id;
         this.tag = tag;
         this.time = time;
         this.title = title;
+        this.summary = summary;
         this.imagePath = imagePath;
         this.from = from;
         this.contentUrl = contentUrl;
@@ -44,12 +45,10 @@ public class News {
         this.id = id;
     }
 
-    /** Not-null value. */
     public String getTag() {
         return tag;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setTag(String tag) {
         this.tag = tag;
     }
@@ -72,6 +71,14 @@ public class News {
     /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
     }
 
     public String getImagePath() {

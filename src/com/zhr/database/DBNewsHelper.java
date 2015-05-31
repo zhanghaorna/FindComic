@@ -1,8 +1,10 @@
 package com.zhr.database;
 
 import java.util.List;
+import java.util.Observable;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.zhr.findcomic.R.id;
 import com.zhr.sqlitedao.DaoSession;
@@ -18,12 +20,17 @@ import de.greenrobot.dao.query.QueryBuilder;
  * @date 2015年5月28日
  * @description
  */
-public class DBNewsHelper {
+public class DBNewsHelper{
 	private static DBNewsHelper dbNewsHelper;
 	private DaoSession daoSession;
 	private NewsDao newsDao;
 	
-	public DBNewsHelper()
+	public static DBNewsHelper getDbNewsHelper()
+	{
+		return dbNewsHelper;			
+	}
+	
+	private DBNewsHelper()
 	{
 		
 	}
@@ -48,16 +55,36 @@ public class DBNewsHelper {
 	{
 		if(newsDao.count() > 50)
 		{
-			newsDao.deleteAll();
+			deleteAllNews();
 		}
 		return newsDao.insert(news);
 	}
 	
-	public List<News> queryNews()
+	public List<News> queryNews(String from)
 	{
 		QueryBuilder<News> qBuilder = newsDao.queryBuilder();
-		qBuilder.orderAsc(NewsDao.Properties.Time).limit(10);
+		qBuilder.where(NewsDao.Properties.From.eq(from)).orderAsc(NewsDao.Properties.Time).limit(10);
 		return qBuilder.list();
 	}
+	
+	public void alertNews(String oldPath,String newPath)
+	{
+		QueryBuilder<News> qBuilder = newsDao.queryBuilder();
+		qBuilder.where(NewsDao.Properties.ImagePath.eq(oldPath)).limit(1);
+		List<News> news = qBuilder.list();
+		if(news != null&&news.size() == 1)
+		{
+			//这里的更改会影响DzNewsFragment里面NewsItem的更改
+			news.get(0).setImagePath(newPath);
+			newsDao.update(news.get(0));
+		}		
+	}
+	
+	public void deleteAllNews()
+	{
+		newsDao.deleteAll();
+	}
+	
+	
 
 }

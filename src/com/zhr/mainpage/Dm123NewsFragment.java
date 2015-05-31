@@ -14,12 +14,11 @@ import android.view.ViewGroup;
  * @date 2015年5月25日
  * @description
  */
-public class Dm123NewsFragment extends Fragment{
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		return inflater.inflate(R.layout.fragment_comic_news, container,false);
-	}
+public class Dm123NewsFragment extends NewsFragment{
 
+	public static final String URL = "http://www.dm123.cn/new/";
+	private int index = 1;
+	private String real_url = URL;
+	
+	
 }

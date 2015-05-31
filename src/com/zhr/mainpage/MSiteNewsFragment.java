@@ -1,15 +1,15 @@
 package com.zhr.mainpage;
 
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.http.Header;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,43 +32,46 @@ import com.zhr.util.Util;
  * @date 2015年5月30日
  * @description
  */
-public class DmzjNewsFragment extends NewsFragment{
-	
-	public static final String URL = "http://acg.178.com/";
+public class MSiteNewsFragment extends NewsFragment{
+	public static final String URL = "http://news.missevan.cn";
 	private int index = 1;
 	private String real_url = URL;
 	private NewsAdapter mAdapter;
-	private String timeRegex = "\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}";
 	
 	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		timeFormat = "yyyy-MM-dd HH:mm:ss";
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+	
 	protected void initView() {		
 		super.initView();
 		mAdapter = new NewsAdapter();
 		mListView.setAdapter(mAdapter);
 	}
 	
+	@Override
 	protected void loadFromDatabase() {
-		newsItems = (ArrayList<News>) DBNewsHelper.getInstance(getActivity()).queryNews(Constants.DMZJ);
+		newsItems = (ArrayList<News>) DBNewsHelper.getInstance(getActivity()).queryNews(Constants.MSITE);
 		if(newsItems == null)
 			newsItems = new ArrayList<News>();
-		mAdapter.notifyDataSetChanged();		
+		mAdapter.notifyDataSetChanged();	
 	}
 	
-	@Override
 	protected void loadNewsFromInternet() {
 		// TODO Auto-generated method stub
 		if(pullToRefresh)
 			real_url = URL;
-		else if(index > 1){
-			real_url = URL + "index_" + index + ".html";
+		else{
+			real_url = URL + "/news/index?p=" + index;
 		}
 		client.get(real_url, new AsyncHttpResponseHandler() {
 			public void onSuccess(int status, Header[] headers, byte[] response) {
 				if(status == 200)
 				{
-					Pattern pattern = Pattern.compile(timeRegex);
 					Document doc = Jsoup.parse(new String(response));
-					Elements elements = doc.select("body > div.bg > div.wrapper.ie6png > div.container > div.left > div.news_box");
+					Elements elements = doc.select("body > div#newsmain > div#left > div.newslist");
 					//第一次加载清空目前已经新闻，加载最新新闻
 					if(index == 1)
 					{
@@ -81,7 +84,7 @@ public class DmzjNewsFragment extends NewsFragment{
 						Element element = elements.get(i);
 						boolean exist = false;
 						News item = new News();
-						item.setTitle(element.select("div.title > a").attr("title"));
+						item.setTitle(element.select("div.newstitle > a").text());
 						for(News news:newsItems)
 						{
 							if(news.getTitle().equals(item.getTitle()))
@@ -91,22 +94,18 @@ public class DmzjNewsFragment extends NewsFragment{
 							}								
 						}
 						if(exist)
-							continue;
-						item.setTag(element.select("div.title > span").text());						
-						item.setContentUrl(URL + element.select("div.title > a").attr("href"));
-						String time = element.select("div.title_data").text();
-						Matcher matcher = pattern.matcher(time);
-						try
+							continue;					
+						item.setContentUrl(URL + element.select("div.newstitle > a").attr("href"));
+						item.setSummary(element.select("div.newscontent > p").text());
+						String time = element.select("div.newsinfo > div:nth-child(4)").text();
+						try 
 						{
-							if(matcher.find())
-							{								
-								item.setTime(Util.stringToDate(matcher.group()));
-							}
-						} catch (Exception e) {
+							item.setTime(Util.stringToDate(time, timeFormat));
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						item.setImagePath(element.select("div.newspic > a > img").attr("src"));
-						item.setFrom(Constants.DMZJ);
+						item.setFrom(Constants.MSITE);
 						if(pullToRefresh)
 							newsItems.add(0, item);
 						else
@@ -164,31 +163,26 @@ public class DmzjNewsFragment extends NewsFragment{
 			if(convertView == null)
 			{
 				LayoutInflater inflater = getActivity().getLayoutInflater();
-				convertView = inflater.inflate(R.layout.news_listview_item_with_image, parent,false);
+				convertView = inflater.inflate(R.layout.news_listview_item_without_image, parent,false);
 				holder = new ViewHolder();
 				holder.title = (TextView) convertView.findViewById(R.id.title);
-				holder.tag = (TextView)convertView.findViewById(R.id.tag);
+				holder.summary = (TextView)convertView.findViewById(R.id.summary);
 				holder.time = (TextView)convertView.findViewById(R.id.time);
-				holder.image = (ImageView)convertView.findViewById(R.id.image);
 				convertView.setTag(holder);
 			}else {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			holder.title.setText(newsItems.get(position).getTitle());
-			holder.tag.setText(newsItems.get(position).getTag());
+			holder.summary.setText(newsItems.get(position).getSummary());
 			holder.time.setText(Util.dateToString(newsItems.get(position).getTime(),timeFormat));
-			holder.image.setImageDrawable(getResources().getDrawable(R.drawable.loading));
-			BitmapLoader.getInstance().loadImage(holder.image, newsItems.get(position).getImagePath(),
-					true, false, true);
 			return convertView;
 		}
 		
 		class ViewHolder
 		{
 			public TextView title;
-			public TextView tag;
+			public TextView summary;
 			public TextView time;
-			public ImageView image;
 		}
 		
 	}

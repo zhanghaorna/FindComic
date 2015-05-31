@@ -28,5 +28,7 @@
 	
 	<string name="dmzj">动漫之家</string>
 	<string name="dm123">动漫fans</string>
+	<string name="msite">MSite</string>
 	<string name="loading">载入中...</string>
+	
 </resources>

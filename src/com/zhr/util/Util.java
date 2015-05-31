@@ -1,15 +1,19 @@
 package com.zhr.util;
 
 
+import java.io.File;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 import android.content.Context;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -80,7 +84,10 @@ public class Util {
 		ConnectivityManager cManager = (ConnectivityManager)context.getSystemService(
 				Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = cManager.getActiveNetworkInfo();
-		return networkInfo.isConnected();
+		if(networkInfo == null)
+			return false;
+		else
+			return networkInfo.isConnected();
 	}
 	
 	public static Date stringToDate(String date) throws ParseException
@@ -105,5 +112,29 @@ public class Util {
 		return dateFormat.format(date);
 	}
 	
+	public static void createFile()
+	{
+		if(Environment.isExternalStorageEmulated())
+		{
+			File file = new File(Constants.FILENAME);
+			if(!file.exists())
+			{
+				file.mkdirs();
+			}
+			if(file.isDirectory())
+			{
+				File cache = new File(Constants.DISKCACHE_FILENAME);
+				if(!cache.exists())
+					cache.mkdirs();
+			}
+		}
+	}
+	
+	public static String randomStr()
+	{
+		Random random = new Random();
+		int value = random.nextInt(2000);
+		return String.valueOf(value);
+	}
 
 }

@@ -234,7 +234,9 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				holder = (ViewHolder) convertView.getTag();
 			}
 			holder.pathView.setText(files[position].getName());
-			if(!files[position].isDirectory()&&!isBusy)
+			if(!files[position].isDirectory()&&(files[position].getAbsolutePath()
+					.endsWith(".jpg")||files[position].getAbsolutePath()
+					.endsWith(".png"))&&!isBusy)
 			{
 				Log.d("File", files[position].getAbsolutePath());
 				BitmapLoader.getInstance().loadImageNoCache(holder.iconView,

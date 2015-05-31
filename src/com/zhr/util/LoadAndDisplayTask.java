@@ -1,6 +1,8 @@
 package com.zhr.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import org.apache.http.Header;
 
@@ -9,13 +11,18 @@ import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
 import com.zhr.comic.ComicReadActivity;
+import com.zhr.database.DBNewsHelper;
 import com.zhr.setting.AppSetting;
 
+import android.R.integer;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Message;
+import android.support.v4.graphics.BitmapCompat;
 import android.support.v4.util.LruCache;
 import android.text.Layout;
 import android.util.Log;
@@ -147,6 +154,32 @@ public class LoadAndDisplayTask implements Runnable{
 			else 
 			{
 				targetView.setImageBitmap(bitmap);
+			}
+		}
+		if(isCache&&imagePath.startsWith("http://"))
+		{
+			int sep = imagePath.lastIndexOf("/");
+			int point = imagePath.lastIndexOf(".");
+			if(sep != -1&&point != -1&&sep < point&&sep < imagePath.length() - 1)
+			{
+				String imageName = imagePath.substring(sep + 1,point);
+				imageName = Constants.DISKCACHE_FILENAME + File.separator + imageName;
+				File imageFile = new File(imageName);
+				if(imageFile.exists())
+					return;
+				try
+				{
+					FileOutputStream stream = new FileOutputStream(imageName);
+					
+					if(DBNewsHelper.getDbNewsHelper() != null)
+					{		
+						bitmap.compress(CompressFormat.JPEG, 30, stream);
+						DBNewsHelper.getDbNewsHelper().alertNews(imagePath,imageName);
+					}
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
 			}
 		}
 	}
