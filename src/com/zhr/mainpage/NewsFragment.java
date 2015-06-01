@@ -13,6 +13,7 @@ import com.zhr.util.BitmapLoader;
 import com.zhr.util.Util;
 import com.zhr.util.WeakFragmentHandler;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,6 +21,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,7 +73,8 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 				pullToRefresh = true;
 				loadNewsFromInternet();
 			}
-		});		
+		});	
+
 	}
 	
 	private void initData()
@@ -81,7 +85,7 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 		loadFromDatabase();
 		if(Util.isNetWorkConnect(getActivity()))
 		{
-			mPullToRefreshView.setRefreshing(true);
+//			mPullToRefreshView.setRefreshing(true);
 			loadNewsFromInternet();
 		}
 	}
@@ -112,7 +116,6 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 			super.handleMessage(msg);
 		}
 	}
-	
 
 
 }

@@ -10,13 +10,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.R.integer;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.zhr.database.DBNewsHelper;
@@ -32,7 +36,7 @@ import com.zhr.util.Util;
  * @date 2015年5月30日
  * @description
  */
-public class DmzjNewsFragment extends NewsFragment{
+public class DmzjNewsFragment extends NewsFragment implements OnItemClickListener{
 	
 	public static final String URL = "http://acg.178.com/";
 	private int index = 1;
@@ -45,6 +49,7 @@ public class DmzjNewsFragment extends NewsFragment{
 		super.initView();
 		mAdapter = new NewsAdapter();
 		mListView.setAdapter(mAdapter);
+		mListView.setOnItemClickListener(this);
 	}
 	
 	protected void loadFromDatabase() {
@@ -92,8 +97,14 @@ public class DmzjNewsFragment extends NewsFragment{
 						}
 						if(exist)
 							continue;
-						item.setTag(element.select("div.title > span").text());						
-						item.setContentUrl(URL + element.select("div.title > a").attr("href"));
+						item.setTag(element.select("div.title > span").text());	
+						String contentUrl = URL + element.select("div.title > a").attr("href");
+						int lastindex = contentUrl.lastIndexOf(".html");
+						if(lastindex != -1)
+						{
+							contentUrl = contentUrl.substring(0, lastindex) + "_s" + contentUrl.substring(lastindex);
+						}
+						item.setContentUrl(contentUrl);
 						String time = element.select("div.title_data").text();
 						Matcher matcher = pattern.matcher(time);
 						try
@@ -135,6 +146,18 @@ public class DmzjNewsFragment extends NewsFragment{
 					mListView.loadCompleted();
 			}
 		});
+	}
+	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		if(newsItems.get(position).getContentUrl() == null||
+				newsItems.get(position).getContentUrl() == "")
+			return;
+		Intent intent = new Intent(getActivity(),NewsWebviewActivity.class);	
+		intent.putExtra("content_url", newsItems.get(position).getContentUrl());
+		intent.putExtra("from", Constants.DMZJ);
+		startActivity(intent);
 	}
 	
 	private class NewsAdapter extends BaseAdapter

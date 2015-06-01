@@ -72,7 +72,11 @@
             android:screenOrientation="nosensor"
             android:theme="@android:style/Theme.Light"
             ></activity> 
-            
+        <activity 
+            android:name="com.zhr.mainpage.NewsWebviewActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            ></activity>     
         <meta-data
             android:name="UMENG_APPKEY"
             android:value="5555d4cd67e58e3e2e0051ce" >
