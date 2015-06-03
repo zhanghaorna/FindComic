@@ -67,7 +67,7 @@ public class BitmapLoader
 	}
 	
 	public void loadImage(ImageView imageView,String path,
-							boolean asyn,boolean thumbnail,boolean isCache)
+							boolean asyn,boolean thumbnail,boolean cacheToDisk)
 	{
 		LoadAndDisplayTask task = null;
 		//获取内存是否有缓存,应该是全局的缓存
@@ -87,7 +87,7 @@ public class BitmapLoader
 			
 		}
 		if(task == null)
-			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,isCache);
+			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,true,cacheToDisk);
 		if(!asyn)
 		{
 			task.run();

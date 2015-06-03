@@ -15,8 +15,9 @@
         android:padding="10dp"/>
     <com.opensource.zcw.togglebutton.ToggleButton
         android:id="@+id/setting_toggle"
-		android:layout_width="54dp"
+		android:layout_width="60dp"
         android:layout_height="35dp"        
         android:layout_alignParentRight="true"
-        android:padding="10dp"/>
+        android:padding="10dp"
+        android:layout_centerVertical="true"/>
 </RelativeLayout>

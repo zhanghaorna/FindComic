@@ -3,7 +3,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    
- 
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center"
+        android:background="@color/white">
+        <com.zhr.customview.EditTextWithDel
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_weight="3"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="0dp"
+            android:layout_gravity="center"
+            android:singleLine="true"
+            android:hint="@string/input_comic_name"
+            android:background="@drawable/search_edittext_background"
+            android:drawableRight="@drawable/search_del"
+            android:id="@+id/edit_text"/>
+        <TextView
+            android:id="@+id/search_text" 
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:background="@drawable/search_button_background"
+            android:text="@string/search"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
+            android:gravity="center"/>
+    </LinearLayout>
+ 	<GridView 
+ 	    android:id="@+id/gridview"
+ 	    android:layout_width="match_parent"
+ 	    android:layout_height="wrap_content"
+ 	    android:numColumns="3"
+ 	    android:horizontalSpacing="10dp"
+ 	    android:verticalSpacing="10dp"
+ 	    android:stretchMode="columnWidth"
+ 	    android:gravity="center"></GridView>
 
 </LinearLayout>

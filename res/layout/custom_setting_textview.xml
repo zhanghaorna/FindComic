@@ -19,6 +19,7 @@
         android:textSize="14sp"
         android:textColor="@color/blue"
         android:gravity="center"
-        android:padding="10dp"/>
+        android:padding="10dp"
+        android:layout_centerVertical="true"/>
 
 </RelativeLayout>

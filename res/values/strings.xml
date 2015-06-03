@@ -31,4 +31,35 @@
 	<string name="msite">MSite</string>
 	<string name="loading">载入中...</string>
 	
+	<string name="input_comic_name">输入漫画名</string>
+	<string name="search">搜索</string>
+	<string name="hot_classify">热门分类</string>
+	
+	<string name="data_loading">获取数据中</string>
+	
+	<string-array name="category">
+	    <item>萌系</item>
+	    <item>搞笑</item>
+	    <item>格斗</item>
+	    <item>科幻</item>
+	    <item>剧情</item>
+	    <item>侦探</item>
+	    <item>竞技</item>
+	    <item>魔法</item>
+	    <item>神鬼</item>
+	    <item>校园</item>
+	    <item>惊栗</item>
+	    <item>厨艺</item>
+	    <item>伪娘</item>
+	    <item>图片</item>
+	    <item>冒险</item>
+	    <item>小说</item>
+	    <item>港漫</item>
+	    <item>耽美</item>
+	    <item>经典</item>
+	    <item>欧美</item>
+	    <item>日文</item>
+	</string-array>
+	
+	
 </resources>

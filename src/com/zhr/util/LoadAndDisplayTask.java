@@ -40,19 +40,21 @@ public class LoadAndDisplayTask implements Runnable{
 	private ImageView targetView;
 	private String imagePath;
 	private boolean thumbnail;
-	private boolean isCache;
+	private boolean cacheToMemory;
+	private boolean cacheToDisk;
 	private Handler handler;
 	
 	private Bitmap bitmap = null;
 	
 	public LoadAndDisplayTask(ImageView targetView,String imagePath
-			,boolean thumbnail,Handler handler,boolean isCache)
+			,boolean thumbnail,Handler handler,boolean cacheToMemory,boolean cacheToDisk)
 	{
 		this.targetView = targetView;
 		this.imagePath = imagePath;
 		this.thumbnail = thumbnail;
-		this.isCache = isCache;		
+		this.cacheToMemory = cacheToMemory;		
 		this.handler = handler;
+		this.cacheToDisk = cacheToDisk;
 	}
 	
 	public LoadAndDisplayTask(ImageView targetView,Bitmap bitmap,Handler handler)
@@ -60,7 +62,7 @@ public class LoadAndDisplayTask implements Runnable{
 		this.targetView = targetView;
 		this.bitmap = bitmap;
 		this.handler = handler;
-		this.isCache = false;
+		this.cacheToMemory = true;
 	}
 	
 	
@@ -121,7 +123,7 @@ public class LoadAndDisplayTask implements Runnable{
 					}
 					loadImage();
 				}
-				if(isCache&&AppSetting.getInstance() != null)
+				if(cacheToMemory&&AppSetting.getInstance() != null)
 					AppSetting.getInstance().getCache().put(imagePath, bitmap);
 			}
 			//有缓存就直接加载
@@ -156,7 +158,7 @@ public class LoadAndDisplayTask implements Runnable{
 				targetView.setImageBitmap(bitmap);
 			}
 		}
-		if(isCache&&imagePath.startsWith("http://"))
+		if(cacheToDisk&&imagePath.startsWith("http://"))
 		{
 			int sep = imagePath.lastIndexOf("/");
 			int point = imagePath.lastIndexOf(".");

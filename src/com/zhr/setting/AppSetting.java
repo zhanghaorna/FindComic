@@ -205,8 +205,8 @@ public class AppSetting {
 					@Override
 					protected void entryRemoved(boolean evicted, String key,
 							Bitmap oldValue, Bitmap newValue) {
-						// TODO Auto-generated method stub
-						oldValue.recycle();
+						if(true)
+							oldValue.recycle();
 					}
 				};
 	}

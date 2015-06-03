@@ -15,6 +15,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,18 +51,22 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 		if(savedInstanceState == null)
 			initData();
 		else {
-			Fragment fragment1 = getSupportFragmentManager().findFragmentByTag("0");
-			Fragment fragment2 = getSupportFragmentManager().findFragmentByTag("1");
-			Fragment fragment3 = getSupportFragmentManager().findFragmentByTag("2");
-			Fragment fragment4 = getSupportFragmentManager().findFragmentByTag("3");
+			Log.d("Comic", "not null");
+			fragmentManager = getSupportFragmentManager();
+			fragments = new Fragment[4];
+			fragments[0] = getSupportFragmentManager().findFragmentByTag("0");
+			fragments[1] = getSupportFragmentManager().findFragmentByTag("1");
+			fragments[2] = getSupportFragmentManager().findFragmentByTag("2");
+			fragments[3] = getSupportFragmentManager().findFragmentByTag("3");
 			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-			transaction.show(fragment1);
-			if(fragment2 != null)
-				transaction.hide(fragment2);
-			if(fragment3 != null)
-				transaction.hide(fragment3);
-			if(fragment4 != null)
-				transaction.hide(fragment4);
+			transaction.show(fragments[0]);
+			if(fragments[1] != null)
+				transaction.hide(fragments[1]);
+			if(fragments[2] != null)
+				transaction.hide(fragments[2]);
+			if(fragments[3] != null)
+				
+				transaction.hide(fragments[3]);
 			transaction.commit();
 		}
 

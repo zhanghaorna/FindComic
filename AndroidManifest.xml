@@ -25,6 +25,7 @@
             android:name=".MainActivity"
             android:launchMode="singleTask"
             android:label="@string/app_name"
+            android:windowSoftInputMode="adjustPan"
             android:theme="@android:style/Theme.Light.NoTitleBar"
             >
         </activity>
@@ -77,6 +78,11 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Light.NoTitleBar"
             ></activity>     
+        <activity 
+            android:name="com.zhr.searchcomic.SearchResultActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            ></activity> 
         <meta-data
             android:name="UMENG_APPKEY"
             android:value="5555d4cd67e58e3e2e0051ce" >
