@@ -36,7 +36,7 @@ public class ReadSettingActivity extends BaseActivity implements OnIndexChange,O
 	
 	private ImageView back;
 	
-	private String[] orientations = new String[]{"横屏","竖屏"};
+	private String[] orientations = new String[]{"竖屏","横屏"};
 	private String[] page_turn_orientations = new String[]{"横向翻页(左右滑动)","竖向翻页(上下滑动)"};
 	private String[] page_turn_hands = new String[]{"左手翻页","右手翻页"};
 	
@@ -105,7 +105,7 @@ public class ReadSettingActivity extends BaseActivity implements OnIndexChange,O
 	public void indexChange(View view, int index) {
 		switch (view.getId()) {
 		case R.id.screen_orientation:
-			AppSetting.getInstance(getApplicationContext()).setScreenOrientation(index);
+			AppSetting.getInstance(getApplicationContext()).setScreenOrientation(index + 1);
 			break;
 		case R.id.vertical_page_turn_orientation:
 			AppSetting.getInstance(getApplicationContext()).setPage_turn_orientation(index);

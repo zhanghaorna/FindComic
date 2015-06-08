@@ -5,6 +5,7 @@ import com.zhr.findcomic.R;
 import android.R.integer;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 import android.util.Log;
@@ -255,8 +256,8 @@ public class AppSetting {
 		return last_read_local;
 	}
 
-	public final static int HORIZONTAL_ORIENTATION = 0;
-	public final static int VERTICAL_ORIENTATION = 1;
+	public final static int HORIZONTAL_ORIENTATION = Configuration.ORIENTATION_LANDSCAPE;
+	public final static int VERTICAL_ORIENTATION = Configuration.ORIENTATION_PORTRAIT;
 	
 	public final static int MODE_IN_VERTICAL_LEFT_RIGHT = 0;
 	public final static int MODE_IN_VERTICAL_UP_DOWN = 1;

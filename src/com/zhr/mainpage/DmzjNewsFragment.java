@@ -15,6 +15,8 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -30,19 +32,26 @@ import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
 
+
 /**
  * @author zhr
  * @version 1.0.0
  * @date 2015年5月30日
  * @description
  */
-public class DmzjNewsFragment extends NewsFragment implements OnItemClickListener{
+public class DmzjNewsFragment extends NewsFragment implements OnItemClickListener
+			,OnScrollListener
+{
 	
 	public static final String URL = "http://acg.178.com/";
 	private int index = 1;
 	private String real_url = URL;
 	private NewsAdapter mAdapter;
 	private String timeRegex = "\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}";
+	
+	private boolean isScroll = false;
+	private int firstVisibleItem;
+	private int visibleItemCount;
 	
 	@Override
 	protected void initView() {		
@@ -160,6 +169,39 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 		startActivity(intent);
 	}
 	
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		switch (scrollState) {
+		case OnScrollListener.SCROLL_STATE_IDLE:
+			isScroll = false;
+			int first = view.getFirstVisiblePosition();
+			for(int i = 0;i <visibleItemCount;i++)
+			{
+				View convertView = view.getChildAt(i);
+				BitmapLoader.getInstance().loadImage(((NewsAdapter.ViewHolder)convertView.getTag()).image, 
+						newsItems.get(first + i).getImagePath(),true, false, true);				
+			}
+			break;
+		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+			isScroll = false;
+			break;
+		case OnScrollListener.SCROLL_STATE_FLING:
+			isScroll = true;
+			break;
+
+		default:
+			break;
+		}
+		
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		this.visibleItemCount = visibleItemCount;
+		
+	}
+	
 	private class NewsAdapter extends BaseAdapter
 	{
 
@@ -200,8 +242,9 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 			holder.title.setText(newsItems.get(position).getTitle());
 			holder.tag.setText(newsItems.get(position).getTag());
 			holder.time.setText(Util.dateToString(newsItems.get(position).getTime(),timeFormat));
-			holder.image.setImageDrawable(getResources().getDrawable(R.drawable.loading));
-			BitmapLoader.getInstance().loadImage(holder.image, newsItems.get(position).getImagePath(),
+			holder.image.setImageDrawable(getResources().getDrawable(R.drawable.holder_loading));
+			if(!isScroll)
+				BitmapLoader.getInstance().loadImage(holder.image, newsItems.get(position).getImagePath(),
 					true, false, true);
 			return convertView;
 		}
@@ -215,5 +258,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 		}
 		
 	}
+
+
 
 }

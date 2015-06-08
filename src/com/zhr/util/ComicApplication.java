@@ -18,6 +18,14 @@ public class ComicApplication extends Application{
 	private static DaoSession daoSession;
 	private static DaoMaster daoMaster;
 	
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		super.onCreate();
+		CrashHandler crashHandler = CrashHandler.getInstance();
+		crashHandler.init(getApplicationContext());
+	}
+	
 	public static DaoSession getDaoSession(Context context)
 	{
 		if(daoSession == null)

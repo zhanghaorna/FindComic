@@ -139,20 +139,24 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 					Intent intent = new Intent(this,ComicReadActivity.class);
 					File parentFile = file.getParentFile();
 					File[] tempFiles = parentFile.listFiles(picFilter);
+					if(tempFiles.length <= 0)
+					{
+						Toast.makeText(getBaseContext(), "漫画文件已不存在", Toast.LENGTH_SHORT).show();
+						return;
+					}
 					String[] picPaths = new String[tempFiles.length];
 					int index = 0;
 					for(int i = 0;i < tempFiles.length;i++)
 					{
-						picPaths[i] = files[i].getAbsolutePath();
+						picPaths[i] = tempFiles[i].getAbsolutePath();
 						if(tempFiles[i].getAbsolutePath().equals(file.getAbsolutePath()))
 						{
 							index = i;
 						}
 					}
-					Log.d("Comic", picPaths[index]);
 					intent.putExtra("picPaths", picPaths);
 					intent.putExtra("position", index);
-					intent.putExtra("dirName", tempFiles[index].getParentFile().getName());
+					intent.putExtra("comicName", tempFiles[index].getParentFile().getName());
 					startActivityForResult(intent, LAST_READ);
 				}
 				else {
@@ -172,7 +176,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 			if(resultCode == RESULT_OK)
 			{
 				String path = data.getStringExtra("last_read_path");
-				if(path != null)
+				if(path != null&&(path.endsWith(".jpg")||path.endsWith(".png")))
 					AppSetting.getInstance(getApplicationContext()).setLastReadLocal(path);
 				last_readView.setText(AppSetting.getInstance(getApplicationContext()).getLastReadLocal());
 			}
@@ -228,12 +232,14 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				View view = layoutInflater.inflate(R.layout.local_dir_listview_item, parent,false);
 				holder.iconView = (ImageView)view.findViewById(R.id.icon_dir);
 				holder.pathView = (TextView)view.findViewById(R.id.path);
-				convertView = view;				
+				convertView = view;	
+				convertView.setTag(holder);	
 			}
 			else {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			holder.pathView.setText(files[position].getName());
+			holder.iconView.setImageResource(R.drawable.local_dir);
 			if(!files[position].isDirectory()&&(files[position].getAbsolutePath()
 					.endsWith(".jpg")||files[position].getAbsolutePath()
 					.endsWith(".png"))&&!isBusy)
@@ -242,10 +248,8 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				BitmapLoader.getInstance().loadImageNoCache(holder.iconView,
 						files[position].getAbsolutePath(),true);
 			}
-			else {
-				holder.iconView.setImageResource(R.drawable.local_dir);
-			}
-			convertView.setTag(holder);			
+
+					
 			return convertView;
 		}
 		
@@ -266,14 +270,18 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				picPaths[i] = files[i].getAbsolutePath();
 			intent.putExtra("picPaths", picPaths);
 			intent.putExtra("position", position);
-			intent.putExtra("dirName", files[position].getParentFile().getName());
+			intent.putExtra("comicName", files[position].getParentFile().getName());
 			startActivityForResult(intent, LAST_READ);
 			return;
 		}
-		currentFile = files[position];
-		files = currentFile.listFiles(fileFilter);
-		adapter.notifyDataSetChanged();
-		file_pathView.setText(currentFile.getAbsolutePath());
+		else
+		{
+			currentFile = files[position];
+			files = currentFile.listFiles(fileFilter);
+			adapter.notifyDataSetChanged();
+			file_pathView.setText(currentFile.getAbsolutePath());
+		}
+
 	}
 	
 	@Override
@@ -298,13 +306,17 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 		switch (scrollState) {
 		case OnScrollListener.SCROLL_STATE_IDLE:
 			isBusy = false;
+			Log.d("Comic", "scroll pause");
 			int first = view.getFirstVisiblePosition();
 			for(int i = 0;i <visibleItemCount;i++)
 			{
-				View convertView = view.getChildAt(i);
-				BitmapLoader.getInstance().loadImageNoCache(((DirBaseAdapter.ViewHolder)convertView.getTag()).iconView,
-						files[first + i].getAbsolutePath(),true);
-				
+				if(!files[first + i].isDirectory()&&(files[first + i].getAbsolutePath()
+						.endsWith(".jpg")||files[first + i].getAbsolutePath().endsWith(".png")))
+				{
+					View convertView = view.getChildAt(i);
+					BitmapLoader.getInstance().loadImageNoCache(((DirBaseAdapter.ViewHolder)convertView.getTag()).iconView,
+							files[first + i].getAbsolutePath(),true);
+				}				
 			}
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:

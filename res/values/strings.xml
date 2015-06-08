@@ -21,6 +21,7 @@
 	<string name="share">分享</string>
 	<string name="landscape">横屏</string>
 	<string name="portrait">竖屏</string>
+	<string name="comic_loading">漫画加载中</string>
 	<string name="landscape_page">横向翻页</string>
 	<string name="portrait_page">纵向翻页</string>
 	<string name="left_page">左手翻页</string>
@@ -36,6 +37,11 @@
 	<string name="hot_classify">热门分类</string>
 	
 	<string name="data_loading">获取数据中</string>
+	
+	<string name="download">下载</string>
+	<string name="author">作者:</string>
+	<string name="begin_read">开始阅读</string>
+	<string name="serialise">连载</string>
 	
 	<string-array name="category">
 	    <item>萌系</item>

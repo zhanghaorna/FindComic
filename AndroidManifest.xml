@@ -70,7 +70,7 @@
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
         <activity 
             android:name="com.zhr.comic.ComicReadActivity"
-            android:screenOrientation="nosensor"
+            android:configChanges="keyboardHidden|orientation"
             android:theme="@android:style/Theme.Light"
             ></activity> 
         <activity 
@@ -83,6 +83,11 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Light.NoTitleBar"
             ></activity> 
+        <activity 
+            android:name="com.zhr.comic.ComicIntroActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            ></activity>            
         <meta-data
             android:name="UMENG_APPKEY"
             android:value="5555d4cd67e58e3e2e0051ce" >

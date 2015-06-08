@@ -179,7 +179,6 @@ public class LoadAndDisplayTask implements Runnable{
 						DBNewsHelper.getDbNewsHelper().alertNews(imagePath,imageName);
 					}
 				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}				
 			}

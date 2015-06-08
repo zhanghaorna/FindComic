@@ -1,11 +1,11 @@
 package com.zhr.searchcomic;
 
-import com.umeng.socialize.net.h;
+
 import com.zhr.customview.EditTextWithDel;
 import com.zhr.findcomic.R;
-import com.zhr.util.BaseActivity;
 
-import android.R.integer;
+import com.zhr.util.Util;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,13 +14,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-import android.webkit.WebView.FindListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SearchComicFragment extends Fragment implements OnClickListener,OnItemClickListener{
 	
@@ -29,6 +29,7 @@ public class SearchComicFragment extends Fragment implements OnClickListener,OnI
 	private GridView mGridView;
 	
 	private String URL = "http://m.99mh.com/lists/";
+	private String SearchURL = "http://m.99mh.com/comicsearch/s.aspx?s=";
 	
 	private String[] category;
 	private int[] category_id = new int[]{R.drawable.mengxi,R.drawable.gaoxiao
@@ -68,7 +69,19 @@ public class SearchComicFragment extends Fragment implements OnClickListener,OnI
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.search_text:
-			
+			if(editTextWithDel.getText().toString().trim().equals(""))
+				return;
+			if(!Util.isNetWorkConnect(getActivity().getApplicationContext()))
+			{
+				Toast.makeText(getActivity(), "网络未连接", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			Intent intent = new Intent(getActivity(),SearchResultActivity.class);
+			intent.putExtra("search", true);
+			intent.putExtra("category", editTextWithDel.getText().toString().trim());
+			intent.putExtra("category_url", SearchURL);
+			startActivity(intent);
+			getActivity().overridePendingTransition(R.anim.slide_right_in,R.anim.slide_left_out);
 			break;
 
 		default:

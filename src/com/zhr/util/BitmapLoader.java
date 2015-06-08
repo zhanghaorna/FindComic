@@ -81,13 +81,14 @@ public class BitmapLoader
 			{
 				if(bitmap.isRecycled())
 					Log.d("Comic", "isRecycle");
+				Log.d("Comic", "cache task");
 				task = new LoadAndDisplayTask(imageView, bitmap, handler);
 			}
 
 			
 		}
 		if(task == null)
-			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,true,cacheToDisk);
+			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,thumbnail != true,cacheToDisk);
 		if(!asyn)
 		{
 			task.run();

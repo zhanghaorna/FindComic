@@ -6,11 +6,27 @@ package com.zhr.searchcomic;
  * @description
  */
 public class ComicIntro {
+	//漫画图片URL
 	private String imageUrl;
+	//漫画名字
 	private String title;
+	//漫画作者
 	private String author;
+	//漫画更新到多少话
 	private String update;
+	//是否完结
 	private boolean finished;
+	//漫画详情页URL
+	private String introUrl;
+	
+	
+	
+	public String getIntroUrl() {
+		return introUrl;
+	}
+	public void setIntroUrl(String introUrl) {
+		this.introUrl = introUrl;
+	}
 	public String getImageUrl() {
 		return imageUrl;
 	}

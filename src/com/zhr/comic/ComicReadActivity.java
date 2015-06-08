@@ -1,9 +1,19 @@
 package com.zhr.comic;
 
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.apache.http.Header;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.controller.UMServiceFactory;
 import com.umeng.socialize.controller.UMSocialService;
+import com.umeng.socialize.controller.c;
 import com.umeng.socialize.media.UMImage;
 import com.umeng.socialize.sso.SinaSsoHandler;
 import com.zhr.customview.ComicPageView;
@@ -16,6 +26,7 @@ import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Util;
 
+import android.R.integer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -46,7 +57,6 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.PopupWindow.OnDismissListener;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,7 +70,20 @@ import android.widget.Toast;
 public class ComicReadActivity extends BaseActivity implements OnTouchClick				
 {
 		
-	private RelativeLayout rootView = null;
+	private FrameLayout rootView = null;
+	private LinearLayout loadingLayout;
+	//Timer定时器,用来显示加载时切换动态图
+	private Timer timer;
+	private int[] loadingImage_id = new int[]{R.drawable.playviewloading_1,R.drawable.playviewloading_2,
+			R.drawable.playviewloading_3,R.drawable.playviewloading_4,R.drawable.playviewloading_5,
+			R.drawable.playviewloading_6,R.drawable.playviewloading_7,R.drawable.playviewloading_8,
+			R.drawable.playviewloading_9,R.drawable.playviewloading_10,R.drawable.playviewloading_11,
+			R.drawable.playviewloading_12,R.drawable.playviewloading_13,R.drawable.playviewloading_14,
+			R.drawable.playviewloading_15,R.drawable.playviewloading_16,R.drawable.playviewloading_17,
+			R.drawable.playviewloading_18,R.drawable.playviewloading_19,R.drawable.playviewloading_20,
+			R.drawable.playviewloading_21};
+	private ImageView loadingImageView;
+	
 	private RecyclerView mRecyclerView;
 	//RecyclerView是否在滑动，滑动就不加载图片
 	private boolean isScroll;
@@ -69,11 +92,21 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 	private PictureAdapter mAdapter;
 	private LinearLayoutManager mLayoutManager;
+	//获取漫画网的前缀
+	private String urlPrefix = "http://d1.99mh.com:9393/dm03/";
 	
-	private String dirName;
+	//漫画名字
+	private String comicName;
+	//所有漫画图片的路径
 	private String[] picPaths;
+	//阅读的图片位置(第几页)
 	private int filePosition;
+	//实际漫画显示页(也即显示在下面的)
 	private int viewPosition;
+	//漫画页是否来自网络
+	private boolean fromInternet = false;
+	//屏幕方向是否需要改变
+	private boolean changeScreenOrientation = false;
 	
 	private PopWindowHolder mPopWindowHolder;
 	private boolean dismiss;
@@ -92,6 +125,11 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() != 
+				getResources().getConfiguration().orientation)
+		{
+			changeScreenOrientation = true;
+		}
 		if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
 				AppSetting.HORIZONTAL_ORIENTATION)
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -99,25 +137,38 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		}
 		setContentView(R.layout.activity_comic_read);
-
-		preData();
-		initView();
-		initData();
-		
+		if(!changeScreenOrientation)
+		{
+			preData();
+			initView();
+			initData();
+		}		
 	}
 	
 	private void preData()
 	{
 		Intent intent = getIntent();
+
 		picPaths = intent.getStringArrayExtra("picPaths");
-		dirName = intent.getStringExtra("dirName");
-		if(dirName == null)
-			dirName = "";
+		comicName = intent.getStringExtra("comicName");
+		if(comicName == null)
+			comicName = "";
 		if(picPaths == null||picPaths.length == 0)
 			picPaths = new String[]{""};
 		filePosition = intent.getIntExtra("position", 0);
+		if(intent.getStringExtra("comicUrl") != null)
+		{
+			fromInternet = true;
+			queryImageUrlFromInternet(intent.getStringExtra("comicUrl"));
+		}
 		
 		viewPosition = filePosition;
+		
+		lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+		
+		timer = new Timer();
+		//每200ms更新一次图片
+		timer.schedule(new ImageLoadingTask(), 200,200);
 		
 		mAdapter = new PictureAdapter();
 		if(AppSetting.getInstance(getApplicationContext()).getPage_turn_orientation() == 
@@ -140,7 +191,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private void initView()
 	{
 
-		rootView = (RelativeLayout)findViewById(R.id.root);
+		rootView = (FrameLayout)findViewById(R.id.root);
+		loadingLayout = (LinearLayout)findViewById(R.id.loading_layout);
+		loadingImageView = (ImageView)findViewById(R.id.loading_image);
 		
 		mRecyclerView = (RecyclerView)findViewById(R.id.recyclerView);
 		mRecyclerView.setLayoutManager(mLayoutManager);
@@ -162,7 +215,12 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		mController = UMServiceFactory.getUMSocialService("com.umeng.share");
 		//配置友盟分享相关设置
 		mController.getConfig().setSsoHandler(new SinaSsoHandler());
-		
+		if(!fromInternet)
+		{
+			timer.cancel();
+			loadingLayout.setVisibility(View.GONE);
+			mRecyclerView.setVisibility(View.VISIBLE);
+		}
 		
 	}
 	//当用户点击设置，重新返回Activity应用设置
@@ -200,6 +258,86 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					readerHintView.setHandMode(AppSetting.RIGHT_HAND);
 				}
 			}				
+		}		
+	}
+	
+	
+	private void queryImageUrlFromInternet(String url)
+	{
+		AsyncHttpClient client = new AsyncHttpClient();
+		client.get(url, new AsyncHttpResponseHandler() {
+
+			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+				if(arg0 == 200)
+				{
+					Document document = Jsoup.parse(new String(arg2));
+					
+					String text = document.select("head > script:nth-child(10)").html();
+					if(text.indexOf(";") != -1)
+					{
+						text = text.split(";")[0];
+					}
+					text = text.replace("var", "").replace("sFiles=", "").replace("\"", "")
+							.replace(" ", "");
+					getImageUrl(text);
+					mAdapter.notifyDataSetChanged();
+					loadingLayout.setVisibility(View.GONE);
+					mRecyclerView.setVisibility(View.VISIBLE);
+					mPopWindowHolder.refreshStatus();
+					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+				}
+				timer.cancel();
+			}
+			
+			public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
+				Toast.makeText(getBaseContext(), "漫画加载失败", Toast.LENGTH_SHORT).show();
+				timer.cancel();
+			}
+		});
+	}
+	//从一串代码中解析出图片地址，由于该网站采取了加密
+	private void getImageUrl(String code)
+	{
+		String x = code.substring(code.length() - 1);
+		int xi = "abcdefghijklmnopqrstuvwxyz".indexOf(x) + 1;
+		String sk = code.substring(code.length() - xi - 12,code.length() - xi - 1);
+		code = code.substring(0,code.length() - xi - 12);
+		String k = sk.substring(0,sk.length() - 1);
+		String f = sk.substring(sk.length() - 1);
+		for(int i = 0;i < k.length();i++)
+		{
+			code = code.replaceAll(k.substring(i,i+1), i + "");
+		}
+		String[] ss = code.split(f);
+		StringBuilder builder = new StringBuilder();
+		for(int i = 0;i < ss.length;i++)
+		{
+			builder.append((char)Integer.valueOf(ss[i]).intValue());
+		}
+		String[] path = builder.toString().split("\\|");
+		for(int i = 0;i < path.length;i++)
+		{
+			path[i] = urlPrefix + path[i];
+		}
+		picPaths = path;
+	}
+	
+	private class ImageLoadingTask extends TimerTask
+	{
+		private int index = 1;
+		public void run() {			
+			if(loadingImageView != null)
+			{
+				loadingImageView.post(new Runnable() {
+					public void run() {
+						loadingImageView.setImageDrawable(getResources()
+								.getDrawable(loadingImage_id[index]));						
+					}
+				});
+			}
+			index++;
+			if(index > 20)
+				index = 1;
 		}		
 	}
 	
@@ -286,7 +424,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			});
 			
 			TextView title =  (TextView)view.findViewById(R.id.title);
-			title.setText(dirName);
+			title.setText(comicName);
 			
 			TextView share = (TextView)view.findViewById(R.id.share);
 			share.setOnClickListener(new OnClickListener() {
@@ -305,6 +443,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				}
 			});
 		}
+		
+		
 		//设置bottomWindow监听
 		private void setupBottomWindowListener(View view)
 		{
@@ -454,6 +594,13 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			return this.page_hint;
 		}
 		
+		public void refreshStatus()
+		{			
+			pageSeekBar.setMax(picPaths.length - 1);
+			pageSeekBar.setProgress(filePosition);
+			page_hint.setText((filePosition + 1) + "/" + picPaths.length);
+		}
+		
 		public void dismiss()
 		{
 			topWindow.dismiss();
@@ -590,16 +737,20 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		
 		@Override
 		public void onReceive(Context context, Intent intent) {
+			if(intent == null)
+				return;
 			if(Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction()))
 			{
 				int level = intent.getIntExtra("level", 0);
 				int scale = intent.getIntExtra("scale", 100);
 				battery = level * 100 / scale;
-				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+				if(readerHintView != null)
+					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 			}
 			else if(Intent.ACTION_TIME_TICK.equals(intent.getAction()))
 			{
-				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+				if(readerHintView != null)
+					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 			}
 		}
 	};
@@ -646,13 +797,16 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	@Override
 	protected void onResume() {
 		super.onResume();
-//		Log.d("Comic", "onResume");
-		changeSetting();
-		mAdapter.notifyItemChanged(viewPosition);
+		Log.d("Comic", "onResume");
+		if(!changeScreenOrientation)
+			changeSetting();
+		if(mAdapter != null)
+			mAdapter.notifyItemChanged(viewPosition);
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
 		intentFilter.addAction(Intent.ACTION_TIME_TICK);
-		registerReceiver(batteryChangeReceiver, intentFilter);
+		if(batteryChangeReceiver != null)
+			registerReceiver(batteryChangeReceiver, intentFilter);
 		if(readerHintView != null)
 			mWindowManager.addView(readerHintView, lp);
 		
@@ -662,26 +816,28 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-//		Log.d("Comic", "onPause");
+		Log.d("Comic", "onPause");
 		if(readerHintView != null)
 		{
 			//不能使用removeview(异步的方法)，activity已被销毁了，但view还没有被remove掉
 			//导致activity leaked问题，使用removeViewImmediate(同步)
 			mWindowManager.removeViewImmediate(readerHintView);
 		}
-		if(mPopWindowHolder.isShowing())
+		if(mPopWindowHolder!= null&&mPopWindowHolder.isShowing())
 		{
 			mPopWindowHolder.dismiss(); 
 		}
-		unregisterReceiver(batteryChangeReceiver);
+		if(batteryChangeReceiver != null)
+			unregisterReceiver(batteryChangeReceiver);
 		AppSetting.getInstance(getApplicationContext()).commitAllAlter();
 	}
 	
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		mController.dismissShareBoard();
-//		Log.d("Comic", "onDestory");		
+		if(mController != null)
+			mController.dismissShareBoard();
+		Log.d("Comic", "onDestory");		
 	}
 		
 	@Override
@@ -700,6 +856,13 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		intent.putExtra("last_read_path", picPaths[viewPosition]);
 		setResult(RESULT_OK,intent);	
 		super.onBackPressed();
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
+		Log.d("Comic", "turn orientation");
 	}
 
 }
