@@ -76,6 +76,7 @@ public class LoadAndDisplayTask implements Runnable{
 					//采用同步方法，因为这里已经在一个线程中，不能再异步调用
 					//Log一直报警告，说强制采用同步方法
 					SyncHttpClient client = new SyncHttpClient();
+					client.setEnableRedirects(true);
 					client.get(imagePath, new BinaryHttpResponseHandler() {
 						
 						@Override
@@ -92,7 +93,7 @@ public class LoadAndDisplayTask implements Runnable{
 						
 						@Override
 						public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
-							Log.d("Comic", "failure");
+							Log.d("Comic","Path:" + imagePath);
 							
 						}
 					});

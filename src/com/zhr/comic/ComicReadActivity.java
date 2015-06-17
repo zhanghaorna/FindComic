@@ -24,6 +24,7 @@ import com.zhr.setting.AppSetting;
 import com.zhr.setting.ReadSettingActivity;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
+import com.zhr.util.Constants;
 import com.zhr.util.Util;
 
 import android.R.integer;
@@ -93,7 +94,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private PictureAdapter mAdapter;
 	private LinearLayoutManager mLayoutManager;
 	//获取漫画网的前缀
-	private String urlPrefix = "http://d1.99mh.com:9393/dm03/";
+	private int url_prefix_position;
 	
 	//漫画名字
 	private String comicName;
@@ -274,8 +275,12 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					
 					String text = document.select("head > script:nth-child(10)").html();
 					if(text.indexOf(";") != -1)
-					{
+					{						
+						String position = text.split(";")[1];
 						text = text.split(";")[0];
+						position = position.replace("var", "").replace("sPath=", "").replace("\"", "")
+							.replace(" ", "");
+						url_prefix_position = Integer.valueOf(position).intValue();
 					}
 					text = text.replace("var", "").replace("sFiles=", "").replace("\"", "")
 							.replace(" ", "");
@@ -317,7 +322,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		String[] path = builder.toString().split("\\|");
 		for(int i = 0;i < path.length;i++)
 		{
-			path[i] = urlPrefix + path[i];
+			path[i] = Constants.URL_PERFIX[url_prefix_position - 1] + path[i];
 		}
 		picPaths = path;
 	}
@@ -366,7 +371,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				BitmapLoader.getInstance().loadImage(holder.imageView,
 						picPaths[poistion], true, false, false);
 			viewPosition = poistion;
-			Log.d("Comic", "" + poistion);
+			Log.d("Comic", "path:" + picPaths[poistion]);
 
 		}
 

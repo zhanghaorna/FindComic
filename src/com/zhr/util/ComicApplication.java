@@ -7,6 +7,7 @@ import com.zhr.sqlitedao.DaoSession;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 /**
  * @author zhr
@@ -18,12 +19,12 @@ public class ComicApplication extends Application{
 	private static DaoSession daoSession;
 	private static DaoMaster daoMaster;
 	
+	//ComicApplication可能会多次调用onCreate()，由于每有一个进程就会初始化一次Application
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
-		CrashHandler crashHandler = CrashHandler.getInstance();
-		crashHandler.init(getApplicationContext());
+
 	}
 	
 	public static DaoSession getDaoSession(Context context)

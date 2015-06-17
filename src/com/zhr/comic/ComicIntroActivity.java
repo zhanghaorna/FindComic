@@ -202,7 +202,10 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		case R.id.intro:
 			introView.toggle();
 			break;
-
+		case R.id.back:
+			finish();
+			overridePendingTransition(R.anim.slide_left_in, R.anim.slide_right_out);
+			break;
 		default:
 			break;
 		}

@@ -15,6 +15,15 @@ public class Constants {
 	public static String DM123 = "dm123";
 	public static String MSITE = "Msite";
 	
+	public static String[] URL_PERFIX = new String[]{"http://d1.99mh.com:9393/dm01/",
+		"http://d1.99mh.com:9393/dm02/","http://d1.99mh.com:9393/dm03/","http://d1.99mh.com:9393/dm04/",
+		"http://d1.99mh.com:9393/dm05/","http://d1.99mh.com:9393/dm06/","http://d1.99mh.com:9393/dm07/",
+		"http://d1.99mh.com:9393/dm08/","http://d1.99mh.com:9393/dm09/","http://d1.99mh.com:9393/dm10/",
+		"http://d1.99mh.com:9393/dm11/","http://d1.99mh.com:9393/dm12/","http://d1.99mh.com:9393/dm13/",
+		"http://d1.99mh.com:9393/dm14/","http://d1.99mh.com:9393/dm15/","http://d1.99mh.com:9393/dm16/"};
+	
+	public static String BUGLY_ID = "900004158";
+	
 	public static String FILENAME = Environment.getExternalStorageDirectory() + File.separator + "findComic";
 	public static String DISKCACHE_FILENAME = FILENAME + File.separator + "diskCache";
 }

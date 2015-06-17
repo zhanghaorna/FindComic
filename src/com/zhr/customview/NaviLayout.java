@@ -26,18 +26,23 @@ public class NaviLayout extends LinearLayout{
 	{
 		if(index >= getChildCount())
 			return;
+		Log.d("Comic", "index:" + index + " turnOrientation:" + turnOrientation);
 		NaviView currentView = (NaviView) getChildAt(index);
 		NaviView nextView = null;
 		if(turnOrientation == 1)
 		{
 			nextView = (NaviView)getChildAt(index + 1);
-			currentView.setOffset(offset, false);
-			nextView.setOffset(offset, true);
+			if(currentView!= null)
+				currentView.setOffset(offset, false);
+			if(nextView != null)
+				nextView.setOffset(offset, true);
 		}
 		else if(turnOrientation == 0){
 			nextView = (NaviView)getChildAt(index - 1);
-			currentView.setOffset(offset, true);
-			nextView.setOffset(offset, false);
+			if(currentView!= null)
+				currentView.setOffset(offset, true);
+			if(nextView != null)
+				nextView.setOffset(offset, false);
 		}
 		
 	}

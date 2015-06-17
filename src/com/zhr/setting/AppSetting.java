@@ -206,8 +206,10 @@ public class AppSetting {
 					@Override
 					protected void entryRemoved(boolean evicted, String key,
 							Bitmap oldValue, Bitmap newValue) {
-						if(true)
-							oldValue.recycle();
+						if(evicted)
+						{
+//							oldValue.recycle();
+						}
 					}
 				};
 	}

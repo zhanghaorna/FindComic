@@ -15,7 +15,15 @@ import java.util.Date;
 import java.util.HashMap;  
 import java.util.Map;  
   
+
+
+
+
+import android.R.integer;
+import android.app.AlertDialog;
 import android.content.Context;  
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageInfo;  
 import android.content.pm.PackageManager;  
 import android.content.pm.PackageManager.NameNotFoundException;  
@@ -27,7 +35,7 @@ import android.widget.Toast;
   
 /** 
  * UncaughtException处理类,当程序发生Uncaught异常的时候,有该类来接管程序,并记录发送错误报告. 
- *  
+ * 目前并没有用来记录消息，只是在默认出现异常时，能顺利退出程序(不出现终止运行对话框)
  * @author user 
  *  
  */  
@@ -43,7 +51,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
     private Context mContext;  
     //用来存储设备信息和异常信息  
     private Map<String, String> infos = new HashMap<String, String>();  
-  
+    
+   
+    
     //用于格式化日期,作为日志文件名的一部分  
     private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");  
   
@@ -73,13 +83,13 @@ public class CrashHandler implements UncaughtExceptionHandler {
      * 当UncaughtException发生时会转入该函数来处理 
      */  
     @Override  
-    public void uncaughtException(Thread thread, Throwable ex) {  
+    public synchronized void uncaughtException(Thread thread, Throwable ex) {     	
         if (!handleException(ex) && mDefaultHandler != null) {  
             //如果用户没有处理则让系统默认的异常处理器来处理  
             mDefaultHandler.uncaughtException(thread, ex);  
         } else {  
             try {  
-                Thread.sleep(3000);  
+                Thread.sleep(500);  
             } catch (InterruptedException e) {  
                 Log.e(TAG, "error : ", e);  
             }  
@@ -109,9 +119,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
             }  
         }.start();  
         //收集设备参数信息   
-        collectDeviceInfo(mContext);  
+//        collectDeviceInfo(mContext);  
         //保存日志文件   
-        saveCrashInfo2File(ex);  
+//        saveCrashInfo2File(ex);  
         return true;  
     }  
       
@@ -181,7 +191,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
                 if (!dir.exists()) {  
                     dir.mkdirs();  
                 }  
-                FileOutputStream fos = new FileOutputStream(path + fileName);  
+                FileOutputStream fos = new FileOutputStream(path + File.separator + fileName);  
                 fos.write(sb.toString().getBytes());  
                 fos.close();  
             }  

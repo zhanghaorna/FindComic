@@ -146,12 +146,11 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 					{
 						if(!search)
 							page++;
-						else {
-							searchView.setText("已为你找到" + comicIntros.size() +
-									"部相关漫画");
-						}
 						mSearchAdapter.notifyDataSetChanged();
 					}
+					if(search)
+						searchView.setText("已为你找到" + comicIntros.size() +
+								"部相关漫画");
 				}
 				isLoading = false;
 				if(dialog.isShowing())
@@ -163,6 +162,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 				if(!Util.isNetWorkConnect(getApplicationContext()))
 					Toast.makeText(SearchResultActivity.this,"网络未连接",
 							Toast.LENGTH_SHORT).show();
+				Log.d("Failure", arg3.toString());
 				isLoading = false;
 				if(dialog.isShowing())
 					dialog.dismiss();
