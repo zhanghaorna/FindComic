@@ -1,11 +1,18 @@
 package com.zhr.util;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.zhr.setting.AppSetting;
 
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.util.LruCache;
@@ -24,6 +31,25 @@ public class BitmapLoader
 	public static final String LOG_TAG = "BitmapLoader";
 	private ExecutorService threadPool;
 	private Handler handler;
+	//缓存正在加载ImageView，有ImageView正在加载,解决AbsView中getView循环利用View时，ImageView显示
+	//图片频繁跳动问题。显示图片时，检查HashMap中View对应的URL地址是否是自己的，如不是，则不加载图片。
+	private final Map<Integer, String> cacheKeyForImage = Collections.synchronizedMap(
+			new HashMap<Integer,String>());
+	
+	public void prepareDisplayTask(ImageView imageView,String path)
+	{
+		cacheKeyForImage.put(imageView.hashCode(), path);
+	}
+	
+	public String getLoadingUriFromView(ImageView imageView)
+	{
+		return cacheKeyForImage.get(imageView.hashCode());
+	}
+	
+	public void cancelDisplayTask(ImageView imageView)
+	{
+		cacheKeyForImage.remove(imageView.hashCode());
+	}
 	
 	public static BitmapLoader getInstance()
 	{
@@ -36,7 +62,7 @@ public class BitmapLoader
 		}
 		return instance;
 	}
-	
+		
 	private BitmapLoader()
 	{
 		if(Thread.currentThread() != Looper.getMainLooper().getThread())
@@ -83,12 +109,22 @@ public class BitmapLoader
 					Log.d("Comic", "isRecycle");
 				Log.d("Comic", "cache task");
 				task = new LoadAndDisplayTask(imageView, bitmap, handler);
-			}
-
-			
+			}			
 		}
+		
 		if(task == null)
+		{
+			if(getLoadingUriFromView(imageView) != null&&
+					getLoadingUriFromView(imageView) == path)
+			{				
+				return;
+			}
+			else {
+				prepareDisplayTask(imageView, path);
+			}
 			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,thumbnail != true,cacheToDisk);
+		}
+			
 		if(!asyn)
 		{
 			task.run();

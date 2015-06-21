@@ -28,8 +28,8 @@ public class SearchComicFragment extends Fragment implements OnClickListener,OnI
 	private TextView searchView;
 	private GridView mGridView;
 	
-	private String URL = "http://m.99mh.com/lists/";
-	private String SearchURL = "http://m.99mh.com/comicsearch/s.aspx?s=";
+	private String URL = "http://3gmanhua.com//lists/";
+	private String SearchURL = "http://3gmanhua.com/comicsearch/s.aspx?s=";
 	
 	private String[] category;
 	private int[] category_id = new int[]{R.drawable.mengxi,R.drawable.gaoxiao
@@ -51,6 +51,7 @@ public class SearchComicFragment extends Fragment implements OnClickListener,OnI
 		super.onActivityCreated(savedInstanceState);
 		initData();
 		editTextWithDel = (EditTextWithDel)getView().findViewById(R.id.edit_text);
+//		editTextWithDel.setText("浮恋");
 		searchView = (TextView)getView().findViewById(R.id.search_text);
 		searchView.setOnClickListener(this);
 		

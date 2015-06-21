@@ -13,7 +13,6 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.controller.UMServiceFactory;
 import com.umeng.socialize.controller.UMSocialService;
-import com.umeng.socialize.controller.c;
 import com.umeng.socialize.media.UMImage;
 import com.umeng.socialize.sso.SinaSsoHandler;
 import com.zhr.customview.ComicPageView;
@@ -27,7 +26,6 @@ import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
 
-import android.R.integer;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -266,15 +264,15 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private void queryImageUrlFromInternet(String url)
 	{
 		AsyncHttpClient client = new AsyncHttpClient();
+		Log.d("Comic", "query url" + url);
 		client.get(url, new AsyncHttpResponseHandler() {
 
 			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
 				if(arg0 == 200)
 				{
-					Document document = Jsoup.parse(new String(arg2));
-					
-					String text = document.select("head > script:nth-child(10)").html();
-					if(text.indexOf(";") != -1)
+					Document document = Jsoup.parse(new String(arg2));					
+					String text = document.data();
+					if(!text.equals("")&&text.indexOf(";") != -1)
 					{						
 						String position = text.split(";")[1];
 						text = text.split(";")[0];

@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.umeng.socialize.net.f;
+import com.zhr.customview.WaitProgressBar;
 import com.zhr.findcomic.R;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.Constants;
@@ -29,6 +30,8 @@ import com.zhr.util.Constants;
 public class NewsWebviewActivity extends BaseActivity{
 	
 	private WebView mWebView;
+	private WaitProgressBar progressBar;
+	
 	private String URL = "";
 	private AsyncHttpClient client;
 	
@@ -51,10 +54,9 @@ public class NewsWebviewActivity extends BaseActivity{
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				view.loadUrl(url);
 				return true;
-			}
-			
-			
+			}	
 		});
+		progressBar = (WaitProgressBar) findViewById(R.id.progressBar);
 //		mWebView.getSettings().setJavaScriptEnabled(true);
 //		mWebView.loadUrl(URL);
 	}

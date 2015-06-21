@@ -3,6 +3,8 @@
     android:layout_width="80dp"
     android:layout_height="wrap_content"
     android:gravity="center"
+    android:singleLine="true"
+    android:ellipsize="end"
     android:padding="10dp"
     android:paddingLeft="20dp"
     android:paddingRight="20dp"

@@ -15,12 +15,11 @@ public class Constants {
 	public static String DM123 = "dm123";
 	public static String MSITE = "Msite";
 	
-	public static String[] URL_PERFIX = new String[]{"http://d1.99mh.com:9393/dm01/",
-		"http://d1.99mh.com:9393/dm02/","http://d1.99mh.com:9393/dm03/","http://d1.99mh.com:9393/dm04/",
-		"http://d1.99mh.com:9393/dm05/","http://d1.99mh.com:9393/dm06/","http://d1.99mh.com:9393/dm07/",
-		"http://d1.99mh.com:9393/dm08/","http://d1.99mh.com:9393/dm09/","http://d1.99mh.com:9393/dm10/",
-		"http://d1.99mh.com:9393/dm11/","http://d1.99mh.com:9393/dm12/","http://d1.99mh.com:9393/dm13/",
-		"http://d1.99mh.com:9393/dm14/","http://d1.99mh.com:9393/dm15/","http://d1.99mh.com:9393/dm16/"};
+	public static String[] URL_PERFIX = new String("http://mhh.3348.net:9393/dm01/|http://mhh.3348.net:9393/dm02/|http://mhh.3348.net:9393/dm03/|"
+			+ "http://mhh.3348.net:9393/dm04/|http://mhh.3348.net:9393/dm05/|http://mhh.3348.net:9393/dm06/|http://mhh.3348.net:9393/dm07/|"
+			+ "http://mhh.3348.net:9393/dm08/|http://mhh.3348.net:9393/dm09/|http://mhh.3348.net:9393/dm10/|http://mhh.3348.net:9393/dm11/|"
+			+ "http://mhh.3348.net:9393/dm12/|http://mhh.3348.net:9393/dm13/|http://mhh.3348.net:9393/dm14/|http://mhh.3348.net:9393/dm15/|"
+			+ "http://mhh.3348.net:9393/dm16/").split("\\|");
 	
 	public static String BUGLY_ID = "900004158";
 	

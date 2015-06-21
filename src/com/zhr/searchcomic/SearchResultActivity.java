@@ -162,7 +162,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 				if(!Util.isNetWorkConnect(getApplicationContext()))
 					Toast.makeText(SearchResultActivity.this,"网络未连接",
 							Toast.LENGTH_SHORT).show();
-				Log.d("Failure", arg3.toString());
+				//Log.d("Failure", arg3.toString());
 				isLoading = false;
 				if(dialog.isShowing())
 					dialog.dismiss();

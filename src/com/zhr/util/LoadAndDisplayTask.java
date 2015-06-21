@@ -38,7 +38,7 @@ import android.widget.ImageView;
  */
 public class LoadAndDisplayTask implements Runnable{
 	private ImageView targetView;
-	private String imagePath;
+	private String imagePath = "";
 	private boolean thumbnail;
 	private boolean cacheToMemory;
 	private boolean cacheToDisk;
@@ -81,6 +81,8 @@ public class LoadAndDisplayTask implements Runnable{
 						
 						@Override
 						public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+							if(isViewReused())
+								return;
 							BitmapFactory.Options options = new BitmapFactory.Options();
 							options.inJustDecodeBounds = true;
 							bitmap = BitmapFactory.decodeByteArray(arg2, 0, arg2.length);
@@ -88,6 +90,8 @@ public class LoadAndDisplayTask implements Runnable{
 									100);
 							options.inJustDecodeBounds = false;
 							bitmap = BitmapFactory.decodeByteArray(arg2, 0, arg2.length);
+							if(isViewReused())
+								return;
 							loadImage();							
 						}
 						
@@ -142,6 +146,8 @@ public class LoadAndDisplayTask implements Runnable{
 	
 	private void loadImage()
 	{
+		if(isViewReused())
+			return;
 		if(bitmap != null&&!bitmap.isRecycled()&&targetView != null)
 		{
 			if(Thread.currentThread() != Looper.getMainLooper().getThread())
@@ -150,8 +156,10 @@ public class LoadAndDisplayTask implements Runnable{
 //						FrameLayout.LayoutParams params = (LayoutParams) targetView.getLayoutParams();
 //						params.height = (int) (params.width * bitmap.getHeight() / (float)bitmap.getWidth());
 //						targetView.setLayoutParams(params);
-						if(bitmap != null&&!bitmap.isRecycled())
+						if(bitmap != null&&!bitmap.isRecycled()&&!isViewReused())
+						{
 							targetView.setImageBitmap(bitmap);
+						}
 					}
 				});
 			else 
@@ -206,4 +214,19 @@ public class LoadAndDisplayTask implements Runnable{
 	    
 	    return inSampleSize;  
 	}
+
+	//检测ImageView是否被重用，如被重用则取消加载
+	private boolean isViewReused()
+	{
+		String currentPath = BitmapLoader.getInstance().getLoadingUriFromView(targetView);
+		//imagePath为""表示缓存任务,也返回false.
+		if(currentPath == null||currentPath.equals(imagePath)||imagePath.equals(""))
+			return false;
+		else 
+		{
+			return true;
+		}
+
+	}
+	
 }

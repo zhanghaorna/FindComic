@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import android.R.integer;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +66,8 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 		newsItems = (ArrayList<News>) DBNewsHelper.getInstance(getActivity()).queryNews(Constants.DMZJ);
 		if(newsItems == null)
 			newsItems = new ArrayList<News>();
-		mAdapter.notifyDataSetChanged();		
+		mAdapter.notifyDataSetChanged();	
+		
 	}
 	
 	@Override
@@ -199,6 +201,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
 		this.visibleItemCount = visibleItemCount;
+		
 		
 	}
 	
