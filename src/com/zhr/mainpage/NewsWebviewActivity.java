@@ -7,8 +7,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.R.integer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -48,15 +51,33 @@ public class NewsWebviewActivity extends BaseActivity{
 	
 	private void initView()
 	{
+		progressBar = (WaitProgressBar) findViewById(R.id.progressBar);
+		
 		mWebView = (WebView)findViewById(R.id.webview);	
 		mWebView.setWebViewClient(new WebViewClient(){
 			//新请求的网址也由本webview处理
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				view.loadUrl(url);
 				return true;
-			}	
+			}			
+			
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				// TODO Auto-generated method stub
+				progressBar.setVisibility(View.GONE);
+				mWebView.setVisibility(View.VISIBLE);
+			}
 		});
-		progressBar = (WaitProgressBar) findViewById(R.id.progressBar);
+		mWebView.setWebChromeClient(new WebChromeClient(){
+			@Override
+			public void onProgressChanged(WebView view, int newProgress) {
+				progressBar.setProgress(newProgress);
+			}
+			
+			
+		});
+		
+		
 //		mWebView.getSettings().setJavaScriptEnabled(true);
 //		mWebView.loadUrl(URL);
 	}
@@ -81,6 +102,7 @@ public class NewsWebviewActivity extends BaseActivity{
 		if(from.equals(Constants.MSITE))
 		{
 			mWebView.loadUrl(URL);
+			
 			return;
 		}
 		client = new AsyncHttpClient();
@@ -100,9 +122,16 @@ public class NewsWebviewActivity extends BaseActivity{
 					{
 						webPage = filterMSite(response);
 					}
+					progressBar.setProgress(100);
+					progressBar.setVisibility(View.GONE);
+					mWebView.setVisibility(View.VISIBLE);
 					mWebView.loadData(webPage, "text/html;charset=UTF-8", null);
-				}
-				
+				}				
+			}
+			
+			@Override
+			public void onProgress(long bytesWritten, long totalSize) {
+				progressBar.setProgress((int) (bytesWritten / totalSize));
 			}
 			
 			@Override
@@ -118,7 +147,6 @@ public class NewsWebviewActivity extends BaseActivity{
 		Elements elements = doc.select("div.wrap");
 		for(Element element:elements.get(0).children())
 		{
-			Log.d("Comic", element.className());
 			if(!element.className().equals("mainPage"))
 			{
 				element.remove();

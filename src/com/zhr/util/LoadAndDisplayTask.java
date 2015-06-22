@@ -57,9 +57,11 @@ public class LoadAndDisplayTask implements Runnable{
 		this.cacheToDisk = cacheToDisk;
 	}
 	
-	public LoadAndDisplayTask(ImageView targetView,Bitmap bitmap,Handler handler)
+	public LoadAndDisplayTask(ImageView targetView,String imagePath
+			,Bitmap bitmap,Handler handler)
 	{
 		this.targetView = targetView;
+		this.imagePath = imagePath;
 		this.bitmap = bitmap;
 		this.handler = handler;
 		this.cacheToMemory = true;

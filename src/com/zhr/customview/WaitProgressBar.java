@@ -10,9 +10,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetrics;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * @author zhr
@@ -40,6 +42,10 @@ public class WaitProgressBar extends View{
 	//目前的颜色索引
 	private int color_index;
 	private int pre_color_index;
+	//目前加载进度
+	private int rate = 0;
+	//字体属性
+	private FontMetrics fontMetrics;
 	
 	public WaitProgressBar(Context context) {
 		super(context);
@@ -53,10 +59,18 @@ public class WaitProgressBar extends View{
 	
 	private void initView()
 	{
+		ViewGroup.LayoutParams params = getLayoutParams();
+		if(params == null)
+		{
+			params = new ViewGroup.LayoutParams(100, 100);					
+		}
+		params.width = 100;
+		params.height = 100;
+		setLayoutParams(params);
+		
 		mPaint = new Paint();
 		mPaint.setColor(colors[0]);
 		mPaint.setStyle(Paint.Style.STROKE);
-		mPaint.setStrokeWidth(10);
 		num = (int) (360 / rotate_angle);
 		rotate_angle = rotate_angle * Math.PI / 180;
 		reDraw = false;
@@ -66,6 +80,8 @@ public class WaitProgressBar extends View{
 		current_draw = 0;
 		color_index = 1;
 		pre_color_index = 0;
+		
+		
 	}
 	
 	private void getCoordinate()
@@ -133,6 +149,7 @@ public class WaitProgressBar extends View{
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		getCoordinate();
+		mPaint.setStrokeWidth(2);
 		mPaint.setColor(colors[color_index]);
 		for(int i = 0;i <= current_draw;i++)
 		{
@@ -145,10 +162,19 @@ public class WaitProgressBar extends View{
 			canvas.drawLine(start[i].x, start[i].y, 
 					end[i].x, end[i].y, mPaint);
 		}
-
+		mPaint.setColor(Color.BLACK);
+		mPaint.setTextAlign(Paint.Align.CENTER);
+		mPaint.setStrokeWidth(1);
+		mPaint.setTextSize(35);	
+		fontMetrics = mPaint.getFontMetrics();
+		canvas.drawText(rate + "%", getWidth() / 2, getHeight() / 2
+				+ (fontMetrics.descent- fontMetrics.ascent) / 2 - fontMetrics.bottom, mPaint);		
+	}
 	
-					
-		
+	public void setProgress(int progress)
+	{
+		rate = progress;
+		invalidate();
 	}
 	
 	public void cancelTask()

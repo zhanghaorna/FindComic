@@ -108,7 +108,8 @@ public class BitmapLoader
 				if(bitmap.isRecycled())
 					Log.d("Comic", "isRecycle");
 				Log.d("Comic", "cache task");
-				task = new LoadAndDisplayTask(imageView, bitmap, handler);
+				prepareDisplayTask(imageView, path);
+				task = new LoadAndDisplayTask(imageView,path, bitmap, handler);
 			}			
 		}
 		
@@ -135,8 +136,7 @@ public class BitmapLoader
 		}
 	}
 	
-	
-	
+
 	protected ExecutorService getDefaultThreadPool()
 	{
 		return Executors.newCachedThreadPool();
