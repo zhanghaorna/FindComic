@@ -28,7 +28,7 @@ public class SearchComicFragment extends Fragment implements OnClickListener,OnI
 	private TextView searchView;
 	private GridView mGridView;
 	
-	private String URL = "http://3gmanhua.com//lists/";
+	private String URL = "http://3gmanhua.com/lists/";
 	private String SearchURL = "http://3gmanhua.com/comicsearch/s.aspx?s=";
 	
 	private String[] category;

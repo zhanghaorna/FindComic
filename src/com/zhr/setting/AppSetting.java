@@ -2,7 +2,6 @@ package com.zhr.setting;
 
 import com.zhr.findcomic.R;
 
-import android.R.integer;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -66,8 +65,10 @@ public class AppSetting {
 	
 	//下载文件路径
 	private String downloadFile;
-	//全局的缓存，主要用来存放Bitmap
+	//全局的缓存，主要用来存放Bitmap(新闻与简介的缓存)
 	private LruCache<String, Bitmap> cache;
+	//用来存放漫画页的缓存
+	private volatile LruCache<String, Bitmap> comicCache;
 	
 	
 	public synchronized static AppSetting getInstance(Context context)
@@ -94,6 +95,11 @@ public class AppSetting {
 	public LruCache<String, Bitmap> getCache()
 	{
 		return this.cache;
+	}
+	
+	public LruCache<String, Bitmap> getComicCache()
+	{
+		return this.comicCache;
 	}
 	
 	//此处不用commit,由于commit是同步，apply是异步
@@ -210,6 +216,20 @@ public class AppSetting {
 						{
 //							oldValue.recycle();
 						}
+					}
+				};
+				
+		comicCache = new LruCache<String, Bitmap>(maxMemory / 8)
+				{
+					@Override
+					protected int sizeOf(String key, Bitmap value) {
+						return value.getByteCount()/1024;
+					}
+					
+					@Override
+					protected void entryRemoved(boolean evicted, String key,
+							Bitmap oldValue, Bitmap newValue) {
+						
 					}
 				};
 	}

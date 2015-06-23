@@ -6,28 +6,19 @@ import java.io.FileOutputStream;
 
 import org.apache.http.Header;
 
-import com.loopj.android.http.AsyncHttpClient;
+
 import com.loopj.android.http.BinaryHttpResponseHandler;
-import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
-import com.zhr.comic.ComicReadActivity;
 import com.zhr.database.DBNewsHelper;
 import com.zhr.setting.AppSetting;
 
-import android.R.integer;
+
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Message;
-import android.support.v4.graphics.BitmapCompat;
-import android.support.v4.util.LruCache;
-import android.text.Layout;
 import android.util.Log;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
 /**

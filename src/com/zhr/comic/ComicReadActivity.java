@@ -366,10 +366,17 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		public void onBindViewHolder(PicViewHolder holder, int poistion) {
 			holder.imageView.setPageNum(poistion + 1);
 			if(!isScroll)
-				BitmapLoader.getInstance().loadImage(holder.imageView,
-						picPaths[poistion], true, false, false);
+			{
+//				BitmapLoader.getInstance().loadImage(holder.imageView,
+//						picPaths[poistion], true, false, false);
+				BitmapLoader.getInstance().loadComicImage(holder.imageView,
+						picPaths[poistion]);
+				preLoadComicPage(poistion);
+//				Log.d("Comic", "bindView run");
+			}
+						
 			viewPosition = poistion;
-			Log.d("Comic", "path:" + picPaths[poistion]);
+//			Log.d("Comic", "path:" + picPaths[poistion]);
 
 		}
 
@@ -540,15 +547,15 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() == 
 					AppSetting.VERTICAL_ORIENTATION)
 			{
-				textView.setText(AppSetting.screen_orientations[AppSetting.HORIZONTAL_ORIENTATION]);
+				textView.setText(AppSetting.screen_orientations[0]);
 				textView.setCompoundDrawablesWithIntrinsicBounds(null,
-						getResources().getDrawable(AppSetting.screen_orientations_src[AppSetting.HORIZONTAL_ORIENTATION]), null, null);
+						getResources().getDrawable(AppSetting.screen_orientations_src[0]), null, null);
 			}
 			else
 			{
-				textView.setText(AppSetting.screen_orientations[AppSetting.VERTICAL_ORIENTATION]);
+				textView.setText(AppSetting.screen_orientations[1]);
 				textView.setCompoundDrawablesWithIntrinsicBounds(null,
-						getResources().getDrawable(AppSetting.screen_orientations_src[AppSetting.VERTICAL_ORIENTATION]), null, null);
+						getResources().getDrawable(AppSetting.screen_orientations_src[1]), null, null);
 			}
 		}
 		//popupwindow设置翻页方向
@@ -640,9 +647,12 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				{
 					vHolder = (PictureAdapter.PicViewHolder) recyclerView.getChildViewHolder(
 							mLayoutManager.findViewByPosition(i));
-					BitmapLoader.getInstance().loadImage(vHolder.imageView,
-							picPaths[i], true, false, false);
+//					BitmapLoader.getInstance().loadImage(vHolder.imageView,
+//							picPaths[i], true, false, false);
+					BitmapLoader.getInstance().loadComicImage(vHolder.imageView, picPaths[i]);
 				}
+				Log.d("Comic", "scroll run");
+				preLoadComicPage(first);
 				isSeekbarTouch = false;
 				mPopWindowHolder.getSeekBar().setProgress(mLayoutManager.findFirstVisibleItemPosition());
 				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
@@ -655,6 +665,17 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				break;
 			default:
 				break;
+			}
+		}
+	}
+	//提前预加载5张图片(当前页，以及上下各两页)
+	private void preLoadComicPage(int position)
+	{
+		for(int i = position - 2;i <= position + 2;i++)
+		{
+			if(i >= 0&&i <= picPaths.length - 1)
+			{
+				BitmapLoader.getInstance().loadComicImage(null, picPaths[i]);
 			}
 		}
 	}

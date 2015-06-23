@@ -2,7 +2,10 @@ package com.zhr.util;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
@@ -15,6 +18,7 @@ import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore.Video;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.widget.ImageView;
@@ -35,6 +39,24 @@ public class BitmapLoader
 	//图片频繁跳动问题。显示图片时，检查HashMap中View对应的URL地址是否是自己的，如不是，则不加载图片。
 	private final Map<Integer, String> cacheKeyForImage = Collections.synchronizedMap(
 			new HashMap<Integer,String>());
+	//漫画页下载页面的缓存
+	private final Set<String> comicPageCache = Collections.synchronizedSet(
+			new HashSet<String>());
+	
+	public void addImageTask(String path)
+	{
+		comicPageCache.add(path);
+	}
+	
+	public boolean hashImageTask(String path)
+	{
+		return comicPageCache.contains(path);
+	}
+	
+	public void removeImageTask(String path)
+	{
+		comicPageCache.remove(path);
+	}
 	
 	public void prepareDisplayTask(ImageView imageView,String path)
 	{
@@ -90,6 +112,60 @@ public class BitmapLoader
 							boolean asyn)
 	{
 		loadImage(imageView, path,asyn,false,true);
+	}
+	//加载漫画页，如imageView为null，则提前加载图片
+	public void loadComicImage(ImageView imageView,String path)
+	{
+		if(path == null||path.equals(""))
+			return;
+		ComicLoadTask task = null;
+
+		//提前加载图片，只是新开线程，将任务保存
+		if(imageView == null&&AppSetting.getInstance() != null)
+		{
+			LruCache<String, Bitmap> cache = AppSetting.getInstance().getComicCache();
+			if(cache == null||cache.get(path) == null||cache.get(path).isRecycled())
+			{
+				if(!hashImageTask(path))
+				{
+					 task = new ComicLoadTask(path);
+					 Log.d("Comic", "task: " + path);
+					 comicPageCache.add(path);
+				}
+			}
+		}
+		else 
+		{
+			Log.d("Comic", "load " + path);
+			LruCache<String, Bitmap> cache = AppSetting.getInstance().getComicCache();
+			if(cache.get(path) == null)
+			{				
+				Log.d("Comic", "null ");
+			}
+				
+			if(cache == null||cache.get(path) == null||cache.get(path).isRecycled())
+			{
+				Log.d("Comic", "not find");
+				task = new ComicLoadTask(imageView,path,handler,null);
+				comicPageCache.add(path);
+			}
+			else
+			{
+				Log.d("Comic", "find");
+				String cur_path = (String) imageView.getTag();
+				if(cur_path == null||!cur_path.equals(path))
+				{
+					task = new ComicLoadTask(imageView,path,handler,cache.get(path));
+					Log.d("Comic", "cache page");
+				}
+			}
+		}
+		if(task != null)
+		{
+			threadPool.submit(task);
+			
+		}
+			
 	}
 	
 	public void loadImage(ImageView imageView,String path,
