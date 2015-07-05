@@ -33,12 +33,14 @@ public class LoadAndDisplayTask implements Runnable{
 	private boolean thumbnail;
 	private boolean cacheToMemory;
 	private boolean cacheToDisk;
+	private boolean isComicPage;
 	private Handler handler;
 	
 	private Bitmap bitmap = null;
 	
 	public LoadAndDisplayTask(ImageView targetView,String imagePath
-			,boolean thumbnail,Handler handler,boolean cacheToMemory,boolean cacheToDisk)
+			,boolean thumbnail,Handler handler,boolean cacheToMemory,boolean cacheToDisk
+			,boolean isComicPage)
 	{
 		this.targetView = targetView;
 		this.imagePath = imagePath;
@@ -46,15 +48,17 @@ public class LoadAndDisplayTask implements Runnable{
 		this.cacheToMemory = cacheToMemory;		
 		this.handler = handler;
 		this.cacheToDisk = cacheToDisk;
+		this.isComicPage = isComicPage;
 	}
 	
 	public LoadAndDisplayTask(ImageView targetView,String imagePath
-			,Bitmap bitmap,Handler handler)
+			,Bitmap bitmap,Handler handler,boolean isComicPage)
 	{
 		this.targetView = targetView;
 		this.imagePath = imagePath;
 		this.bitmap = bitmap;
 		this.handler = handler;
+		this.isComicPage = isComicPage;
 		this.cacheToMemory = true;
 	}
 	
@@ -121,8 +125,6 @@ public class LoadAndDisplayTask implements Runnable{
 					}
 					loadImage();
 				}
-				if(cacheToMemory&&AppSetting.getInstance() != null)
-					AppSetting.getInstance().getCache().put(imagePath, bitmap);
 			}
 			//有缓存就直接加载
 			else
@@ -139,6 +141,14 @@ public class LoadAndDisplayTask implements Runnable{
 	
 	private void loadImage()
 	{
+		if(!isComicPage&&cacheToMemory&&AppSetting.getInstance() != null)
+			AppSetting.getInstance().getCache().put(imagePath, bitmap);
+		else if(isComicPage&&AppSetting.getInstance() != null)
+		{
+			Log.d("Comic", "cache comic page");
+//			AppSetting.getInstance().getComicCache().put(imagePath, bitmap);
+		}
+
 		if(isViewReused())
 			return;
 		if(bitmap != null&&!bitmap.isRecycled()&&targetView != null)

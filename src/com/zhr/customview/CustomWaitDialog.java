@@ -28,7 +28,7 @@ public class CustomWaitDialog extends AlertDialog{
 		
 		LayoutInflater inflater = getLayoutInflater();
 		View layout = inflater.inflate(R.layout.custom_wait_dialog, null);
-		
+		waitTextView = (TextView) layout.findViewById(R.id.wait_text);
 		dialog = builder.setView(layout).create();
 		setCancelable(false);
 	}
@@ -40,11 +40,15 @@ public class CustomWaitDialog extends AlertDialog{
 	
 	public void show()
 	{
+		if(dialog.isShowing())
+			return;
 		dialog.show();
 	}
 	
 	public void dismiss()
 	{
+		if(!dialog.isShowing())
+			return;
 		dialog.dismiss();
 	}
 	

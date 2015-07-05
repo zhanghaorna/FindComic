@@ -132,7 +132,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		authorView.setText(author);
 		titleView.setText(title);
 		if(imageUrl != null)
-			BitmapLoader.getInstance().loadImage(coverView, imageUrl, true, false, false);
+			BitmapLoader.getInstance().loadImage(coverView, imageUrl, true, false, false,false);
 		readButton.setText("开始阅读");
 		
 		client = new AsyncHttpClient();

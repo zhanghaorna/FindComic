@@ -25,4 +25,6 @@ public class Constants {
 	
 	public static String FILENAME = Environment.getExternalStorageDirectory() + File.separator + "findComic";
 	public static String DISKCACHE_FILENAME = FILENAME + File.separator + "diskCache";
+	
+	public static final int IMAGE_LOADED = 101;
 }

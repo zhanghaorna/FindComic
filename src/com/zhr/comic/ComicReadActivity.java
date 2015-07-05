@@ -25,7 +25,9 @@ import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
+import com.zhr.util.WeakActivityHandler;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -37,6 +39,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -114,6 +117,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	//剩余电量
 	private int battery;
 	
+	public static ComicLoadHandler handler;
+	
 	//开源服务
 	//友盟分享
 	private UMSocialService mController;
@@ -138,6 +143,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		setContentView(R.layout.activity_comic_read);
 		if(!changeScreenOrientation)
 		{
+			Log.d("Comic", "init");
 			preData();
 			initView();
 			initData();
@@ -146,6 +152,13 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 	private void preData()
 	{
+		loadingLayout = (LinearLayout)findViewById(R.id.loading_layout);
+		loadingImageView = (ImageView)findViewById(R.id.loading_image);
+		timer = new Timer();
+		//每100ms更新一次图片
+		timer.schedule(new ImageLoadingTask(), 0,100);
+	
+		
 		Intent intent = getIntent();
 
 		picPaths = intent.getStringArrayExtra("picPaths");
@@ -155,19 +168,13 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		if(picPaths == null||picPaths.length == 0)
 			picPaths = new String[]{""};
 		filePosition = intent.getIntExtra("position", 0);
-		if(intent.getStringExtra("comicUrl") != null)
-		{
-			fromInternet = true;
-			queryImageUrlFromInternet(intent.getStringExtra("comicUrl"));
-		}
+
 		
 		viewPosition = filePosition;
 		
 		lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
 		
-		timer = new Timer();
-		//每200ms更新一次图片
-		timer.schedule(new ImageLoadingTask(), 200,200);
+
 		
 		mAdapter = new PictureAdapter();
 		if(AppSetting.getInstance(getApplicationContext()).getPage_turn_orientation() == 
@@ -185,14 +192,20 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 
 		
 		mPopWindowHolder = new PopWindowHolder();
+		handler = new ComicLoadHandler(this);
+		
+		if(intent.getStringExtra("comicUrl") != null)
+		{
+			fromInternet = true;
+			queryImageUrlFromInternet(intent.getStringExtra("comicUrl"));
+		}
 	}
 	
 	private void initView()
 	{
 
 		rootView = (FrameLayout)findViewById(R.id.root);
-		loadingLayout = (LinearLayout)findViewById(R.id.loading_layout);
-		loadingImageView = (ImageView)findViewById(R.id.loading_image);
+
 		
 		mRecyclerView = (RecyclerView)findViewById(R.id.recyclerView);
 		mRecyclerView.setLayoutManager(mLayoutManager);
@@ -211,6 +224,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 	private void initData()
 	{
+		
+		
 		mController = UMServiceFactory.getUMSocialService("com.umeng.share");
 		//配置友盟分享相关设置
 		mController.getConfig().setSsoHandler(new SinaSsoHandler());
@@ -264,7 +279,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private void queryImageUrlFromInternet(String url)
 	{
 		AsyncHttpClient client = new AsyncHttpClient();
-		Log.d("Comic", "query url" + url);
+//		Log.d("Comic", "query url" + url);
 		client.get(url, new AsyncHttpResponseHandler() {
 
 			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
@@ -283,13 +298,15 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					text = text.replace("var", "").replace("sFiles=", "").replace("\"", "")
 							.replace(" ", "");
 					getImageUrl(text);
-					mAdapter.notifyDataSetChanged();
-					loadingLayout.setVisibility(View.GONE);
-					mRecyclerView.setVisibility(View.VISIBLE);
-					mPopWindowHolder.refreshStatus();
-					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 				}
+				Log.d("Comic", "disappear");
 				timer.cancel();
+
+				mAdapter.notifyDataSetChanged();
+				mPopWindowHolder.refreshStatus();
+				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+				loadingLayout.setVisibility(View.GONE);
+				mRecyclerView.setVisibility(View.VISIBLE);
 			}
 			
 			public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
@@ -337,10 +354,10 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 								.getDrawable(loadingImage_id[index]));						
 					}
 				});
+				index++;
+				if(index > 20)
+					index = 1;
 			}
-			index++;
-			if(index > 20)
-				index = 1;
 		}		
 	}
 	
@@ -365,16 +382,15 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 
 		public void onBindViewHolder(PicViewHolder holder, int poistion) {
 			holder.imageView.setPageNum(poistion + 1);
-			if(!isScroll)
-			{
-//				BitmapLoader.getInstance().loadImage(holder.imageView,
-//						picPaths[poistion], true, false, false);
-				BitmapLoader.getInstance().loadComicImage(holder.imageView,
+//			if(!isScroll)
+			
+			
+//			BitmapLoader.getInstance().loadImage(holder.imageView,
+//						picPaths[poistion], true, false, false,true);
+			BitmapLoader.getInstance().loadComicImage(holder.imageView,
 						picPaths[poistion]);
-				preLoadComicPage(poistion);
-//				Log.d("Comic", "bindView run");
-			}
-						
+			preLoadComicPage(poistion);
+			Log.d("Comic", "load" + poistion);						
 			viewPosition = poistion;
 //			Log.d("Comic", "path:" + picPaths[poistion]);
 
@@ -386,8 +402,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					inflate(R.layout.comic_read_recycleview_item, parent,false));
 			return holder;
 		}
-	}
-	
+	}	
 	
 	//将所有popupwindow写在一起，方便管理
 	private class PopWindowHolder implements OnDismissListener
@@ -638,24 +653,24 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			//当滚动结束时则加载当前页图片以及当前页上一页图片
 			//recyclerView中的子view要通过它的LayoutManager寻找到，然后在调用自身的getChildViewHolder
 			//找到自己的viewHolder
+			
 			case OnScrollListener.SCROLL_STATE_IDLE:
 				isScroll = false;
-				int first = mLayoutManager.findFirstVisibleItemPosition();
-				int last = mLayoutManager.findLastVisibleItemPosition();
-				PictureAdapter.PicViewHolder vHolder = null;
-				for(int i = first;i <= last;i++)
-				{
-					vHolder = (PictureAdapter.PicViewHolder) recyclerView.getChildViewHolder(
-							mLayoutManager.findViewByPosition(i));
-//					BitmapLoader.getInstance().loadImage(vHolder.imageView,
-//							picPaths[i], true, false, false);
-					BitmapLoader.getInstance().loadComicImage(vHolder.imageView, picPaths[i]);
-				}
-				Log.d("Comic", "scroll run");
-				preLoadComicPage(first);
-				isSeekbarTouch = false;
-				mPopWindowHolder.getSeekBar().setProgress(mLayoutManager.findFirstVisibleItemPosition());
-				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+				//由于滚动时显示的页面不多，取消滚动时显示，由于每次暂停时加载，会严重影响性能，导致加载过慢
+//				int first = mLayoutManager.findFirstVisibleItemPosition();
+//				int last = mLayoutManager.findLastVisibleItemPosition();
+//				PictureAdapter.PicViewHolder vHolder = null;
+//				for(int i = first;i <= last;i++)
+//				{
+//					vHolder = (PictureAdapter.PicViewHolder) recyclerView.getChildViewHolder(
+//							mLayoutManager.findViewByPosition(i));
+////					BitmapLoader.getInstance().loadImage(vHolder.imageView,
+////							picPaths[i], true, false, false);
+//					BitmapLoader.getInstance().loadComicImage(vHolder.imageView, picPaths[i]);
+//				}
+//				Log.d("Comic", "scroll run");
+//				preLoadComicPage(first);
+
 				break;
 			case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
 				isScroll = true;
@@ -666,14 +681,17 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			default:
 				break;
 			}
+			isSeekbarTouch = false;
+			mPopWindowHolder.getSeekBar().setProgress(mLayoutManager.findFirstVisibleItemPosition());
+			readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 		}
 	}
 	//提前预加载5张图片(当前页，以及上下各两页)
 	private void preLoadComicPage(int position)
 	{
-		for(int i = position - 2;i <= position + 2;i++)
+		for(int i = position - 1;i <= position + 1;i++)
 		{
-			if(i >= 0&&i <= picPaths.length - 1)
+			if(i >= 0&&i <= picPaths.length - 1&&i != position)
 			{
 				BitmapLoader.getInstance().loadComicImage(null, picPaths[i]);
 			}
@@ -754,6 +772,19 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	            outRect.set(0, 0, mDivider.getIntrinsicWidth(), 0);
 	        }
 	    }
+	}
+	
+	public static class ComicLoadHandler extends WeakActivityHandler<Activity>
+	{
+
+		public ComicLoadHandler(Activity activty) {
+			super(activty);
+		}
+		
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);	
+		}		
 	}
 	
 	//电量改变监听器，获取手机电量

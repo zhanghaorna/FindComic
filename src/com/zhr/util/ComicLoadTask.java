@@ -1,13 +1,17 @@
 package com.zhr.util;
 
+import java.lang.ref.WeakReference;
+
 import org.apache.http.Header;
 
 import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
+import com.zhr.comic.ComicReadActivity;
 import com.zhr.setting.AppSetting;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
@@ -19,14 +23,14 @@ import android.widget.ImageView;
  * @description
  */
 public class ComicLoadTask implements Runnable{
-	private ImageView targetView;
+	private final WeakReference<ImageView> targetView;
 	private String imagePath = "";
 	private Handler handler;
 	private Bitmap bitmap = null;
 	
 	public ComicLoadTask(ImageView imageView,String url,Handler handler,Bitmap bitmap)
 	{
-		targetView = imageView;
+		targetView = new WeakReference<ImageView>(imageView);
 		imagePath = url;
 		this.handler = handler;
 		this.bitmap = bitmap;
@@ -48,7 +52,9 @@ public class ComicLoadTask implements Runnable{
 				if(AppSetting.getInstance() != null)
 				{
 					bitmap = AppSetting.getInstance().getComicCache().get(imagePath);
-				}				
+				}
+				if(isViewReused())
+					return;
 				if((bitmap == null||bitmap.isRecycled())&&
 						imagePath.startsWith("http://"))
 				{	
@@ -60,28 +66,18 @@ public class ComicLoadTask implements Runnable{
 					client.get(imagePath, new BinaryHttpResponseHandler() {						
 						@Override
 						public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-							
+							if(isViewReused())
+								return;
 							bitmap = BitmapFactory.decodeByteArray(arg2, 0, arg2.length);
 							if(handler != null)
 								loadImage();								
 							BitmapLoader.getInstance().removeImageTask(imagePath);
 							
 							if(AppSetting.getInstance() != null&&bitmap != null)
-							{								
-								if(targetView != null)
-								{
-									Log.d("Comic", "add cache " + imagePath);
-									AppSetting.getInstance().getComicCache().put(imagePath, bitmap);	
-								}
-								else {
-									if(AppSetting.getInstance().getComicCache().get(imagePath) == null
-											||AppSetting.getInstance().getComicCache().get(imagePath).isRecycled())
-									{
-										AppSetting.getInstance().getComicCache().put(imagePath, bitmap);	
-									}
-								}	
-							}
-							
+							{			
+								Log.d("Comic", "add cache" + imagePath);
+								AppSetting.getInstance().getComicCache().put(imagePath, bitmap);	
+							}							
 						}
 						
 						@Override
@@ -94,24 +90,53 @@ public class ComicLoadTask implements Runnable{
 			else
 				loadImage();
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 		}		
 	}
 	
 	private void loadImage()
 	{
+		if(isViewReused())
+			return;
 		if(bitmap != null&&!bitmap.isRecycled()&&targetView != null)
 		{
 			handler.post(new Runnable() {
 				public void run() {
-					if(bitmap != null&&!bitmap.isRecycled())
+					if(bitmap != null&&!bitmap.isRecycled()&&!isViewReused())
 					{
-						targetView.setTag(imagePath);
-						targetView.setImageBitmap(bitmap);
+//						targetView.setTag(imagePath);
+//						Log.d("Comic", "show");
+						ImageView imageView = targetView.get();
+						if(imageView != null)
+							imageView.setImageBitmap(bitmap);
+						
+//						targetView.setImageDrawable(new BitmapDrawable(
+//								targetView.getContext().getResources(), bitmap));
+						
 					}					
 				}
 			});
+
 		}
+	}
+	
+	//检测ImageView是否被重用，如被重用则取消加载
+	private boolean isViewReused()
+	{
+		if(targetView == null)
+			return false;
+		ImageView imageView = targetView.get();
+		if(imageView == null)
+			return false;
+		String currentPath = BitmapLoader.getInstance().getLoadingUriFromView(imageView);
+		//imagePath为""表示缓存任务,也返回false.
+		if(currentPath == null||currentPath.equals(imagePath))
+			return false;
+		else 
+		{
+			return true;
+		}
+
 	}
 
 }

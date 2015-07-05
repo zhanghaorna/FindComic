@@ -100,7 +100,7 @@ public class BitmapLoader
 	
 	public void loadImageNoCache(ImageView imageView,String path,boolean thumbnail)
 	{
-		loadImage(imageView, path,false,thumbnail,false);
+		loadImage(imageView, path,false,thumbnail,false,false);
 	}
 	
 	public void loadImage(ImageView imageView,String path)
@@ -111,7 +111,7 @@ public class BitmapLoader
 	public void loadImage(ImageView imageView,String path,
 							boolean asyn)
 	{
-		loadImage(imageView, path,asyn,false,true);
+		loadImage(imageView, path,asyn,false,true,false);
 	}
 	//加载漫画页，如imageView为null，则提前加载图片
 	public void loadComicImage(ImageView imageView,String path)
@@ -119,73 +119,80 @@ public class BitmapLoader
 		if(path == null||path.equals(""))
 			return;
 		ComicLoadTask task = null;
-
+		LruCache<String, Bitmap> cache = AppSetting.getInstance().getComicCache();
 		//提前加载图片，只是新开线程，将任务保存
 		if(imageView == null&&AppSetting.getInstance() != null)
 		{
-			LruCache<String, Bitmap> cache = AppSetting.getInstance().getComicCache();
 			if(cache == null||cache.get(path) == null||cache.get(path).isRecycled())
 			{
 				if(!hashImageTask(path))
 				{
+					 Log.d("Comic", "add task" + path);
 					 task = new ComicLoadTask(path);
-					 Log.d("Comic", "task: " + path);
 					 comicPageCache.add(path);
 				}
 			}
 		}
-		else 
-		{
-			Log.d("Comic", "load " + path);
-			LruCache<String, Bitmap> cache = AppSetting.getInstance().getComicCache();
-			if(cache.get(path) == null)
+		else //加载图片，有缓存就直接加载，没有就想网页url请求加载
+		{	
+			if(getLoadingUriFromView(imageView) != null&&
+					getLoadingUriFromView(imageView) == path)
 			{				
-				Log.d("Comic", "null ");
+				return;
 			}
-				
 			if(cache == null||cache.get(path) == null||cache.get(path).isRecycled())
 			{
-				Log.d("Comic", "not find");
+				Log.d("Comic", "download" + path);
+				prepareDisplayTask(imageView, path);
 				task = new ComicLoadTask(imageView,path,handler,null);
 				comicPageCache.add(path);
 			}
 			else
 			{
-				Log.d("Comic", "find");
-				String cur_path = (String) imageView.getTag();
-				if(cur_path == null||!cur_path.equals(path))
-				{
+//				String cur_path = (String) imageView.getTag();
+//				Log.d("Comic", "tag" + cur_path);
+//				if(cur_path == null||!cur_path.equals(path))
+//				{
+					prepareDisplayTask(imageView, path);
 					task = new ComicLoadTask(imageView,path,handler,cache.get(path));
-					Log.d("Comic", "cache page");
-				}
+//					Log.d("Comic", "cache page");
+					
+//				}
 			}
 		}
 		if(task != null)
 		{
-			threadPool.submit(task);
-			
+			threadPool.submit(task);			
 		}
 			
 	}
 	
 	public void loadImage(ImageView imageView,String path,
-							boolean asyn,boolean thumbnail,boolean cacheToDisk)
+							boolean asyn,boolean thumbnail,boolean cacheToDisk
+							,boolean isComicPage)
 	{
+		if(path == null||path.equals(""))
+			return;
 		LoadAndDisplayTask task = null;
 		//获取内存是否有缓存,应该是全局的缓存
 		if(AppSetting.getInstance() != null)
 		{
-			LruCache<String, Bitmap> cache = AppSetting.getInstance().getCache();
+			LruCache<String, Bitmap> cache = null;
+			if(isComicPage)
+			{
+				 cache = AppSetting.getInstance().getComicCache();
+			}
+			else {
+				cache = AppSetting.getInstance().getCache();
+			}
 			Bitmap bitmap = null;
 			if(cache != null)
 				bitmap = cache.get(path);
 			if(bitmap != null&&!bitmap.isRecycled())
 			{
-				if(bitmap.isRecycled())
-					Log.d("Comic", "isRecycle");
 				Log.d("Comic", "cache task");
 				prepareDisplayTask(imageView, path);
-				task = new LoadAndDisplayTask(imageView,path, bitmap, handler);
+				task = new LoadAndDisplayTask(imageView,path, bitmap, handler,isComicPage);
 			}			
 		}
 		
@@ -199,7 +206,8 @@ public class BitmapLoader
 			else {
 				prepareDisplayTask(imageView, path);
 			}
-			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,thumbnail != true,cacheToDisk);
+			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,thumbnail != true,cacheToDisk
+					,isComicPage);
 		}
 			
 		if(!asyn)
@@ -212,7 +220,7 @@ public class BitmapLoader
 		}
 	}
 	
-
+	
 	protected ExecutorService getDefaultThreadPool()
 	{
 		return Executors.newCachedThreadPool();

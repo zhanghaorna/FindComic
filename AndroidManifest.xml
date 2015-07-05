@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zhr.findcomic"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0.0" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -88,7 +88,8 @@
             android:name="com.zhr.comic.ComicIntroActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Light.NoTitleBar"
-            ></activity>            
+            ></activity>          
+        <service android:name="com.zhr.download.UpdateService"></service>  
         <meta-data
             android:name="UMENG_APPKEY"
             android:value="5555d4cd67e58e3e2e0051ce" >

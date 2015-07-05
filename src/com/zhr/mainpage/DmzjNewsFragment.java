@@ -135,6 +135,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 						{
 							newsItems.add(currentItemSize,item);
 						}
+						
 						DBNewsHelper.getInstance(getActivity()).saveNews(item);
 					}
 					handler.post(new Runnable() {
@@ -181,7 +182,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 			{
 				View convertView = view.getChildAt(i);
 				BitmapLoader.getInstance().loadImage(((NewsAdapter.ViewHolder)convertView.getTag()).image, 
-						newsItems.get(first + i).getImagePath(),true, false, true);				
+						newsItems.get(first + i).getImagePath(),true, false, true,false);				
 			}
 			mAdapter.notifyDataSetChanged();
 			break;
@@ -249,7 +250,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 			holder.image.setImageDrawable(getResources().getDrawable(R.drawable.holder_loading));
 			if(!isScroll)
 				BitmapLoader.getInstance().loadImage(holder.image, newsItems.get(position).getImagePath(),
-					true, false, true);
+					true, false, true,false);
 			return convertView;
 		}
 		

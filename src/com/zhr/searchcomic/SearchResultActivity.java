@@ -309,7 +309,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 			}
 
 			BitmapLoader.getInstance().loadImage(viewHolder.coverView,
-					comicIntros.get(position).getImageUrl()	, true, false, false);
+					comicIntros.get(position).getImageUrl()	, true, false, false,false);
 			
 			return convertView;
 		}
