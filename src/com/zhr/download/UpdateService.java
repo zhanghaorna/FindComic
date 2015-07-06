@@ -9,17 +9,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.zhr.findcomic.R;
-import com.zhr.findcomic.R.color;
 
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -40,16 +37,23 @@ public class UpdateService extends IntentService{
 	private HttpURLConnection connection;
 	
 	private final int notifyId = 1;
-	
+	//通知栏自定义view
 	private RemoteViews remoteViews;
+	//通知栏
 	private Notification updateNotification;
+
 	
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
 		nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//		showNotification();
+	}
+	
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
 	}
 	
 	private void showNotification()
@@ -57,6 +61,7 @@ public class UpdateService extends IntentService{
 		remoteViews = new RemoteViews(getPackageName(),
 				R.layout.update_service_download);
 		remoteViews.setTextViewText(R.id.text, "下载中");
+		//构造notification
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext())
 					.setContent(remoteViews)
 					.setSmallIcon(R.drawable.ic_launcher)
@@ -80,6 +85,7 @@ public class UpdateService extends IntentService{
 				url = new URL(intent.getStringExtra("apk_url"));
 				connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
+				//模拟浏览器，否则github下载很慢
 				connection.setRequestProperty("User-Agent", 
 						"Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
 				connection.connect();
@@ -100,7 +106,7 @@ public class UpdateService extends IntentService{
 					{
 						outputStream.write(buf, 0, index);
 						progress += index;
-						Log.d("Comic", "" + progress);						
+//						Log.d("Comic", "" + progress);						
 						if(progress / (float) max_progress > notify_pre)
 						{
 							notify_pre += 0.05;
@@ -115,7 +121,7 @@ public class UpdateService extends IntentService{
 				{
 					outputStream.flush();
 					outputStream.close();
-					update();
+					update();					
 					nManager.cancel(notifyId);
 				}
 			}

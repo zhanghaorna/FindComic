@@ -11,11 +11,12 @@
         android:id="@+id/icon"/>
     
     <TextView 
+        android:layout_marginTop="10dp"
+        android:textSize="15sp"
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
-        android:text="下载中"
         android:textColor="@color/blue"/>
 	
     <ProgressBar 
