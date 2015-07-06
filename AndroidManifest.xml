@@ -8,6 +8,7 @@
         android:minSdkVersion="14"
         android:targetSdkVersion="21" />
     
+    <uses-permission android:name="android.permission.RESTART_PACKAGES"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
@@ -90,6 +91,14 @@
             android:theme="@android:style/Theme.Light.NoTitleBar"
             ></activity>          
         <service android:name="com.zhr.download.UpdateService"></service>  
+        <receiver android:name="com.zhr.download.ComicInstallReceiver">
+            <intent-filter>    
+       			<action android:name="android.intent.action.PACKAGE_ADDED" />   
+       			<action android:name="android.intent.action.PACKAGE_REMOVED" />   
+       			<data android:scheme="package" />   
+     		</intent-filter>  
+        </receiver>
+        
         <meta-data
             android:name="UMENG_APPKEY"
             android:value="5555d4cd67e58e3e2e0051ce" >

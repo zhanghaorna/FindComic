@@ -71,6 +71,8 @@ public class UpdateService extends IntentService{
 		if(intent.getStringExtra("apk_url") != null)
 		{	
 			int max_progress = 0;
+			//notify太频繁导致通知栏卡顿，每过5%，发出一次更新通知
+			float notify_pre = 0.05f;
 			showNotification();
 			URL url;
 			try
@@ -79,7 +81,7 @@ public class UpdateService extends IntentService{
 				connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
 				connection.setRequestProperty("User-Agent", 
-						"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)");
+						"Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
 				connection.connect();
 				InputStream stream = connection.getInputStream();
 				max_progress = connection.getContentLength();
@@ -98,10 +100,15 @@ public class UpdateService extends IntentService{
 					{
 						outputStream.write(buf, 0, index);
 						progress += index;
-						Log.d("Comic", "" + progress);
-						remoteViews.setProgressBar(R.id.progress,max_progress, progress,false);
-						updateNotification.contentView = remoteViews;
-						nManager.notify(notifyId, updateNotification);
+						Log.d("Comic", "" + progress);						
+						if(progress / (float) max_progress > notify_pre)
+						{
+							notify_pre += 0.05;
+							remoteViews.setProgressBar(R.id.progress,max_progress, progress,false);
+							updateNotification.contentView = remoteViews;
+							nManager.notify(notifyId, updateNotification);
+						}
+
 					}
 				}
 				if(outputStream != null)
