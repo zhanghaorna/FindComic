@@ -67,5 +67,7 @@
 	    <item>日文</item>
 	</string-array>
 	
+	<string name="network_error">联网失败,请重试</string>
+	<string name="re_get">重新获取</string>
 	
 </resources>

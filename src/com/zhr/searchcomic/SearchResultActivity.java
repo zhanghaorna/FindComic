@@ -116,6 +116,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 	private void initData()
 	{		
 		client = new AsyncHttpClient();
+		client.setTimeout(2000);
 		comicIntros = new ArrayList<ComicIntro>();
 		mSearchAdapter = new SearchAdapter();
 		searchGridView.setAdapter(mSearchAdapter);

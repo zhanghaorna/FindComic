@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,8 +32,10 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.zhr.customview.GridViewInScrollView;
 import com.zhr.customview.NoAutoScrollView;
 import com.zhr.customview.TextViewWithExpand;
+import com.zhr.database.DBComicRecordHelper;
 import com.zhr.findcomic.R;
 import com.zhr.searchcomic.ComicChapter;
+import com.zhr.sqlitedao.ComicRecord;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Util;
@@ -46,24 +49,30 @@ import com.zhr.util.Util;
 public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				,OnItemClickListener
 {
+	
+	public static final int COMIC_INTRO = 101;
 	//顶部布局
 	private ImageView back;
 	private TextView downloadView;
 	//简介显示出来显示的进度条
 	private ProgressBar progressBar;
-	
+	//漫画相关简介view
 	private ImageView coverView;
 	private TextView authorView;
 	private TextView titleView;
 	private Button readButton;
 	private TextViewWithExpand introView;
 	private TextView lastUpdateView;
-	
+	//漫画阅读信息
+	private ComicRecord comicRecord;
+	//漫画简介
 	private String author;
 	private String title;
 	private String imageUrl;
 	private String intro;
 	private String introUrl;
+	//续看按钮的text，点击后,与所有进行比较，决定载入哪个url
+	private String continue_chapter = "";
 	
 	//显示详细话数的gridview
 	private GridViewInScrollView gridView;
@@ -93,6 +102,13 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		title = getIntent().getStringExtra("title");
 		if(title == null)
 			title = "";
+		//搜索数据库找阅读记录
+		if(!title.equals(""))
+		{
+			comicRecord = DBComicRecordHelper.getInstance(getBaseContext()).
+					getComicRecord(title);
+			
+		}
 		imageUrl = getIntent().getStringExtra("imageUrl");
 		introUrl = getIntent().getStringExtra("introUrl");
 		chapters = new ArrayList<ComicChapter>();
@@ -110,7 +126,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		authorView = (TextView)findViewById(R.id.author);
 
 		titleView = (TextView)findViewById(R.id.title);
-		readButton = (Button)findViewById(R.id.read_button  );
+		readButton = (Button)findViewById(R.id.read_button);
 		readButton.setOnClickListener(this);
 		
 		introView = (TextViewWithExpand)findViewById(R.id.intro);
@@ -134,6 +150,12 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		if(imageUrl != null)
 			BitmapLoader.getInstance().loadImage(coverView, imageUrl, true, false, false,false);
 		readButton.setText("开始阅读");
+		if(comicRecord != null)
+		{
+			continue_chapter = comicRecord.getChapter();
+			readButton.setText("续看 " + comicRecord.getChapter());
+			readButton.setBackgroundColor(getResources().getColor(R.color.green));
+		}
 		
 		client = new AsyncHttpClient();
 		client.get(introUrl, new AsyncHttpResponseHandler() {
@@ -187,10 +209,42 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		Intent intent = new Intent(this,ComicReadActivity.class);
-		intent.putExtra("comicName",title + " " + chapters.get(position).getTitle());
-		intent.putExtra("position", 0);
+		intent.putExtra("comicName",title + "###" + chapters.get(position).getTitle());
+		if(comicRecord != null&&
+				comicRecord.getChapter().equals(chapters.get(position).getTitle()))
+			intent.putExtra("position", comicRecord.getPage());
+		else
+			intent.putExtra("position", 0);
 		intent.putExtra("comicUrl", chapters.get(position).getUrl());
-		startActivity(intent);
+		startActivityForResult(intent, COMIC_INTRO);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == COMIC_INTRO)
+		{
+			if(resultCode == RESULT_OK)
+			{
+				
+				int read_position = data.getIntExtra("last_position",-1);
+				String chapter_name = data.getStringExtra("chapter_name");
+				Log.d("Comic", "record" + read_position + " " + chapter_name);
+				if(read_position != -1&&chapter_name != null)
+				{
+					if(comicRecord == null)
+						comicRecord = new ComicRecord();
+					comicRecord.setName(title);
+					comicRecord.setChapter(chapter_name);
+					comicRecord.setPage(read_position);
+					
+					DBComicRecordHelper.getInstance(getBaseContext()).saveRecord(comicRecord);
+					readButton.setText("续看 " + chapter_name);
+					chapterAdapter.notifyDataSetInvalidated();
+					continue_chapter = chapter_name;
+					readButton.setBackgroundColor(getResources().getColor(R.color.green));
+				}			
+			}
+		}
 	}
 
 	@Override
@@ -202,6 +256,32 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		case R.id.back:
 			finish();
 			overridePendingTransition(R.anim.slide_left_in, R.anim.slide_right_out);
+			break;
+		//点击开始阅读或续看按钮
+		case R.id.read_button:
+			int position = 0;
+			Log.d("Comic","chapter" + continue_chapter);
+			if(!continue_chapter.equals(""))
+			{
+				for(int i = 0;i < chapters.size();i++)
+				{
+					if(chapters.get(i).getTitle().equals(continue_chapter))
+					{
+						position = i;
+						break;
+					}
+				}
+			}
+			Log.d("Comic", "p" + position);
+			Intent intent = new Intent(this,ComicReadActivity.class);
+			intent.putExtra("comicName",title + "###" + chapters.get(position).getTitle());
+			if(comicRecord != null&&
+					comicRecord.getChapter().equals(chapters.get(position).getTitle()))
+				intent.putExtra("position", comicRecord.getPage());
+			else
+				intent.putExtra("position", 0);
+			intent.putExtra("comicUrl", chapters.get(position).getUrl());
+			startActivityForResult(intent, COMIC_INTRO);
 			break;
 		default:
 			break;
@@ -242,6 +322,14 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 			else {
 				textView = (TextView) convertView;
+			}
+			if(comicRecord != null&&chapters.get(position).getTitle().
+					equals(comicRecord.getChapter()))
+			{
+				textView.setBackgroundColor(getResources().getColor(R.color.red));
+			}
+			else {
+				textView.setBackgroundColor(getResources().getColor(R.color.white));
 			}
 			textView.setText(chapters.get(position).getTitle());			
 			return textView;

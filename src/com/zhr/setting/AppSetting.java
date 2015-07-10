@@ -81,9 +81,8 @@ public class AppSetting {
 	}
 	
 	public static AppSetting getInstance()
-	{
-		if(instance == null)
-			throw new IllegalStateException("You must call getInstance(Context context) before");
+	{			
+//			throw new IllegalStateException("You must call getInstance(Context context) before");
 		return instance;
 	}
 	

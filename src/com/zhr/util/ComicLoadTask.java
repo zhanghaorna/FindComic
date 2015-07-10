@@ -75,7 +75,7 @@ public class ComicLoadTask implements Runnable{
 							
 							if(AppSetting.getInstance() != null&&bitmap != null)
 							{			
-								Log.d("Comic", "add cache" + imagePath);
+//								Log.d("Comic", "add cache" + imagePath);
 								AppSetting.getInstance().getComicCache().put(imagePath, bitmap);	
 							}							
 						}
@@ -85,7 +85,26 @@ public class ComicLoadTask implements Runnable{
 							BitmapLoader.getInstance().removeImageTask(imagePath);
 						}
 					});
-				}			
+				}
+				else if((bitmap == null||bitmap.isRecycled())&&!imagePath.equals(""))
+				{
+					BitmapFactory.Options options = new BitmapFactory.Options();
+					options.inJustDecodeBounds = true;
+					bitmap = BitmapFactory.decodeFile(imagePath,options);
+					//Bitmap宽高都大于2000进行压缩
+					if(options.outHeight > 2000&&options.outWidth > 2000)
+						options.inSampleSize = calculateInSampleSize(options, 720, 
+								1280);
+					options.inJustDecodeBounds = false;
+					bitmap = BitmapFactory.decodeFile(imagePath,options);
+					
+					if(AppSetting.getInstance() != null&&bitmap != null)
+					{			
+//						Log.d("Comic", "add cache" + imagePath);
+						AppSetting.getInstance().getComicCache().put(imagePath, bitmap);	
+					}
+					loadImage();
+				}
 			}
 			else
 				loadImage();
@@ -137,6 +156,26 @@ public class ComicLoadTask implements Runnable{
 			return true;
 		}
 
+	}
+	
+	private int calculateInSampleSize(BitmapFactory.Options options,  
+	        int reqWidth, int reqHeight)
+	{
+	    // Raw height and width of image  
+	    final int height = options.outHeight;  
+	    final int width = options.outWidth;  
+	    int inSampleSize = 1;
+	    
+	    //先根据宽度进行缩小  
+	    while (width / inSampleSize > reqWidth) {  
+	        inSampleSize++;  
+	    }  
+	    //然后根据高度进行缩小  
+	    while (height / inSampleSize > reqHeight) {  
+	        inSampleSize++;  
+	    }  
+	    
+	    return inSampleSize;  
 	}
 
 }

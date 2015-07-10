@@ -119,7 +119,9 @@ public class BitmapLoader
 		if(path == null||path.equals(""))
 			return;
 		ComicLoadTask task = null;
-		LruCache<String, Bitmap> cache = AppSetting.getInstance().getComicCache();
+		LruCache<String, Bitmap> cache = null;
+		if(AppSetting.getInstance() != null)
+		 cache = AppSetting.getInstance().getComicCache();
 		//提前加载图片，只是新开线程，将任务保存
 		if(imageView == null&&AppSetting.getInstance() != null)
 		{
@@ -127,7 +129,6 @@ public class BitmapLoader
 			{
 				if(!hashImageTask(path))
 				{
-					 Log.d("Comic", "add task" + path);
 					 task = new ComicLoadTask(path);
 					 comicPageCache.add(path);
 				}
@@ -142,7 +143,7 @@ public class BitmapLoader
 			}
 			if(cache == null||cache.get(path) == null||cache.get(path).isRecycled())
 			{
-				Log.d("Comic", "download" + path);
+//				Log.d("Comic", "download" + path);
 				prepareDisplayTask(imageView, path);
 				task = new ComicLoadTask(imageView,path,handler,null);
 				comicPageCache.add(path);

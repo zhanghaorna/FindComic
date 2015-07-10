@@ -97,7 +97,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	//获取漫画网的前缀
 	private int url_prefix_position;
 	
-	//漫画名字
+	//漫画名字(实际为章节名字)
 	private String comicName;
 	//所有漫画图片的路径
 	private String[] picPaths;
@@ -140,9 +140,10 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		else {
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		}
-		setContentView(R.layout.activity_comic_read);
+		
 		if(!changeScreenOrientation)
 		{
+			setContentView(R.layout.activity_comic_read);
 			Log.d("Comic", "init");
 			preData();
 			initView();
@@ -212,9 +213,14 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		
 		mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
 				DividerItemDecoration.VERTICAL_LIST));
-		mRecyclerView.setAdapter(mAdapter);
+		
 		mRecyclerView.addOnScrollListener(new ComicScrollListener());
-		mLayoutManager.scrollToPosition(filePosition);
+		if(!fromInternet)
+		{
+			mRecyclerView.setAdapter(mAdapter);
+			mLayoutManager.scrollToPosition(filePosition);
+		}
+			
 		
 		readerHintView = new ReaderHintView(this,getResources().getConfiguration().orientation);
 		
@@ -299,14 +305,16 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 							.replace(" ", "");
 					getImageUrl(text);
 				}
-				Log.d("Comic", "disappear");
 				timer.cancel();
-
+				
 				mAdapter.notifyDataSetChanged();
 				mPopWindowHolder.refreshStatus();
+
 				readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+				mRecyclerView.setAdapter(mAdapter);
 				loadingLayout.setVisibility(View.GONE);
 				mRecyclerView.setVisibility(View.VISIBLE);
+				mLayoutManager.scrollToPosition(viewPosition);
 			}
 			
 			public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
@@ -908,7 +916,18 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	@Override
 	public void onBackPressed() {
 		Intent intent = new Intent();
-		intent.putExtra("last_read_path", picPaths[viewPosition]);
+		if(fromInternet)
+		{
+			if(comicName.split("###").length >= 2)
+				intent.putExtra("chapter_name", comicName.split("###")[1]);
+			//返回阅读位置
+			intent.putExtra("last_position", viewPosition);
+			Log.d("Comic", "last_position" + viewPosition);
+		}
+		else
+		{
+			intent.putExtra("last_read_path", picPaths[viewPosition]);
+		}
 		setResult(RESULT_OK,intent);	
 		super.onBackPressed();
 	}
