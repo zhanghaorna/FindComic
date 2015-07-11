@@ -11,6 +11,8 @@
         android:gravity="center"
         />
     <Button 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/re_get"
         android:text="@string/re_get"
         android:gravity="center"

@@ -48,6 +48,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:id="@+id/progressBar"/>
+        
+        <ViewStub 
+            android:id="@+id/network_error"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout="@layout/network_error"/>
 
         <com.zhr.customview.NoAutoScrollView
             android:id="@+id/scrollview"

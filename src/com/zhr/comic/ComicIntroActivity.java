@@ -12,12 +12,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Network;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -73,6 +75,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private String introUrl;
 	//续看按钮的text，点击后,与所有进行比较，决定载入哪个url
 	private String continue_chapter = "";
+	
+	private View networkErrorView;
 	
 	//显示详细话数的gridview
 	private GridViewInScrollView gridView;
@@ -158,6 +162,11 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		}
 		
 		client = new AsyncHttpClient();
+		loadComicIntro();
+	}
+	
+	private void loadComicIntro()
+	{
 		client.get(introUrl, new AsyncHttpResponseHandler() {
 			
 			@Override
@@ -176,6 +185,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				if(!Util.isNetWorkConnect(getApplicationContext()))
 					Toast.makeText(getBaseContext(), "网络连接未启用", Toast.LENGTH_SHORT).show();
 				progressBar.setVisibility(View.GONE);
+
 			}	
 		});
 	}
@@ -246,6 +256,19 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 		}
 	}
+	
+	private void showNetError()
+	{
+		if(networkErrorView != null)
+		{
+			networkErrorView.setVisibility(View.VISIBLE);
+			return;
+		}
+		ViewStub stub = (ViewStub) findViewById(R.id.network_error);
+		networkErrorView = stub.inflate();
+		Button re_get = (Button)networkErrorView.findViewById(R.id.re_get);
+		re_get.setOnClickListener(this);
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -283,6 +306,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			intent.putExtra("comicUrl", chapters.get(position).getUrl());
 			startActivityForResult(intent, COMIC_INTRO);
 			break;
+		case R.id.re_get:
+			
 		default:
 			break;
 		}
