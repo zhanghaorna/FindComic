@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewStub;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -21,6 +22,7 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,6 +72,8 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 	//顶部标题
 	private String title;
 	
+	private View networkErrorView;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -110,7 +114,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 		
 		
 		dialog = new CustomWaitDialog(this);
-		dialog.show();
+//		dialog.show();
 	}
 	
 	private void initData()
@@ -121,14 +125,6 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 		mSearchAdapter = new SearchAdapter();
 		searchGridView.setAdapter(mSearchAdapter);
 		isLoading = false;
-		loadFromInternet();
-	}
-	
-	private void loadFromInternet()
-	{
-		if(!dialog.isShowing())
-			dialog.show();
-		isLoading = true;
 		if(search)
 		{
 			read_url = url + title;
@@ -137,6 +133,14 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 		{
 			read_url = url + "/" + page;
 		}
+		loadFromInternet();
+	}
+	
+	private void loadFromInternet()
+	{
+		if(!dialog.isShowing())
+			dialog.show();
+		isLoading = true;
 		client.get(read_url, new AsyncHttpResponseHandler() {
 			
 			@Override
@@ -153,6 +157,8 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 						searchView.setText("已为你找到" + comicIntros.size() +
 								"部相关漫画");
 				}
+				else
+					showNetError();
 				isLoading = false;
 				if(dialog.isShowing())
 					dialog.dismiss();
@@ -167,6 +173,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 				isLoading = false;
 				if(dialog.isShowing())
 					dialog.dismiss();
+				showNetError();
 			}
 		});
 	}
@@ -200,6 +207,25 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 		}
 		return true;
 	}
+	
+	private void showNetError()
+	{
+		if(networkErrorView != null)
+		{
+			networkErrorView.setVisibility(View.VISIBLE);
+			return;
+		}
+		ViewStub stub = (ViewStub) findViewById(R.id.network_error);
+		networkErrorView = stub.inflate();
+		Button re_get = (Button)networkErrorView.findViewById(R.id.re_get);
+		re_get.setOnClickListener(this);
+	}
+	
+	private void hideNetError()
+	{
+		if(networkErrorView != null)
+			networkErrorView.setVisibility(View.GONE);
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -208,6 +234,9 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 			finish();
 			overridePendingTransition(R.anim.slide_left_in,R.anim.slide_right_out);
 			break;
+		case R.id.re_get:
+			loadFromInternet();
+			hideNetError();
 
 		default:
 			break;

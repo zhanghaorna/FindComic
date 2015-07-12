@@ -175,6 +175,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				{
 					handleIntroPage(arg2);
 					chapterAdapter.notifyDataSetChanged();
+					if(chapters.size() == 0)
+						showNetError();
 				}
 				progressBar.setVisibility(View.GONE);
 				scrollView.setVisibility(View.VISIBLE);				
@@ -185,7 +187,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				if(!Util.isNetWorkConnect(getApplicationContext()))
 					Toast.makeText(getBaseContext(), "网络连接未启用", Toast.LENGTH_SHORT).show();
 				progressBar.setVisibility(View.GONE);
-
+				showNetError();
 			}	
 		});
 	}
@@ -202,7 +204,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		{
 			for(Element element:elements.get(0).children())
 			{
-//保留卷信息，并且将卷和话信息一起显示出来
+//              保留卷信息，并且将卷和话信息一起显示出来
 //				if(element.tagName().equals("br"))
 //					break;
 				if(element.tagName().equals("br"))
@@ -269,6 +271,12 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		Button re_get = (Button)networkErrorView.findViewById(R.id.re_get);
 		re_get.setOnClickListener(this);
 	}
+	
+	private void hideNetError()
+	{
+		if(networkErrorView != null)
+			networkErrorView.setVisibility(View.GONE);
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -307,7 +315,9 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			startActivityForResult(intent, COMIC_INTRO);
 			break;
 		case R.id.re_get:
-			
+			loadComicIntro();
+			hideNetError();
+			progressBar.setVisibility(View.VISIBLE);
 		default:
 			break;
 		}
