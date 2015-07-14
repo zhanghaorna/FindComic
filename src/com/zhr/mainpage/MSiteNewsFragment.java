@@ -2,6 +2,7 @@ package com.zhr.mainpage;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.Header;
 import org.jsoup.Jsoup;
@@ -81,6 +82,7 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 					}
 					index++;
 					int currentItemSize = newsItems.size();
+					List<News> save_news = new ArrayList<News>();
 					for(int i = elements.size() - 1;i >= 0;i--)
 					{
 						Element element = elements.get(i);
@@ -114,8 +116,9 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 						{
 							newsItems.add(currentItemSize,item);
 						}
-						DBNewsHelper.getInstance(getActivity()).saveNews(item);
+						save_news.add(item);						
 					}
+					DBNewsHelper.getInstance(getActivity()).saveAllNews(save_news);
 					handler.post(new Runnable() {
 						public void run() {
 							if(pullToRefresh)

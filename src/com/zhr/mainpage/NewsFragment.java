@@ -21,9 +21,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -44,6 +46,7 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 	protected AsyncHttpClient client;
 	
 	protected String timeFormat = "yyyy-MM-dd HH:mm";
+	
 	
 	protected ArrayList<News> newsItems = new ArrayList<News>();
 	
@@ -76,6 +79,7 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 		});	
 
 	}
+	
 	
 	private void initData()
 	{

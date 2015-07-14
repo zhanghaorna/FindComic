@@ -137,9 +137,8 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 	}
 	
 	private void loadFromInternet()
-	{
-		if(!dialog.isShowing())
-			dialog.show();
+	{		
+		dialog.show();
 		isLoading = true;
 		client.get(read_url, new AsyncHttpResponseHandler() {
 			
@@ -171,8 +170,8 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 							Toast.LENGTH_SHORT).show();
 				//Log.d("Failure", arg3.toString());
 				isLoading = false;
-				if(dialog.isShowing())
-					dialog.dismiss();
+				
+				dialog.dismiss();
 				showNetError();
 			}
 		});

@@ -61,6 +61,7 @@ public class ComicLoadTask implements Runnable{
 					//采用同步方法，因为这里已经在一个线程中，不能再异步调用
 					//Log一直报警告，说强制采用同步方法
 					SyncHttpClient client = new SyncHttpClient();
+					client.setTimeout(2000);
 					client.setEnableRedirects(true);
 					client.setUserAgent("Baiduspider+");
 					client.get(imagePath, new BinaryHttpResponseHandler() {						
@@ -108,8 +109,9 @@ public class ComicLoadTask implements Runnable{
 			}
 			else
 				loadImage();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (OutOfMemoryError Error) {
+			bitmap = null;
+			Log.d("Comic", "Bitmap is too big to load");
 		}		
 	}
 	

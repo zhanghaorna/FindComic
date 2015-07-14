@@ -1,5 +1,6 @@
 package com.zhr.database;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
@@ -58,6 +59,14 @@ public class DBNewsHelper{
 			deleteAllNews();
 		}
 		return newsDao.insert(news);
+	}
+	
+	public void saveAllNews(List<News> news)
+	{
+		if(newsDao.count() > 50)
+			deleteAllNews();
+		
+		newsDao.insertInTx(news);
 	}
 	
 	public List<News> queryNews(String from)

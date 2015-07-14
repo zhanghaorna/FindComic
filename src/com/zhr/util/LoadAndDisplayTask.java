@@ -74,6 +74,7 @@ public class LoadAndDisplayTask implements Runnable{
 					//Log一直报警告，说强制采用同步方法
 					SyncHttpClient client = new SyncHttpClient();
 					client.setEnableRedirects(true);
+					client.setTimeout(2000);
 					client.get(imagePath, new BinaryHttpResponseHandler() {
 						
 						@Override

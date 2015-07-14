@@ -1,6 +1,7 @@
 package com.zhr.mainpage;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -92,6 +93,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 					}
 					index++;
 					int currentItemSize = newsItems.size();
+					List<News> save_news = new ArrayList<News>();
 					for(int i = elements.size() - 1;i >= 0;i--)
 					{
 						Element element = elements.get(i);
@@ -135,9 +137,10 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 						{
 							newsItems.add(currentItemSize,item);
 						}
+						save_news.add(item);
 						
-						DBNewsHelper.getInstance(getActivity()).saveNews(item);
 					}
+					DBNewsHelper.getInstance(getActivity()).saveAllNews(save_news);
 					handler.post(new Runnable() {
 						public void run() {
 							if(pullToRefresh)

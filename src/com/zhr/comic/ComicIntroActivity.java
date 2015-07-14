@@ -162,6 +162,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		}
 		
 		client = new AsyncHttpClient();
+		client.setTimeout(2000);
 		loadComicIntro();
 	}
 	
