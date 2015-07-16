@@ -51,8 +51,9 @@ public class AppSetting {
 	private boolean pageOver_by_volume;
 	//隐藏虚拟按键
 	private boolean hide_virtual_key;
-	
+	//是否显示时间 电量等状态信息
 	private boolean show_time_battery;
+	//是否保持屏幕常亮
 	private boolean keep_screen_on;
 	
 	private SharedPreferences setting;

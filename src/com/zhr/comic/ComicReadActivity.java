@@ -45,6 +45,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -161,7 +162,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 		
 		Intent intent = getIntent();
-
+		//获取传进的漫画相关数据
 		picPaths = intent.getStringArrayExtra("picPaths");
 		comicName = intent.getStringExtra("comicName");
 		if(comicName == null)
@@ -178,6 +179,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 
 		
 		mAdapter = new PictureAdapter();
+		//翻页模式设置
 		if(AppSetting.getInstance(getApplicationContext()).getPage_turn_orientation() == 
 				AppSetting.MODE_IN_VERTICAL_UP_DOWN)
 		{
@@ -186,7 +188,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		else {
 			mLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
 		}
-		
+		//翻页方向
 		if(AppSetting.getInstance(getApplicationContext()).getScreen_orientation() ==
 				AppSetting.HORIZONTAL_ORIENTATION)
 			mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -225,7 +227,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		readerHintView = new ReaderHintView(this,getResources().getConfiguration().orientation);
 		
 		readerHintView.setOnTouchClickListener(this);
-	
+		
 	}
 	
 	private void initData()
@@ -278,7 +280,13 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					readerHintView.setHandMode(AppSetting.RIGHT_HAND);
 				}
 			}				
-		}		
+		}
+		
+		//是否显示状态栏
+		if(AppSetting.getInstance(getApplicationContext()).isShow_time_battery())
+			readerHintView.showStatusView();
+		else
+			readerHintView.hideStatusView();
 	}
 	
 	
@@ -816,6 +824,31 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 			}
 		}
+	};
+	
+	//监听音量键点击
+	public boolean onKeyDown(int keyCode, android.view.KeyEvent event) 
+	{
+		
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_VOLUME_UP:
+			if(AppSetting.getInstance(getApplicationContext()).isPageOver_by_volume())
+			{
+				onPrePageClick();
+				return true;
+			}
+			break;
+		case KeyEvent.KEYCODE_VOLUME_DOWN:
+			if(AppSetting.getInstance(getApplicationContext()).isPageOver_by_volume())
+			{
+				onNextPageClick();
+				return true;
+			}
+			break;
+		default:
+			break;
+		}
+		return super.onKeyDown(keyCode, event);
 	};
 	
 	//滑动体验不好，可以改为滑动一定距离

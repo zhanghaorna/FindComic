@@ -105,7 +105,15 @@ public class ReaderHintView extends RelativeLayout implements OnTouchListener,On
 		statusView.setText(buffer.toString());
 	}
 	
+	public void showStatusView()
+	{
+		statusView.setVisibility(View.VISIBLE);
+	}
 	
+	public void hideStatusView()
+	{
+		statusView.setVisibility(View.INVISIBLE);
+	}
 	
 	public void showHint()
 	{

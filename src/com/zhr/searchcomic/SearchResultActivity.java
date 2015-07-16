@@ -156,11 +156,10 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 						searchView.setText("已为你找到" + comicIntros.size() +
 								"部相关漫画");
 				}
-				else
-					showNetError();
-				isLoading = false;
-				if(dialog.isShowing())
-					dialog.dismiss();
+//				else
+//					showNetError();
+				isLoading = false;				
+				dialog.dismiss();
 			}
 			
 			@Override
