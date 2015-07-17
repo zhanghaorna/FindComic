@@ -1,5 +1,8 @@
 package com.zhr.findcomic;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.zhr.mainpage.MainPageFragment;
 import com.zhr.recommend.RecommendFragment;
 import com.zhr.searchcomic.SearchComicFragment;
@@ -16,6 +19,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +27,7 @@ import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 /**
  * 
  * @author zhr
@@ -42,6 +47,7 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 	
 	private FragmentManager fragmentManager;
 	
+	private long exitTime = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +206,20 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+	}
+	
+	@Override
+	public void onBackPressed() {
+		
+		if(System.currentTimeMillis() - exitTime > 2000)
+		{
+			Toast.makeText(getBaseContext(), "再按一次退出程序", Toast.LENGTH_SHORT).show();
+			exitTime = System.currentTimeMillis();
+		}
+		else {
+			super.onBackPressed();
+		}
+		
 	}
 	
 }

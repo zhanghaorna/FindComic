@@ -40,6 +40,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -119,7 +121,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	private int battery;
 	
 	public static ComicLoadHandler handler;
-	
+
 	//开源服务
 	//友盟分享
 	private UMSocialService mController;
@@ -202,6 +204,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			fromInternet = true;
 			queryImageUrlFromInternet(intent.getStringExtra("comicUrl"));
 		}
+		
+		
+		
 	}
 	
 	private void initView()
@@ -903,6 +908,10 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		intentFilter.addAction(Intent.ACTION_TIME_TICK);
 		if(batteryChangeReceiver != null)
 			registerReceiver(batteryChangeReceiver, intentFilter);
+		if(!AppSetting.getInstance(getApplicationContext()).isKeep_screen_on())
+			lp.flags &= ~WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+		else 
+			lp.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 		if(readerHintView != null)
 			mWindowManager.addView(readerHintView, lp);
 		

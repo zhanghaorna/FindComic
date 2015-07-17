@@ -37,6 +37,7 @@ public class BaseActivity extends Activity{
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  
                 PixelFormat.TRANSLUCENT);
+		
 		coverView = new TextView(this);
 		//背景设为透明黑色
 		coverView.setBackgroundColor(getResources().getColor(R.color.tran_black));
