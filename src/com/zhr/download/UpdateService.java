@@ -60,7 +60,7 @@ public class UpdateService extends IntentService{
 	{
 		remoteViews = new RemoteViews(getPackageName(),
 				R.layout.update_service_download);
-		remoteViews.setTextViewText(R.id.text, "下载中");
+		remoteViews.setTextViewText(R.id.text, "下载中0%");
 		//构造notification
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext())
 					.setContent(remoteViews)
@@ -76,8 +76,8 @@ public class UpdateService extends IntentService{
 		if(intent.getStringExtra("apk_url") != null)
 		{	
 			int max_progress = 0;
-			//notify太频繁导致通知栏卡顿，每过5%，发出一次更新通知
-			float notify_pre = 0.05f;
+			//notify太频繁导致通知栏卡顿，每过10%，发出一次更新通知
+			float notify_pre = 0.1f;
 			showNotification();
 			URL url;
 			try
@@ -91,12 +91,12 @@ public class UpdateService extends IntentService{
 				connection.connect();
 				InputStream stream = connection.getInputStream();
 				max_progress = connection.getContentLength();
-				Log.d("Comic", "max_progress:" + max_progress);
+//				Log.d("Comic", "max_progress:" + max_progress);
 				remoteViews.setProgressBar(R.id.progress,max_progress, 0, false);
 				FileOutputStream outputStream = null;
 				if(stream != null)
 				{
-					File file = new File(Environment.getExternalStorageDirectory(),
+					File file = new File(getCacheDir(),
 							"FindComic.apk");
 					outputStream = new FileOutputStream(file);
 					byte[] buf = new byte[10240];
@@ -109,8 +109,11 @@ public class UpdateService extends IntentService{
 //						Log.d("Comic", "" + progress);						
 						if(progress / (float) max_progress > notify_pre)
 						{
-							notify_pre += 0.05;
+							remoteViews.setTextViewText(R.id.text, "下载中" + (int)(100 * notify_pre) + "%");
+							notify_pre += 0.1;
+							
 							remoteViews.setProgressBar(R.id.progress,max_progress, progress,false);
+//							updateNotification.bigContentView = remoteViews;
 							updateNotification.contentView = remoteViews;
 							nManager.notify(notifyId, updateNotification);
 						}

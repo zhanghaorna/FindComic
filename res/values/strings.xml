@@ -42,6 +42,9 @@
 	<string name="author">作者:</string>
 	<string name="begin_read">开始阅读</string>
 	<string name="serialise">连载</string>
+	<string name="choose_download_chapter">请选择下载的章节</string>
+	<string name="choose_all">全选</string>
+	<string name="confirm_download">确认下载</string>
 	
 	<string-array name="category">
 	    <item>萌系</item>

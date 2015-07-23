@@ -18,7 +18,8 @@
             android:layout_centerVertical="true"
             android:padding="10dp"
             android:src="@drawable/icon_back" />
-
+		
+        
         <TextView
             android:id="@+id/download"
             android:layout_width="wrap_content"
@@ -30,6 +31,14 @@
             android:text="@string/download"
             android:textColor="@drawable/textview_color_click"
             android:textSize="18sp" />
+        
+        <TextView 
+            android:layout_toLeftOf="@id/download"
+            android:layout_marginRight="2dp"
+            android:background="?android:attr/listDivider"
+            android:layout_width="1dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"/>
     </RelativeLayout>
 
     <TextView
@@ -65,12 +74,53 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
-
+				<RelativeLayout 
+				    android:layout_width="match_parent"
+				    android:layout_height="40dp"
+				    android:id="@+id/download_layout">
+				    <TextView 
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:text="@string/choose_download_chapter"
+				        android:textColor="@color/red"
+				        android:textSize="16sp"
+				        android:padding="5dp"
+				        android:layout_centerVertical="true"
+				        android:layout_alignParentLeft="true"/>
+					<Button 
+				        android:id="@+id/confirm_download"
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:text="@string/confirm_download"
+				        android:layout_alignParentRight="true"
+				        android:padding="5dp"
+				        android:textSize="16sp"
+				        android:layout_centerVertical="true"
+				        android:background="@color/transparent"
+				        android:textColor="@drawable/button_enable_selector"/>					
+					<TextView 
+				        android:id="@+id/divider"				     
+				        android:background="?android:attr/listDivider"
+				        android:layout_width="1dp"
+				        android:layout_height="wrap_content"
+				        android:layout_centerVertical="true"
+				        android:layout_toLeftOf="@id/confirm_download"/>
+				    <TextView 
+				        android:id="@+id/choose_all"
+				    	android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:text="@string/choose_all"
+				        android:textSize="16sp"
+				        android:padding="5dp"
+				        android:layout_centerVertical="true"
+				        android:layout_toLeftOf="@id/divider"
+				        android:textColor="@drawable/textview_color_click"/>
+				</RelativeLayout>
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="110dp"
-                    android:layout_margin="8dp" >
-
+                    android:layout_margin="8dp" 
+                    android:id="@+id/intro_layout">
                     <ImageView
                         android:id="@+id/cover"
                         android:layout_width="83dp"

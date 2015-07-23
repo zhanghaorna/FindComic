@@ -3,6 +3,7 @@ package com.zhr.searchcomic;
 import java.util.ArrayList;
 
 import org.apache.http.Header;
+import org.apache.http.client.RedirectException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,6 +47,7 @@ import com.zhr.util.Util;
 public class SearchResultActivity extends BaseActivity implements OnClickListener
 					,OnScrollListener,OnItemClickListener
 {
+
 	
 	private ImageView back;
 	private TextView titleView;
@@ -247,9 +249,8 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		mSearchAdapter = null;
-		searchGridView = null;
-		if(dialog.isShowing())
-			dialog.dismiss();
+		searchGridView = null;		
+		dialog.dismiss();
 		dialog = null;
 		
 	}

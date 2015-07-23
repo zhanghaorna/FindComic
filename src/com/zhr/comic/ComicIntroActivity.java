@@ -26,6 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +52,11 @@ import com.zhr.util.Util;
 public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				,OnItemClickListener
 {
+	//下载模式和阅读模式
+	public static final int READ_MODE = 0;
+	public static final int DOWNLOAD_MODE = 1;
+	//默认处于阅读模式
+	private int mode = READ_MODE;
 	
 	public static final int COMIC_INTRO = 101;
 	//顶部布局
@@ -65,6 +71,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private Button readButton;
 	private TextViewWithExpand introView;
 	private TextView lastUpdateView;
+
 	//漫画阅读信息
 	private ComicRecord comicRecord;
 	//漫画简介
@@ -82,6 +89,17 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private GridViewInScrollView gridView;
 	private ArrayList<ComicChapter> chapters;
 	private ChapterAdapter chapterAdapter;
+	
+	//漫画介绍页的布局
+	private RelativeLayout introLayout;
+	//下载顶部的布局
+	private RelativeLayout downloadLayout;
+	//下载——全选
+	private TextView chooseAllView;
+	//下载——确认下载
+	private Button confirmDownloadButton;
+	//选中下载章节的数量
+	private int chooseCount = 0;
 	
 	//整个漫画简介页的内容
 	private NoAutoScrollView scrollView;
@@ -121,6 +139,16 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	
 	private void initView()
 	{
+		introLayout = (RelativeLayout) findViewById(R.id.intro_layout);
+		
+		downloadLayout = (RelativeLayout)findViewById(R.id.download_layout);
+		downloadLayout.setVisibility(View.GONE);
+		
+		chooseAllView = (TextView)findViewById(R.id.choose_all);
+		chooseAllView.setOnClickListener(this);
+		confirmDownloadButton = (Button)findViewById(R.id.confirm_download);
+		confirmDownloadButton.setOnClickListener(this);
+		
 		back = (ImageView)findViewById(R.id.back);
 		back.setOnClickListener(this);
 		downloadView = (TextView)findViewById(R.id.download);
@@ -135,6 +163,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		
 		introView = (TextViewWithExpand)findViewById(R.id.intro);
 		introView.setOnClickListener(this);
+		
 		
 		progressBar = (ProgressBar)findViewById(R.id.progressBar);
 		scrollView = (NoAutoScrollView)findViewById(R.id.scrollview);
@@ -221,15 +250,35 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		Intent intent = new Intent(this,ComicReadActivity.class);
-		intent.putExtra("comicName",title + "###" + chapters.get(position).getTitle());
-		if(comicRecord != null&&
-				comicRecord.getChapter().equals(chapters.get(position).getTitle()))
-			intent.putExtra("position", comicRecord.getPage());
-		else
-			intent.putExtra("position", 0);
-		intent.putExtra("comicUrl", chapters.get(position).getUrl());
-		startActivityForResult(intent, COMIC_INTRO);
+		if(mode == READ_MODE)
+		{
+			Intent intent = new Intent(this,ComicReadActivity.class);
+			intent.putExtra("comicName",title + "###" + chapters.get(position).getTitle());
+			if(comicRecord != null&&
+					comicRecord.getChapter().equals(chapters.get(position).getTitle()))
+				intent.putExtra("position", comicRecord.getPage());
+			else
+				intent.putExtra("position", 0);
+			intent.putExtra("comicUrl", chapters.get(position).getUrl());
+			startActivityForResult(intent, COMIC_INTRO);
+		}
+		else if(mode == DOWNLOAD_MODE)
+		{
+			chapters.get(position).changeChoose();
+			if(chapters.get(position).getChoose())
+				++chooseCount;
+			else
+				--chooseCount;
+			if(chooseCount > 0)
+				confirmDownloadButton.setEnabled(true);
+			else
+				confirmDownloadButton.setEnabled(false);
+			if(chooseCount == chapters.size())
+				chooseAllView.setText("取消");
+			else 
+				chooseAllView.setText("全选");			
+			chapterAdapter.notifyDataSetInvalidated();
+		}
 	}
 	
 	@Override
@@ -278,6 +327,12 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		if(networkErrorView != null)
 			networkErrorView.setVisibility(View.GONE);
 	}
+	
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		back.performClick();
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -286,8 +341,20 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			introView.toggle();
 			break;
 		case R.id.back:
-			finish();
-			overridePendingTransition(R.anim.slide_left_in, R.anim.slide_right_out);
+			if(mode == DOWNLOAD_MODE)
+			{
+				downloadLayout.setVisibility(View.GONE);
+				introLayout.setVisibility(View.VISIBLE);
+				introView.setVisibility(View.VISIBLE);
+				downloadView.setVisibility(View.VISIBLE);
+				mode = READ_MODE;
+				chapterAdapter.notifyDataSetInvalidated();
+			}
+			else
+			{
+				finish();
+				overridePendingTransition(R.anim.slide_left_in, R.anim.slide_right_out);
+			}
 			break;
 		//点击开始阅读或续看按钮
 		case R.id.read_button:
@@ -319,6 +386,42 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			loadComicIntro();
 			hideNetError();
 			progressBar.setVisibility(View.VISIBLE);
+			break;
+		case R.id.download:
+			mode = DOWNLOAD_MODE;
+			//将chapter中所有被选中下载的标记清空
+			for(int i = 0;i < chapters.size();i++)
+				chapters.get(i).setChoose(false);
+			chooseCount = 0;
+			downloadView.setVisibility(View.INVISIBLE);
+			introLayout.setVisibility(View.GONE);
+			introView.setVisibility(View.GONE);
+			downloadLayout.setVisibility(View.VISIBLE);
+			chapterAdapter.notifyDataSetInvalidated();
+			confirmDownloadButton.setEnabled(false);
+			break;
+		case R.id.choose_all:
+			if(chooseCount < chapters.size())
+			{
+				for(int i = 0;i < chapters.size();i++)
+					chapters.get(i).setChoose(true);
+				chooseCount = chapters.size();
+				chooseAllView.setText("取消");
+				confirmDownloadButton.setEnabled(true);
+			}
+			else if(chooseCount == chapters.size())
+			{
+				for(int i = 0;i < chapters.size();i++)
+					chapters.get(i).setChoose(false);
+				chooseCount = 0;
+				chooseAllView.setText("全选");
+				confirmDownloadButton.setEnabled(false);
+			}
+			chapterAdapter.notifyDataSetInvalidated();
+			break;
+		//下载按钮点击后响应事件
+		case R.id.confirm_download:
+			break;
 		default:
 			break;
 		}
@@ -359,14 +462,22 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			else {
 				textView = (TextView) convertView;
 			}
-			if(comicRecord != null&&chapters.get(position).getTitle().
-					equals(comicRecord.getChapter()))
+			if(mode == READ_MODE)
 			{
-				textView.setBackgroundColor(getResources().getColor(R.color.red));
+				if(comicRecord != null&&chapters.get(position).getTitle().
+						equals(comicRecord.getChapter()))
+					textView.setBackgroundColor(getResources().getColor(R.color.red));				
+				else
+					textView.setBackgroundColor(getResources().getColor(R.color.white));
 			}
-			else {
-				textView.setBackgroundColor(getResources().getColor(R.color.white));
+			else if(mode == DOWNLOAD_MODE)
+			{
+				if(chapters.get(position).getChoose())
+					textView.setBackgroundColor(getResources().getColor(R.color.red));
+				else
+					textView.setBackgroundColor(getResources().getColor(R.color.white));
 			}
+
 			textView.setText(chapters.get(position).getTitle());			
 			return textView;
 		}

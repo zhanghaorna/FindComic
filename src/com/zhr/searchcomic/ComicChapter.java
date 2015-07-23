@@ -7,9 +7,11 @@ package com.zhr.searchcomic;
  */
 public class ComicChapter {
 	//漫画第几话
-	String title;
+	private String title;
 	//改话详细的地址
-	String url;
+	private String url;
+	//是否选中下载
+	private Boolean choose;
 	
 	public String getTitle() {
 		return title;
@@ -25,6 +27,19 @@ public class ComicChapter {
 	
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public Boolean getChoose() {
+		return choose;
+	}
+
+	public void setChoose(Boolean choose) {
+		this.choose = choose;
+	}
+	
+	public void changeChoose()
+	{
+		this.choose = !this.choose;
 	}
 	
 	
