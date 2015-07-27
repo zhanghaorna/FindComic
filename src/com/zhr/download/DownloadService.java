@@ -1,5 +1,6 @@
 package com.zhr.download;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -12,10 +13,20 @@ import android.os.IBinder;
  */
 public class DownloadService extends Service{
 	
+	
+
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		
+	}
+	
+	
+
 	
 }

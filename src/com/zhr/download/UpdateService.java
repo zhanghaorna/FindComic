@@ -32,6 +32,7 @@ public class UpdateService extends IntentService{
 		super("Update Service");
 		// TODO Auto-generated constructor stub
 	}
+	
 
 	private NotificationManager nManager;
 	private HttpURLConnection connection;
