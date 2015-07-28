@@ -1,11 +1,15 @@
 package com.zhr.setting;
 
+import java.io.File;
+
 import com.zhr.findcomic.R;
+import com.zhr.util.Constants;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
@@ -199,7 +203,9 @@ public class AppSetting {
 		keep_screen_on = setting.getBoolean(KEEP_SCREEN_ON, true);
 		night_mode = setting.getBoolean(NIGHT_MODE, false);
 		
-		last_read_local = setting.getString(LAST_READ_LOCAL, "");		
+		last_read_local = setting.getString(LAST_READ_LOCAL, "");
+		
+		downloadFile = Constants.FILENAME + File.separator + "download";
 		
 		int maxMemory = (int) (Runtime.getRuntime().maxMemory()/1024);
 		Log.d("Comic","maxMemory:" + maxMemory / 1024 + "MB");

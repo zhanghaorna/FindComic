@@ -8,12 +8,14 @@ import com.zhr.util.Util;
 
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -77,6 +79,9 @@ public class SearchComicFragment extends Fragment implements OnClickListener,OnI
 				Toast.makeText(getActivity(), "网络未连接", Toast.LENGTH_SHORT).show();
 				return;
 			}
+			InputMethodManager iManager = (InputMethodManager)getActivity().
+					getSystemService(Context.INPUT_METHOD_SERVICE);
+			iManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
 			Intent intent = new Intent(getActivity(),SearchResultActivity.class);
 			intent.putExtra("search", true);
 			intent.putExtra("category", editTextWithDel.getText().toString().trim());

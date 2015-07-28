@@ -123,10 +123,18 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 	{		
 		client = new AsyncHttpClient();
 		client.setTimeout(2000);
+		client.setUserAgent("Baiduspider+");
 		comicIntros = new ArrayList<ComicIntro>();
 		mSearchAdapter = new SearchAdapter();
 		searchGridView.setAdapter(mSearchAdapter);
 		isLoading = false;
+		loadFromInternet();
+	}
+	
+	private void loadFromInternet()
+	{		
+		dialog.show();
+		isLoading = true;
 		if(search)
 		{
 			read_url = url + title;
@@ -135,13 +143,6 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 		{
 			read_url = url + "/" + page;
 		}
-		loadFromInternet();
-	}
-	
-	private void loadFromInternet()
-	{		
-		dialog.show();
-		isLoading = true;
 		client.get(read_url, new AsyncHttpResponseHandler() {
 			
 			@Override
@@ -173,7 +174,12 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 				isLoading = false;
 				
 				dialog.dismiss();
-				showNetError();
+				if(comicIntros.size() > 0)
+				{
+					Toast.makeText(getBaseContext(), "网络问题,请重新加载", Toast.LENGTH_SHORT).show();
+				}
+				else
+					showNetError();
 			}
 		});
 	}

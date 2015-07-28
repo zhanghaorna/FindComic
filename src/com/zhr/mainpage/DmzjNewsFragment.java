@@ -158,7 +158,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 				if(pullToRefresh)
 					mPullToRefreshView.setRefreshing(false);
 				else
-					mListView.loadCompleted();
+					mListView.loadFailed();
 			}
 		});
 	}
@@ -187,7 +187,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 				BitmapLoader.getInstance().loadImage(((NewsAdapter.ViewHolder)convertView.getTag()).image, 
 						newsItems.get(first + i).getImagePath(),true, false, true,false);				
 			}
-			mAdapter.notifyDataSetChanged();
+			mAdapter.notifyDataSetInvalidated();
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
 			isScroll = false;

@@ -191,6 +191,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		}
 		
 		client = new AsyncHttpClient();
+		client.setUserAgent("Baiduspider+");
 		client.setTimeout(2000);
 		loadComicIntro();
 	}

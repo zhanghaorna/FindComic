@@ -2,7 +2,9 @@ package com.zhr.mainpage;
 
 import com.zhr.findcomic.R;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +18,11 @@ import android.view.ViewGroup;
  */
 public class Dm123NewsFragment extends NewsFragment{
 
-	public static final String URL = "http://www.dm123.cn/new/";
-	private int index = 1;
-	private String real_url = URL;
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+	}
 	
 	
 }

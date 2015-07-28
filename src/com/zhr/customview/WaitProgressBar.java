@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
+import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.View;
@@ -70,7 +71,7 @@ public class WaitProgressBar extends View{
 		
 		mPaint = new Paint();
 		mPaint.setColor(colors[0]);
-		mPaint.setStyle(Paint.Style.STROKE);
+		mPaint.setStyle(Style.FILL);
 		num = (int) (360 / rotate_angle);
 		rotate_angle = rotate_angle * Math.PI / 180;
 		reDraw = false;
@@ -162,6 +163,7 @@ public class WaitProgressBar extends View{
 			canvas.drawLine(start[i].x, start[i].y, 
 					end[i].x, end[i].y, mPaint);
 		}
+		
 		mPaint.setColor(Color.BLACK);
 		mPaint.setTextAlign(Paint.Align.CENTER);
 		mPaint.setStrokeWidth(1);

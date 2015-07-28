@@ -136,7 +136,7 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 				if(pullToRefresh)
 					mPullToRefreshView.setRefreshing(false);
 				else
-					mListView.loadCompleted();
+					mListView.loadFailed();
 			}
 		});
 	}

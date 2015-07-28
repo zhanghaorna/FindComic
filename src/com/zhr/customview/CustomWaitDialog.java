@@ -17,20 +17,19 @@ import com.zhr.findcomic.R;
  * @date 2015年6月3日
  * @description
  */
-public class CustomWaitDialog extends AlertDialog{
+public class CustomWaitDialog{
 
 	private AlertDialog dialog;
 	private TextView waitTextView;
 	
 	public CustomWaitDialog(Context context) {
-		super(context);
-		Builder builder = new Builder(context);
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		
-		LayoutInflater inflater = getLayoutInflater();
+		LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View layout = inflater.inflate(R.layout.custom_wait_dialog, null);
 		waitTextView = (TextView) layout.findViewById(R.id.wait_text);
 		dialog = builder.setView(layout).create();
-		setCancelable(false);
+
 	}
 	
 	public boolean isShowing()

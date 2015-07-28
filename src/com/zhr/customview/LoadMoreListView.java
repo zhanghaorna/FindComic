@@ -65,8 +65,8 @@ public class LoadMoreListView extends ListView implements OnScrollListener{
 			{
 				if(Util.isNetWorkConnect(context))
 				{
-					footBar.setVisibility(View.VISIBLE);
 					footTextView.setText("加载中...");
+					footBar.setVisibility(View.VISIBLE);					
 
 					if(listener != null)
 						listener.onload();
@@ -86,6 +86,12 @@ public class LoadMoreListView extends ListView implements OnScrollListener{
 			int visibleItemCount, int totalItemCount) {
 		this.lastVisibleItem = firstVisibleItem + visibleItemCount;
 		this.totalItem = totalItemCount;
+	}
+	
+	public void loadFailed()
+	{
+		isLoading = false;
+		footBar.setVisibility(View.GONE);
 	}
 	
 	public void loadCompleted()
