@@ -57,7 +57,6 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 		if(savedInstanceState == null)
 			initData();
 		else {
-			Log.d("Comic", "not null");
 			current_fragment = savedInstanceState.getInt("last_fragment", 0);
 			fragmentManager = getSupportFragmentManager();
 			fragments = new Fragment[4];
