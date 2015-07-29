@@ -58,6 +58,7 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 			initData();
 		else {
 			Log.d("Comic", "not null");
+			current_fragment = savedInstanceState.getInt("last_fragment", 0);
 			fragmentManager = getSupportFragmentManager();
 			fragments = new Fragment[4];
 			fragments[0] = getSupportFragmentManager().findFragmentByTag("0");
@@ -65,17 +66,22 @@ public class MainActivity extends BaseFragmentActivity implements OnClickListene
 			fragments[2] = getSupportFragmentManager().findFragmentByTag("2");
 			fragments[3] = getSupportFragmentManager().findFragmentByTag("3");
 			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-			transaction.show(fragments[0]);
-			if(fragments[1] != null)
-				transaction.hide(fragments[1]);
-			if(fragments[2] != null)
-				transaction.hide(fragments[2]);
-			if(fragments[3] != null)
-				
-				transaction.hide(fragments[3]);
+			transaction.show(fragments[current_fragment]);
+			for(int i = 0;i < fragments.length;i++)
+			{
+				if(i != current_fragment)
+					transaction.hide(fragments[i]);
+			}
 			transaction.commit();
 		}
 
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		outState.putInt("last_fragment", current_fragment);
 	}
 	
 	private Fragment getCurrentFragment(int index)
