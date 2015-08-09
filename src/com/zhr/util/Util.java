@@ -9,6 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
@@ -135,6 +138,49 @@ public class Util {
 		Random random = new Random();
 		int value = random.nextInt(2000);
 		return String.valueOf(value);
+	}
+	
+	//从指定url中获取图片的urls
+	public static String[] getImageUrlsFromInternet(byte[] bytes)
+	{
+		//获取漫画网的前缀
+		int url_prefix_position = 0;
+		Document document = Jsoup.parse(new String(bytes));					
+		String text = document.data();
+		if(!text.equals("")&&text.indexOf(";") != -1)
+		{						
+			String position = text.split(";")[1];
+			text = text.split(";")[0];
+			position = position.replace("var", "").replace("sPath=", "").replace("\"", "")
+				.replace(" ", "");
+			url_prefix_position = Integer.valueOf(position).intValue();
+		}
+		text = text.replace("var", "").replace("sFiles=", "").replace("\"", "")
+				.replace(" ", "");
+		
+		//从一串代码中解析出图片地址，由于该网站采取了加密
+		String x = text.substring(text.length() - 1);
+		int xi = "abcdefghijklmnopqrstuvwxyz".indexOf(x) + 1;
+		String sk = text.substring(text.length() - xi - 12,text.length() - xi - 1);
+		text = text.substring(0,text.length() - xi - 12);
+		String k = sk.substring(0,sk.length() - 1);
+		String f = sk.substring(sk.length() - 1);
+		for(int i = 0;i < k.length();i++)
+		{
+			text = text.replaceAll(k.substring(i,i+1), i + "");
+		}
+		String[] ss = text.split(f);
+		StringBuilder builder = new StringBuilder();
+		for(int i = 0;i < ss.length;i++)
+		{
+			builder.append((char)Integer.valueOf(ss[i]).intValue());
+		}
+		String[] path = builder.toString().split("\\|");
+		for(int i = 0;i < path.length;i++)
+		{
+			path[i] = Constants.URL_PERFIX[url_prefix_position - 1] + path[i];
+		}
+		return path;
 	}
 
 }

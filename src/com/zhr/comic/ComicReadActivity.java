@@ -96,8 +96,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	
 	private PictureAdapter mAdapter;
 	private LinearLayoutManager mLayoutManager;
-	//获取漫画网的前缀
-	private int url_prefix_position;
+	
+
 	
 	//漫画名字(实际为章节名字)
 	private String comicName;
@@ -303,19 +303,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
 				if(arg0 == 200)
 				{
-					Document document = Jsoup.parse(new String(arg2));					
-					String text = document.data();
-					if(!text.equals("")&&text.indexOf(";") != -1)
-					{						
-						String position = text.split(";")[1];
-						text = text.split(";")[0];
-						position = position.replace("var", "").replace("sPath=", "").replace("\"", "")
-							.replace(" ", "");
-						url_prefix_position = Integer.valueOf(position).intValue();
-					}
-					text = text.replace("var", "").replace("sFiles=", "").replace("\"", "")
-							.replace(" ", "");
-					getImageUrl(text);
+					picPaths = Util.getImageUrlsFromInternet(arg2);
 				}
 				timer.cancel();
 				
@@ -335,32 +323,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			}
 		});
 	}
-	//从一串代码中解析出图片地址，由于该网站采取了加密
-	private void getImageUrl(String code)
-	{
-		String x = code.substring(code.length() - 1);
-		int xi = "abcdefghijklmnopqrstuvwxyz".indexOf(x) + 1;
-		String sk = code.substring(code.length() - xi - 12,code.length() - xi - 1);
-		code = code.substring(0,code.length() - xi - 12);
-		String k = sk.substring(0,sk.length() - 1);
-		String f = sk.substring(sk.length() - 1);
-		for(int i = 0;i < k.length();i++)
-		{
-			code = code.replaceAll(k.substring(i,i+1), i + "");
-		}
-		String[] ss = code.split(f);
-		StringBuilder builder = new StringBuilder();
-		for(int i = 0;i < ss.length;i++)
-		{
-			builder.append((char)Integer.valueOf(ss[i]).intValue());
-		}
-		String[] path = builder.toString().split("\\|");
-		for(int i = 0;i < path.length;i++)
-		{
-			path[i] = Constants.URL_PERFIX[url_prefix_position - 1] + path[i];
-		}
-		picPaths = path;
-	}
+	
 	
 	private class ImageLoadingTask extends TimerTask
 	{

@@ -36,6 +36,7 @@ import com.zhr.customview.GridViewInScrollView;
 import com.zhr.customview.NoAutoScrollView;
 import com.zhr.customview.TextViewWithExpand;
 import com.zhr.database.DBComicRecordHelper;
+import com.zhr.download.DownloadService;
 import com.zhr.findcomic.R;
 import com.zhr.searchcomic.ComicChapter;
 import com.zhr.sqlitedao.ComicRecord;
@@ -241,7 +242,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				if(element.tagName().equals("br"))
 					continue;
 				ComicChapter chapter = new ComicChapter();
-				chapter.setTitle(element.attr("title"));
+				chapter.setChapter(element.attr("title"));
 				chapter.setUrl(element.attr("href"));
 				chapters.add(chapter);
 			}
@@ -254,9 +255,9 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		if(mode == READ_MODE)
 		{
 			Intent intent = new Intent(this,ComicReadActivity.class);
-			intent.putExtra("comicName",title + "###" + chapters.get(position).getTitle());
+			intent.putExtra("comicName",title + "###" + chapters.get(position).getChapter());
 			if(comicRecord != null&&
-					comicRecord.getChapter().equals(chapters.get(position).getTitle()))
+					comicRecord.getChapter().equals(chapters.get(position).getChapter()))
 				intent.putExtra("position", comicRecord.getPage());
 			else
 				intent.putExtra("position", 0);
@@ -365,7 +366,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			{
 				for(int i = 0;i < chapters.size();i++)
 				{
-					if(chapters.get(i).getTitle().equals(continue_chapter))
+					if(chapters.get(i).getChapter().equals(continue_chapter))
 					{
 						position = i;
 						break;
@@ -374,9 +375,9 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 			Log.d("Comic", "p" + position);
 			Intent intent = new Intent(this,ComicReadActivity.class);
-			intent.putExtra("comicName",title + "###" + chapters.get(position).getTitle());
+			intent.putExtra("comicName",title + "###" + chapters.get(position).getChapter());
 			if(comicRecord != null&&
-					comicRecord.getChapter().equals(chapters.get(position).getTitle()))
+					comicRecord.getChapter().equals(chapters.get(position).getChapter()))
 				intent.putExtra("position", comicRecord.getPage());
 			else
 				intent.putExtra("position", 0);
@@ -422,6 +423,28 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			break;
 		//下载按钮点击后响应事件
 		case R.id.confirm_download:
+			Intent downloadIntent = new Intent(ComicIntroActivity.this
+					,DownloadService.class);
+			String[] chapterNames = new String[chooseCount];
+			String[] urls = new String[chooseCount];
+			int index = 0;
+			for(int i = 0;i < chapters.size();i++)
+			{
+				if(chapters.get(i).getChoose())
+				{
+					chapterNames[index] = chapters.get(i).getChapter();
+					urls[index] = chapters.get(i).getUrl();
+					++index;
+				}
+			}
+			
+			Bundle data = new Bundle();
+			data.putString("comicName", title);
+			data.putStringArray("chapters", chapterNames);
+			data.putStringArray("urls", urls);
+			data.putInt("downloadNum", chooseCount);
+			downloadIntent.putExtras(data);
+			startService(downloadIntent);
 			break;
 		default:
 			break;
@@ -465,7 +488,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 			if(mode == READ_MODE)
 			{
-				if(comicRecord != null&&chapters.get(position).getTitle().
+				if(comicRecord != null&&chapters.get(position).getChapter().
 						equals(comicRecord.getChapter()))
 					textView.setBackgroundColor(getResources().getColor(R.color.red));				
 				else
@@ -479,7 +502,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 					textView.setBackgroundColor(getResources().getColor(R.color.white));
 			}
 
-			textView.setText(chapters.get(position).getTitle());			
+			textView.setText(chapters.get(position).getChapter());			
 			return textView;
 		}
 		

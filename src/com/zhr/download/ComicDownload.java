@@ -9,6 +9,10 @@ public class ComicDownload implements Runnable{
 	
 	
 	
+	public ComicDownload()
+	{
+		
+	}	
 	
 	
 	public void run() {
