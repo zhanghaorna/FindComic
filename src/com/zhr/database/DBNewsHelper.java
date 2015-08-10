@@ -36,7 +36,7 @@ public class DBNewsHelper{
 		
 	}
 	
-	public synchronized static DBNewsHelper getInstance(Context context)
+	public static DBNewsHelper getInstance(Context context)
 	{
 		if(dbNewsHelper == null)
 		{

@@ -5,11 +5,11 @@ package com.zhr.download;
  * @date 2015年7月27日
  * @description
  */
-public class ComicDownload implements Runnable{
+public class ComicDownloadThread implements Runnable{
 	
 	
 	
-	public ComicDownload()
+	public ComicDownloadThread()
 	{
 		
 	}	

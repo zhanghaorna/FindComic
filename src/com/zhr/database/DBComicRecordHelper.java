@@ -25,7 +25,7 @@ public class DBComicRecordHelper {
 	
 	private DBComicRecordHelper(){}
 	
-	public synchronized static DBComicRecordHelper getInstance(Context context)
+	public static DBComicRecordHelper getInstance(Context context)
 	{
 		if(dbComicRecordHelper == null)
 		{

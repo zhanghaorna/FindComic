@@ -278,7 +278,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			if(chooseCount == chapters.size())
 				chooseAllView.setText("取消");
 			else 
-				chooseAllView.setText("全选");			
+				chooseAllView.setText("全选");
 			chapterAdapter.notifyDataSetInvalidated();
 		}
 	}
@@ -486,6 +486,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			else {
 				textView = (TextView) convertView;
 			}
+			textView.setText(chapters.get(position).getChapter());	
 			if(mode == READ_MODE)
 			{
 				if(comicRecord != null&&chapters.get(position).getChapter().
@@ -502,7 +503,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 					textView.setBackgroundColor(getResources().getColor(R.color.white));
 			}
 
-			textView.setText(chapters.get(position).getChapter());			
+					
 			return textView;
 		}
 		
