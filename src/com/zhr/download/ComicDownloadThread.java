@@ -56,39 +56,44 @@ public class ComicDownloadThread implements Runnable{
 			if(urls != null)
 			{
 				isRunning = true;
-				cDetail.setStatus("1");
+				cDetail.setStatus(Constants.DOWNLOADING);
 				for(int i = 0;i < urls.length;i++)
 				{
-					while(isRunning&&context != null)
+					while(!isRunning);
 					{
-
-							URL url = new URL(urls[i]);
-							HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-							connection.setDoInput(true);
-							connection.setRequestProperty("User-Agent","Baiduspider+");
-							connection.connect();
-							InputStream inputStream = connection.getInputStream();
-							FileOutputStream outputStream = null;
-							byte[] bytes = new byte[1024];
-							int nums = 0;
-							if(inputStream != null)
+						URL url = new URL(urls[i]);
+						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+						connection.setDoInput(true);
+						connection.setRequestProperty("User-Agent","Baiduspider+");
+						connection.connect();
+						InputStream inputStream = connection.getInputStream();
+						FileOutputStream outputStream = null;
+						byte[] bytes = new byte[10240];
+						int nums = 0;
+						if(inputStream != null)
+						{	
+							String fileName = "";
+							if(i < 10)
+								fileName = "00" + i + ".jpg";
+							else if(i < 100)
+								fileName = "0" + i + ".jpg";
+							else
+								fileName = i + ".jpg";
+							outputStream = new FileOutputStream(new File(dirPath,fileName));
+							while((nums = inputStream.read(bytes)) != -1)
 							{
-								
-								outputStream = new FileOutputStream(new File(dirPath,"" + i + ".jpg"));
-								while((nums = inputStream.read(bytes)) != -1)
-								{
-									outputStream.write(bytes,0,nums);
-								}
+								outputStream.write(bytes,0,nums);
 							}
-							if(outputStream != null)
-							{
-								outputStream.flush();
-								outputStream.close();
+						}
+						if(outputStream != null)
+						{
+							outputStream.flush();
+							outputStream.close();
 								
-							}
+						}
 					}
 				}
-				cDetail.setStatus("3");
+				cDetail.setStatus(Constants.FINISHED);
 				if(context != null)
 					DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
 			}
@@ -106,16 +111,25 @@ public class ComicDownloadThread implements Runnable{
 	
 	private void createDirs()
 	{
-		File savefile = new File(AppSetting.getInstance(context).getDownloadPath());
-		if(!savefile.exists())
+		//findComic目录
+		File saveFile = new File(AppSetting.getInstance(context).getDownloadPath());
+		if(!saveFile.exists())
 		{
-			savefile.mkdirs();
+			saveFile.mkdirs();
 		}
-		dirPath = savefile.getAbsolutePath() + File.separator + cDetail.getChapter();
-		savefile = new File(dirPath);
-		if(!savefile.exists())
+		//漫画名目录
+		saveFile = new File(saveFile, cDetail.getComicName());
+		if(!saveFile.exists())
 		{
-			savefile.mkdir();
+			saveFile.mkdir();
+		}
+		
+		//第几话目录
+		dirPath = saveFile.getAbsolutePath() + File.separator + cDetail.getChapter();
+		saveFile = new File(dirPath);
+		if(!saveFile.exists())
+		{
+			saveFile.mkdir();
 		}
 	}
 	

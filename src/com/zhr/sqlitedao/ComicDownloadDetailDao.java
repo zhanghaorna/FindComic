@@ -32,7 +32,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
         public final static Property Chapter = new Property(1, String.class, "chapter", false, "CHAPTER");
         public final static Property PageNum = new Property(2, int.class, "pageNum", false, "PAGE_NUM");
         public final static Property FinishNum = new Property(3, int.class, "finishNum", false, "FINISH_NUM");
-        public final static Property Status = new Property(4, String.class, "status", false, "STATUS");
+        public final static Property Status = new Property(4, int.class, "status", false, "STATUS");
         public final static Property Url = new Property(5, String.class, "url", false, "URL");
     };
 
@@ -57,7 +57,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
                 "'CHAPTER' TEXT NOT NULL ," + // 1: chapter
                 "'PAGE_NUM' INTEGER NOT NULL ," + // 2: pageNum
                 "'FINISH_NUM' INTEGER NOT NULL ," + // 3: finishNum
-                "'STATUS' TEXT NOT NULL ," + // 4: status
+                "'STATUS' INTEGER NOT NULL ," + // 4: status
                 "'URL' TEXT NOT NULL );"); // 5: url
     }
 
@@ -75,7 +75,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
         stmt.bindString(2, entity.getChapter());
         stmt.bindLong(3, entity.getPageNum());
         stmt.bindLong(4, entity.getFinishNum());
-        stmt.bindString(5, entity.getStatus());
+        stmt.bindLong(5, entity.getStatus());
         stmt.bindString(6, entity.getUrl());
     }
 
@@ -99,7 +99,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
             cursor.getString(offset + 1), // chapter
             cursor.getInt(offset + 2), // pageNum
             cursor.getInt(offset + 3), // finishNum
-            cursor.getString(offset + 4), // status
+            cursor.getInt(offset + 4), // status
             cursor.getString(offset + 5) // url
         );
         return entity;
@@ -112,7 +112,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
         entity.setChapter(cursor.getString(offset + 1));
         entity.setPageNum(cursor.getInt(offset + 2));
         entity.setFinishNum(cursor.getInt(offset + 3));
-        entity.setStatus(cursor.getString(offset + 4));
+        entity.setStatus(cursor.getInt(offset + 4));
         entity.setUrl(cursor.getString(offset + 5));
      }
     

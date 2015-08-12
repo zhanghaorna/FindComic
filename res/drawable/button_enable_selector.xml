@@ -3,5 +3,6 @@
     
     <item android:state_enabled="false" android:color="@color/gray"></item>
     <item android:state_enabled="true" android:color="@color/red"></item>
+    <item android:state_pressed="true" android:color="@color/black"></item>
 	
 </selector>

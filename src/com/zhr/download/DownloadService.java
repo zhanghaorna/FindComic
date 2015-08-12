@@ -81,7 +81,7 @@ public class DownloadService extends Service{
 						cDetail.setUrl(urls[0]);	
 						cDetail.setFinishNum(0);
 						cDetail.setPageNum(0);
-						cDetail.setStatus("0");
+						cDetail.setStatus(Constants.WAITING);
 						comicDownload.getComicDownloadDetailList().add(cDetail);
 						details.add(cDetail);
 						ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, getBaseContext());
@@ -97,9 +97,6 @@ public class DownloadService extends Service{
 	
 		return START_STICKY;
 	}
-	
-	
-	
 
 	
 }

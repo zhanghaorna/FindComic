@@ -297,8 +297,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		if(requestCode == COMIC_INTRO)
 		{
 			if(resultCode == RESULT_OK)
-			{
-				
+			{			
 				int read_position = data.getIntExtra("last_position",-1);
 				String chapter_name = data.getStringExtra("chapter_name");
 				Log.d("Comic", "record" + read_position + " " + chapter_name);
@@ -339,7 +338,27 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			networkErrorView.setVisibility(View.GONE);
 	}
 	
-
+	private void changeMode()
+	{
+		if(mode == DOWNLOAD_MODE)
+		{
+			downloadLayout.setVisibility(View.GONE);
+			introLayout.setVisibility(View.VISIBLE);
+			introView.setVisibility(View.VISIBLE);
+			downloadView.setVisibility(View.VISIBLE);
+			mode = READ_MODE;
+			chapterAdapter.notifyDataSetInvalidated();		
+		}
+		else if(mode == READ_MODE)
+		{
+			mode = DOWNLOAD_MODE;
+			downloadView.setVisibility(View.INVISIBLE);
+			introLayout.setVisibility(View.GONE);
+			introView.setVisibility(View.GONE);
+			downloadLayout.setVisibility(View.VISIBLE);
+			chapterAdapter.notifyDataSetInvalidated();
+		}
+	}
 	
 	@Override
 	public void onBackPressed() {
@@ -356,12 +375,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		case R.id.back:
 			if(mode == DOWNLOAD_MODE)
 			{
-				downloadLayout.setVisibility(View.GONE);
-				introLayout.setVisibility(View.VISIBLE);
-				introView.setVisibility(View.VISIBLE);
-				downloadView.setVisibility(View.VISIBLE);
-				mode = READ_MODE;
-				chapterAdapter.notifyDataSetInvalidated();
+				changeMode();
 			}
 			else
 			{
@@ -401,16 +415,11 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			progressBar.setVisibility(View.VISIBLE);
 			break;
 		case R.id.download:
-			mode = DOWNLOAD_MODE;
 			//将chapter中所有被选中下载的标记清空
 			for(int i = 0;i < chapters.size();i++)
 				chapters.get(i).setChoose(false);
 			chooseCount = 0;
-			downloadView.setVisibility(View.INVISIBLE);
-			introLayout.setVisibility(View.GONE);
-			introView.setVisibility(View.GONE);
-			downloadLayout.setVisibility(View.VISIBLE);
-			chapterAdapter.notifyDataSetInvalidated();
+			changeMode();
 			confirmDownloadButton.setEnabled(false);
 			break;
 		case R.id.choose_all:
@@ -456,12 +465,15 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			data.putInt("downloadChapterNum", chooseCount);
 			downloadIntent.putExtras(data);
 			startService(downloadIntent);
+			changeMode();
+			Toast.makeText(getBaseContext(), "添加下载任务成功", Toast.LENGTH_SHORT).show();
 			break;
 		default:
 			break;
-		}
-		
+		}		
 	}
+	
+	
 	
 	private class ChapterAdapter extends BaseAdapter
 	{

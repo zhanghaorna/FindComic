@@ -15,8 +15,7 @@ public class ComicDownloadDetail {
     private String chapter;
     private int pageNum;
     private int finishNum;
-    /** Not-null value. */
-    private String status;
+    private int status;
     /** Not-null value. */
     private String url;
 
@@ -37,7 +36,7 @@ public class ComicDownloadDetail {
         this.comicName = comicName;
     }
 
-    public ComicDownloadDetail(String comicName, String chapter, int pageNum, int finishNum, String status, String url) {
+    public ComicDownloadDetail(String comicName, String chapter, int pageNum, int finishNum, int status, String url) {
         this.comicName = comicName;
         this.chapter = chapter;
         this.pageNum = pageNum;
@@ -88,13 +87,11 @@ public class ComicDownloadDetail {
         this.finishNum = finishNum;
     }
 
-    /** Not-null value. */
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
