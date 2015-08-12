@@ -14,6 +14,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Network;
 import android.os.Bundle;
 import android.util.Log;
@@ -104,8 +105,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	//选中下载章节的数量
 	private int chooseCount = 0;
 	
-	//textview(每一话)背景颜色改变和textcolor改变
-	private Drawable backgroundChangeDrawable;
+	
 	private ColorStateList textColorChangeList;
 	
 	//整个漫画简介页的内容
@@ -143,7 +143,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		chapters = new ArrayList<ComicChapter>();
 		chapterAdapter = new ChapterAdapter();
 		
-		backgroundChangeDrawable = getResources().getDrawable(R.drawable.chapter_textview_shape);
+
 		textColorChangeList = getResources().getColorStateList(R.drawable.chapter_textview_click);
 	}
 	
@@ -453,7 +453,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			data.putString("comicName", title);
 			data.putStringArray("chapters", chapterNames);
 			data.putStringArray("urls", urls);
-			data.putInt("downloadNum", chooseCount);
+			data.putInt("downloadChapterNum", chooseCount);
 			downloadIntent.putExtras(data);
 			startService(downloadIntent);
 			break;
@@ -499,14 +499,19 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 			textView.setText(chapters.get(position).getChapter());	
 			if(mode == READ_MODE)
-			{							
+			{						
+				textView.setTextColor(textColorChangeList);
 				if(comicRecord != null&&chapters.get(position).getChapter().
 						equals(comicRecord.getChapter()))
-					textView.setBackgroundColor(getResources().getColor(R.color.red));				
+				{
+					textView.setTextColor(getResources().getColor(R.color.white));
+					textView.setBackgroundResource(R.drawable.chapter_textview_read);		
+				}
 				else
-					textView.setBackgroundColor(getResources().getColor(R.color.white));
-				textView.setBackgroundDrawable(backgroundChangeDrawable);
-				textView.setTextColor(textColorChangeList);
+				{
+					textView.setBackgroundResource(R.drawable.chapter_textview_default);	
+
+				}			
 			}
 			else if(mode == DOWNLOAD_MODE)
 			{
@@ -522,7 +527,6 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				}
 			}
 
-					
 			return textView;
 		}
 		

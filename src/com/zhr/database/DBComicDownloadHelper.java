@@ -54,7 +54,7 @@ public class DBComicDownloadHelper {
 	
 	public long saveComicDownload(ComicDownload entity)
 	{
-		return comicDownloadDao.insert(entity);
+		return comicDownloadDao.insertOrReplace(entity);
 	}
 	
 	public ComicDownload getComicDownload(String comicName)

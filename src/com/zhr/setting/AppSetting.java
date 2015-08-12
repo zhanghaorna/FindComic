@@ -69,7 +69,7 @@ public class AppSetting {
 	private String last_read_local;
 	
 	//下载文件路径
-	private String downloadFile;
+	private String downloadPath;
 	//全局的缓存，主要用来存放Bitmap(新闻与简介的缓存)
 	private LruCache<String, Bitmap> cache;
 	//用来存放漫画页的缓存
@@ -205,7 +205,7 @@ public class AppSetting {
 		
 		last_read_local = setting.getString(LAST_READ_LOCAL, "");
 		
-		downloadFile = Constants.FILENAME + File.separator + "download";
+		downloadPath = Constants.FILENAME + File.separator + "download";
 		
 		int maxMemory = (int) (Runtime.getRuntime().maxMemory()/1024);
 		Log.d("Comic","maxMemory:" + maxMemory / 1024 + "MB");
@@ -282,6 +282,11 @@ public class AppSetting {
 	public String getLastReadLocal()
 	{
 		return last_read_local;
+	}
+	
+	public String getDownloadPath()
+	{
+		return downloadPath;
 	}
 
 	public final static int HORIZONTAL_ORIENTATION = Configuration.ORIENTATION_LANDSCAPE;

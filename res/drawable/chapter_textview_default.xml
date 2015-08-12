@@ -19,7 +19,7 @@
                 android:width="1dp"
                 android:color="@color/middle_gray"/>
             <corners
-                android:radius="2dp"/>
+                android:radius="3dp"/>
         </shape>
 	</item>
 </selector>

@@ -17,6 +17,7 @@
     <color name="red">#FF0000</color><!--红色 --> 
     <color name="dark_red">#750000</color> <!-- 深红色 -->
     <color name="light_orange">#BB3D00</color>
+    <color name="drak_orange">#842B00</color> <!-- 深桔色 -->
     
     <color name="orange">#FFA500</color><!--橙色 -->  
     <color name="green">#008000</color><!--绿色 --> 

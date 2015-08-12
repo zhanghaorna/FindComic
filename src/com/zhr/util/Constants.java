@@ -27,4 +27,10 @@ public class Constants {
 	public static String DISKCACHE_FILENAME = FILENAME + File.separator + "diskCache";
 	
 	public static final int IMAGE_LOADED = 101;
+	
+	public static final int WAITING = 0;
+	public static final int DOWNLOADING = 1;
+	public static final int PAUSED = 2;
+	public static final int FINISHED = 3;
+	
 }

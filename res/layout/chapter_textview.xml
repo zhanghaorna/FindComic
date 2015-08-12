@@ -9,7 +9,7 @@
     android:paddingLeft="20dp"
     android:paddingRight="20dp"
     android:textColor="@drawable/chapter_textview_click"
-    android:background="@drawable/chapter_textview_shape"
+    
     android:id="@+id/chapter_text"
     />
     
