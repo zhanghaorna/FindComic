@@ -1,6 +1,7 @@
 package com.zhr.comic;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.Header;
 import org.jsoup.Jsoup;
@@ -8,8 +9,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -17,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.net.Network;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,13 +42,17 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.zhr.customview.GridViewInScrollView;
 import com.zhr.customview.NoAutoScrollView;
 import com.zhr.customview.TextViewWithExpand;
+import com.zhr.database.DBComicDownloadDetailHelper;
 import com.zhr.database.DBComicRecordHelper;
 import com.zhr.download.DownloadService;
 import com.zhr.findcomic.R;
+import com.zhr.findcomic.R.id;
 import com.zhr.searchcomic.ComicChapter;
+import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.sqlitedao.ComicRecord;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
+import com.zhr.util.Constants;
 import com.zhr.util.Util;
 
 /**
@@ -80,7 +88,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private ComicRecord comicRecord;
 	//漫画简介
 	private String author;
-	private String title;
+	private String comicName;
 	private String imageUrl;
 	private String intro;
 	private String introUrl;
@@ -92,6 +100,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	//显示详细话数的gridview
 	private GridViewInScrollView gridView;
 	private ArrayList<ComicChapter> chapters;
+	//与下载的关联起来，如果点击了下载，就保存入数据库，否则只是一般使用
 	private ChapterAdapter chapterAdapter;
 	
 	//漫画介绍页的布局
@@ -104,6 +113,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private Button confirmDownloadButton;
 	//选中下载章节的数量
 	private int chooseCount = 0;
+	//实际可下载的数量
+	private int realCount = 0;
 	
 	
 	private ColorStateList textColorChangeList;
@@ -112,6 +123,11 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private NoAutoScrollView scrollView;
 	
 	private AsyncHttpClient client;
+	
+	//接收下载状态变化的广播
+	private DownloadBroadcast downloadBroadcast;
+	private LocalBroadcastManager lbManager;
+	private IntentFilter intentFilter;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -128,14 +144,14 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		author = getIntent().getStringExtra("author");
 		if(author == null)
 			author = "";
-		title = getIntent().getStringExtra("title");
-		if(title == null)
-			title = "";
+		comicName = getIntent().getStringExtra("title");
+		if(comicName == null)
+			comicName = "";
 		//搜索数据库找阅读记录
-		if(!title.equals(""))
+		if(!comicName.equals(""))
 		{
 			comicRecord = DBComicRecordHelper.getInstance(getBaseContext()).
-					getComicRecord(title);
+					getComicRecord(comicName);
 			
 		}
 		imageUrl = getIntent().getStringExtra("imageUrl");
@@ -144,7 +160,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		chapterAdapter = new ChapterAdapter();
 		
 
-		textColorChangeList = getResources().getColorStateList(R.drawable.chapter_textview_click);
+		textColorChangeList = getResources().getColorStateList(R.drawable.chapter_button_click);
 	}
 	
 	private void initView()
@@ -189,7 +205,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private void initData()
 	{
 		authorView.setText(author);
-		titleView.setText(title);
+		titleView.setText(comicName);
 		if(imageUrl != null)
 			BitmapLoader.getInstance().loadImage(coverView, imageUrl, true, false, false,false);
 		readButton.setText("开始阅读");
@@ -203,7 +219,15 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		client = new AsyncHttpClient();
 		client.setUserAgent("Baiduspider+");
 		client.setTimeout(2000);
+		
+		downloadBroadcast = new DownloadBroadcast();
+		lbManager = LocalBroadcastManager.getInstance(this);
+		intentFilter = new IntentFilter();
+		intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+		
 		loadComicIntro();
+		
+		
 	}
 	
 	private void loadComicIntro()
@@ -215,9 +239,33 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				if(arg0 == 200)
 				{
 					handleIntroPage(arg2);
-					chapterAdapter.notifyDataSetChanged();
+					
+					
 					if(chapters.size() == 0)
 						showNetError();
+					else
+					{
+						List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper
+								.getInstance(getBaseContext()).getComicDownloadDetails(comicName);
+						realCount = chapters.size();
+						if(cDetails != null&&cDetails.size() != 0)
+						{							
+							for(int i = 0;i < cDetails.size();i++)
+							{
+								String chapterName = cDetails.get(i).getChapter();
+								for(ComicChapter chapter:chapters)
+								{
+									if(chapter.getChapter().equals(chapterName))
+									{
+										realCount--;
+										chapter.setDownload_status(cDetails.get(i).getStatus());
+										break;
+									}
+								}
+							}
+						}
+						chapterAdapter.notifyDataSetChanged();
+					}
 				}
 				progressBar.setVisibility(View.GONE);
 				scrollView.setVisibility(View.VISIBLE);				
@@ -264,7 +312,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		if(mode == READ_MODE)
 		{
 			Intent intent = new Intent(this,ComicReadActivity.class);
-			intent.putExtra("comicName",title + "###" + chapters.get(position).getChapter());
+			intent.putExtra("comicName",comicName + "###" + chapters.get(position).getChapter());
 			if(comicRecord != null&&
 					comicRecord.getChapter().equals(chapters.get(position).getChapter()))
 				intent.putExtra("position", comicRecord.getPage());
@@ -275,6 +323,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		}
 		else if(mode == DOWNLOAD_MODE)
 		{
+			if(chapters.get(position).getDownload_status() != -1)
+				return;
 			chapters.get(position).changeChoose();
 			if(chapters.get(position).getChoose())
 				++chooseCount;
@@ -284,7 +334,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				confirmDownloadButton.setEnabled(true);
 			else
 				confirmDownloadButton.setEnabled(false);
-			if(chooseCount == chapters.size())
+			if(chooseCount == realCount&&chooseCount > 0)
 				chooseAllView.setText("取消");
 			else 
 				chooseAllView.setText("全选");
@@ -305,7 +355,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				{
 					if(comicRecord == null)
 						comicRecord = new ComicRecord();
-					comicRecord.setName(title);
+					comicRecord.setName(comicName);
 					comicRecord.setChapter(chapter_name);
 					comicRecord.setPage(read_position);
 					
@@ -365,6 +415,19 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		// TODO Auto-generated method stub
 		back.performClick();
 	}
+	
+	@Override
+	protected void onResume() {		
+		super.onResume();
+		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		lbManager.unregisterReceiver(downloadBroadcast);
+	}
 
 	@Override
 	public void onClick(View v) {
@@ -400,7 +463,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 			Log.d("Comic", "p" + position);
 			Intent intent = new Intent(this,ComicReadActivity.class);
-			intent.putExtra("comicName",title + "###" + chapters.get(position).getChapter());
+			intent.putExtra("comicName",comicName + "###" + chapters.get(position).getChapter());
 			if(comicRecord != null&&
 					comicRecord.getChapter().equals(chapters.get(position).getChapter()))
 				intent.putExtra("position", comicRecord.getPage());
@@ -423,15 +486,24 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			confirmDownloadButton.setEnabled(false);
 			break;
 		case R.id.choose_all:
-			if(chooseCount < chapters.size())
+			if(chooseCount < realCount)
 			{
+				chooseCount = 0;
 				for(int i = 0;i < chapters.size();i++)
-					chapters.get(i).setChoose(true);
-				chooseCount = chapters.size();
-				chooseAllView.setText("取消");
-				confirmDownloadButton.setEnabled(true);
+				{
+					if(chapters.get(i).getDownload_status() == -1)
+					{
+						chapters.get(i).setChoose(true);
+						++chooseCount;
+					}
+				}
+				if(chooseCount > 0)
+				{
+					chooseAllView.setText("取消");
+					confirmDownloadButton.setEnabled(true);
+				}
 			}
-			else if(chooseCount == chapters.size())
+			else if(chooseCount == realCount)
 			{
 				for(int i = 0;i < chapters.size();i++)
 					chapters.get(i).setChoose(false);
@@ -450,7 +522,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			int index = 0;
 			for(int i = 0;i < chapters.size();i++)
 			{
-				if(chapters.get(i).getChoose())
+				if(chapters.get(i).getChoose()&&chapters.get(i).getDownload_status() == -1)
 				{
 					chapterNames[index] = chapters.get(i).getChapter();
 					urls[index] = chapters.get(i).getUrl();
@@ -459,7 +531,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			}
 			
 			Bundle data = new Bundle();
-			data.putString("comicName", title);
+			data.putString("comicName", comicName);
 			data.putStringArray("chapters", chapterNames);
 			data.putStringArray("urls", urls);
 			data.putInt("downloadChapterNum", chooseCount);
@@ -473,7 +545,40 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		}		
 	}
 	
-	
+	//接收下载完成广播，更新显示
+	private class DownloadBroadcast extends BroadcastReceiver
+	{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(intent != null)
+			{
+				if(intent.getAction().equals(DownloadService.CHAPTER_FINISHING_OR_PAUSED))
+				{
+					if(intent.getStringExtra("comicName") != null
+							&&intent.getStringExtra("comicName").equals(comicName))
+					{
+						String chapterName = intent.getStringExtra("chapterName");
+						if(chapterName == null)
+							return;
+						int status = intent.getIntExtra("status", 0);
+						for(int i = 0;i < chapters.size();i++)
+						{
+							if(chapters.get(i).getChapter().equals(chapterName))
+							{
+								realCount--;
+								chapters.get(i).setDownload_status(status);
+								chapterAdapter.notifyDataSetChanged();
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+		}
+		
+	}
 	
 	private class ChapterAdapter extends BaseAdapter
 	{
@@ -503,40 +608,55 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			{
 				LayoutInflater inflater = (LayoutInflater)getSystemService(
 						Context.LAYOUT_INFLATER_SERVICE);
-				convertView = inflater.inflate(R.layout.chapter_textview, parent,false);
-				textView = (TextView) convertView.findViewById(R.id.chapter_text);
+				convertView = inflater.inflate(R.layout.chapter_button, parent,false);
+				textView = (TextView) convertView.findViewById(R.id.chapter_button);
 			}
 			else {
 				textView = (TextView) convertView;				
 			}
+
 			textView.setText(chapters.get(position).getChapter());	
 			if(mode == READ_MODE)
 			{						
+//				button.setEnabled(true);
 				textView.setTextColor(textColorChangeList);
 				if(comicRecord != null&&chapters.get(position).getChapter().
 						equals(comicRecord.getChapter()))
 				{
 					textView.setTextColor(getResources().getColor(R.color.white));
-					textView.setBackgroundResource(R.drawable.chapter_textview_read);		
+					textView.setBackgroundResource(R.drawable.chapter_button_read);		
 				}
-				else
+				else if(chapters.get(position).getDownload_status() == Constants.FINISHED)
 				{
-					textView.setBackgroundResource(R.drawable.chapter_textview_default);	
-
+					textView.setTextColor(getResources().getColor(R.color.white));
+					textView.setBackgroundResource(R.drawable.chapter_button_downloaded);
+				}
+				else 
+				{
+					textView.setBackgroundResource(R.drawable.chapter_button_default);	
 				}			
 			}
 			else if(mode == DOWNLOAD_MODE)
 			{
-				if(chapters.get(position).getChoose())
+				textView.setTextColor(getResources().getColor(R.color.black));
+				if(chapters.get(position).getDownload_status() != -1)
 				{
-					textView.setBackgroundColor(getResources().getColor(R.color.red));
-					textView.setTextColor(getResources().getColor(R.color.white));
-				}				
+//					button.setClickable(false);
+					textView.setBackgroundResource(R.drawable.chapter_button_background_unable_choose);
+				}
 				else
 				{
-					textView.setBackgroundColor(getResources().getColor(R.color.white));
-					textView.setTextColor(getResources().getColor(R.color.black));
+//					button.setClickable(true);
+					if(chapters.get(position).getChoose())
+					{
+						textView.setBackgroundResource(R.drawable.chapter_button_background_choose);
+					}
+					else
+					{
+						textView.setBackgroundResource(R.drawable.chapter_button_background_no_choose);
+					}
 				}
+
 			}
 
 			return textView;

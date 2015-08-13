@@ -49,29 +49,8 @@ public class WelcomeActivity extends Activity{
 		//初始化数据库
 		DBNewsHelper.getInstance(getApplicationContext()).deleteAllNews();
 		DBComicDownloadHelper.getInstance(getApplicationContext());
-//		ComicDownload comicDownload = new ComicDownload();
-//		comicDownload.setComicName("3");
-//		comicDownload.setChapterNum(1);
-//		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(comicDownload);
-//		
-//		ComicDownloadDetail cDetail = new ComicDownloadDetail();
-//		cDetail.setComicDownload(comicDownload);
-//		cDetail.setChapter("2");
-//		cDetail.setStatus("1");
-//		cDetail.setFinishNum(0);
-//		cDetail.setPageNum(0);
-//		cDetail.setUrl("");
-//		comicDownload.getComicDownloadDetailList().add(cDetail);
-//		DBComicDownloadDetailHelper.getInstance(getApplicationContext()).saveComicDownloadDetail(cDetail);
 		
-//		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(comicDownload);
-		ComicDownload comicDownload2 = DBComicDownloadHelper.getInstance(getApplicationContext()).getComicDownload("3");
 		
-		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper.getInstance(getApplicationContext()).getComicDownloadDetails("3");
-		if(cDetails != null)
-		{
-			
-		}
 		
 
 		Handler handler = new Handler();
@@ -85,6 +64,27 @@ public class WelcomeActivity extends Activity{
 			}
 		}, 2000);
 		
+	}
+	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.d("Comic", "onResume");
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Log.d("Comic", "onPause");
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		Log.d("Comic", "onStop");
 	}
 
 }

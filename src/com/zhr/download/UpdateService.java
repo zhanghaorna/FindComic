@@ -13,6 +13,7 @@ import com.zhr.findcomic.R;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -66,7 +67,7 @@ public class UpdateService extends IntentService{
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext())
 					.setContent(remoteViews)
 					.setSmallIcon(R.drawable.ic_launcher)
-					.setContentTitle("下载中");
+					.setTicker("下载中");
 		updateNotification = mBuilder.build();
 		nManager.notify(notifyId, updateNotification);
 		
@@ -141,6 +142,8 @@ public class UpdateService extends IntentService{
 		}
 		
 	}
+	
+
 	
 	private void update()
 	{

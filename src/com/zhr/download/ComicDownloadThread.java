@@ -11,6 +11,8 @@ import java.net.URL;
 import org.apache.http.Header;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
@@ -57,9 +59,10 @@ public class ComicDownloadThread implements Runnable{
 			{
 				isRunning = true;
 				cDetail.setStatus(Constants.DOWNLOADING);
-				for(int i = 0;i < urls.length;i++)
+				int i = 0;
+				for(;i < urls.length;i++)
 				{
-					while(!isRunning);
+					if(isRunning)
 					{
 						URL url = new URL(urls[i]);
 						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -70,9 +73,9 @@ public class ComicDownloadThread implements Runnable{
 						FileOutputStream outputStream = null;
 						byte[] bytes = new byte[10240];
 						int nums = 0;
+						String fileName = "";
 						if(inputStream != null)
-						{	
-							String fileName = "";
+						{								
 							if(i < 10)
 								fileName = "00" + i + ".jpg";
 							else if(i < 100)
@@ -82,20 +85,42 @@ public class ComicDownloadThread implements Runnable{
 							outputStream = new FileOutputStream(new File(dirPath,fileName));
 							while((nums = inputStream.read(bytes)) != -1)
 							{
+								if(!isRunning)
+									break;
 								outputStream.write(bytes,0,nums);
 							}
+							
 						}
 						if(outputStream != null)
 						{
-							outputStream.flush();
-							outputStream.close();
-								
+							if(!isRunning)
+							{
+								outputStream.close();
+								File file = new File(dirPath,fileName);
+								if(file.exists())
+									file.delete();
+							}
+							else {
+								outputStream.flush();
+								outputStream.close();
+							}								
 						}
 					}
 				}
+				if(isRunning&&i < urls.length)
+					cDetail.setStatus(Constants.PAUSED);
 				cDetail.setStatus(Constants.FINISHED);
 				if(context != null)
+				{
 					DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
+					Intent intent = new Intent();
+					intent.setAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+					intent.putExtra("comicName", cDetail.getComicName());
+					intent.putExtra("chapterName", cDetail.getChapter());
+					intent.putExtra("status", cDetail.getStatus());
+					LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
+					nManager.sendBroadcast(intent);
+				}
 			}
 		
 		} catch (MalformedURLException e) {
@@ -107,6 +132,18 @@ public class ComicDownloadThread implements Runnable{
 		{
 			context = null;
 		}
+	}
+	
+	//清除一些变量，释放内存空间
+	public void clear()
+	{
+		cDetail = null;
+		context = null;
+	}
+	
+	public int getDownloadStatus()
+	{
+		return cDetail.getStatus();
 	}
 	
 	private void createDirs()

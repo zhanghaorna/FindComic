@@ -1,7 +1,5 @@
 package com.zhr.searchcomic;
 
-import java.io.Serializable;
-
 /**
  * @author zhr
  * @version 1.0.0
@@ -17,6 +15,10 @@ public class ComicChapter{
 	private String url;
 	//是否选中下载
 	private Boolean choose;
+	//下载状态，默认为-1，代表未下载,从数据库中获取，或者广播更改数据
+	//其他状态与Sql中保持一致
+	private int download_status = -1;
+
 	
 
 	public String getChapter() {
@@ -47,6 +49,15 @@ public class ComicChapter{
 	{
 		this.choose = !this.choose;
 	}
+
+	public int getDownload_status() {
+		return download_status;
+	}
+
+	public void setDownload_status(int download_status) {
+		this.download_status = download_status;
+	}
+
 	
-	
+
 }
