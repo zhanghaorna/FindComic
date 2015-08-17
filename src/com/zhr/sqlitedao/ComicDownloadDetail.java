@@ -9,7 +9,6 @@ import de.greenrobot.dao.DaoException;
  */
 public class ComicDownloadDetail {
 
-    /** Not-null value. */
     private String comicName;
     /** Not-null value. */
     private String chapter;
@@ -51,12 +50,10 @@ public class ComicDownloadDetail {
         myDao = daoSession != null ? daoSession.getComicDownloadDetailDao() : null;
     }
 
-    /** Not-null value. */
     public String getComicName() {
         return comicName;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setComicName(String comicName) {
         this.comicName = comicName;
     }
@@ -123,12 +120,9 @@ public class ComicDownloadDetail {
     }
 
     public void setComicDownload(ComicDownload comicDownload) {
-        if (comicDownload == null) {
-            throw new DaoException("To-one property 'comicName' has not-null constraint; cannot set to-one to null");
-        }
         synchronized (this) {
             this.comicDownload = comicDownload;
-            comicName = comicDownload.getComicName();
+            comicName = comicDownload == null ? null : comicDownload.getComicName();
             comicDownload__resolvedKey = comicName;
         }
     }

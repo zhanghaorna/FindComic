@@ -187,12 +187,14 @@ public class ComicDownloadThread implements Runnable{
 		File saveFile = new File(AppSetting.getInstance(context).getDownloadPath());
 		if(!saveFile.exists())
 		{
+			//可以创建多级目录，不管是否存在目录，如在a中创建 b//c(文件夹),可以创建c
 			saveFile.mkdirs();
 		}
 		//漫画名目录
 		saveFile = new File(saveFile, cDetail.getComicName());
 		if(!saveFile.exists())
 		{
+			//只能创建一级目录,如在a中创建 b//c，则无法创建c
 			saveFile.mkdir();
 		}
 		

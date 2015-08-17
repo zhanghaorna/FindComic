@@ -1,5 +1,9 @@
 package com.zhr.comic;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +52,7 @@ import com.zhr.download.DownloadService;
 import com.zhr.findcomic.R;
 import com.zhr.findcomic.R.id;
 import com.zhr.searchcomic.ComicChapter;
+import com.zhr.setting.AppSetting;
 import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.sqlitedao.ComicRecord;
 import com.zhr.util.BaseActivity;
@@ -530,6 +535,9 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				}
 			}
 			
+			//下载图片缩略图进行保存
+			downloadThumb();
+			
 			Bundle data = new Bundle();
 			data.putString("comicName", comicName);
 			data.putStringArray("chapters", chapterNames);
@@ -543,6 +551,43 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		default:
 			break;
 		}		
+	}
+	
+	private void downloadThumb()
+	{
+		final File file = new File(AppSetting.getInstance(ComicIntroActivity.this).getDownloadPath()
+				+ File.separator + comicName + File.separator + comicName + ".jpg");
+		if(!file.exists())
+		{
+			client.get(imageUrl, new AsyncHttpResponseHandler() {
+				
+				@Override
+				public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+					if(arg0 == 200)
+					{
+						try 
+						{
+							FileOutputStream fStream = new FileOutputStream(file);												
+							fStream.write(arg2);
+							fStream.close();
+						} catch (FileNotFoundException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}				
+				}
+				
+				@Override
+				public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
+					if(Util.isNetWorkConnect(getBaseContext()))
+						downloadThumb();
+				}
+			});
+		}
+		
 	}
 	
 	//接收下载完成广播，更新显示

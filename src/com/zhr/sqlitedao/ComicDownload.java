@@ -13,8 +13,9 @@ public class ComicDownload {
     /** Not-null value. */
     private String comicName;
     private int chapterNum;
-    //下载漫画的集中状态，0表示等待中(初始状态),1表示下载中，2表示已暂停,3表示已完成
     private int status;
+    /** Not-null value. */
+    private java.util.Date downloadDate;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -31,10 +32,11 @@ public class ComicDownload {
         this.comicName = comicName;
     }
 
-    public ComicDownload(String comicName, int chapterNum, int status) {
+    public ComicDownload(String comicName, int chapterNum, int status, java.util.Date downloadDate) {
         this.comicName = comicName;
         this.chapterNum = chapterNum;
         this.status = status;
+        this.downloadDate = downloadDate;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -67,6 +69,16 @@ public class ComicDownload {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    /** Not-null value. */
+    public java.util.Date getDownloadDate() {
+        return downloadDate;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setDownloadDate(java.util.Date downloadDate) {
+        this.downloadDate = downloadDate;
     }
 
     /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */

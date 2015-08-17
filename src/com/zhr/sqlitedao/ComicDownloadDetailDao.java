@@ -71,7 +71,11 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
     @Override
     protected void bindValues(SQLiteStatement stmt, ComicDownloadDetail entity) {
         stmt.clearBindings();
-        stmt.bindString(1, entity.getComicName());
+ 
+        String comicName = entity.getComicName();
+        if (comicName != null) {
+            stmt.bindString(1, comicName);
+        }
         stmt.bindString(2, entity.getChapter());
         stmt.bindLong(3, entity.getPageNum());
         stmt.bindLong(4, entity.getFinishNum());
@@ -88,14 +92,14 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
     /** @inheritdoc */
     @Override
     public String readKey(Cursor cursor, int offset) {
-        return cursor.getString(offset + 0);
+        return cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0);
     }    
 
     /** @inheritdoc */
     @Override
     public ComicDownloadDetail readEntity(Cursor cursor, int offset) {
         ComicDownloadDetail entity = new ComicDownloadDetail( //
-            cursor.getString(offset + 0), // comicName
+            cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // comicName
             cursor.getString(offset + 1), // chapter
             cursor.getInt(offset + 2), // pageNum
             cursor.getInt(offset + 3), // finishNum
@@ -108,7 +112,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, ComicDownloadDetail entity, int offset) {
-        entity.setComicName(cursor.getString(offset + 0));
+        entity.setComicName(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
         entity.setChapter(cursor.getString(offset + 1));
         entity.setPageNum(cursor.getInt(offset + 2));
         entity.setFinishNum(cursor.getInt(offset + 3));
@@ -173,9 +177,7 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
         int offset = getAllColumns().length;
 
         ComicDownload comicDownload = loadCurrentOther(daoSession.getComicDownloadDao(), cursor, offset);
-         if(comicDownload != null) {
-            entity.setComicDownload(comicDownload);
-        }
+        entity.setComicDownload(comicDownload);
 
         return entity;    
     }

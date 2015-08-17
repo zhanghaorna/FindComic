@@ -2,6 +2,7 @@ package com.zhr.download;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +16,7 @@ import com.zhr.findcomic.R;
 import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.util.Constants;
+
 
 
 
@@ -112,7 +114,8 @@ public class DownloadService extends Service{
 				{
 					comicDownload.setComicName(comicName);
 					comicDownload.setChapterNum(downloadChapterNum);
-					comicDownload.setStatus(Constants.WAITING);	
+					comicDownload.setStatus(Constants.WAITING);
+					comicDownload.setDownloadDate(new Date());
 					DBComicDownloadHelper.getInstance(getBaseContext()).saveComicDownload(comicDownload);
 				}
 				if(chapters != null&&urls != null)

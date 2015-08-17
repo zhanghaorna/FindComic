@@ -26,6 +26,7 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         public final static Property ComicName = new Property(0, String.class, "comicName", true, "COMIC_NAME");
         public final static Property ChapterNum = new Property(1, int.class, "chapterNum", false, "CHAPTER_NUM");
         public final static Property Status = new Property(2, int.class, "status", false, "STATUS");
+        public final static Property DownloadDate = new Property(3, java.util.Date.class, "downloadDate", false, "DOWNLOAD_DATE");
     };
 
     private DaoSession daoSession;
@@ -46,7 +47,8 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         db.execSQL("CREATE TABLE " + constraint + "'COMIC_DOWNLOAD' (" + //
                 "'COMIC_NAME' TEXT PRIMARY KEY NOT NULL ," + // 0: comicName
                 "'CHAPTER_NUM' INTEGER NOT NULL ," + // 1: chapterNum
-                "'STATUS' INTEGER NOT NULL );"); // 2: status
+                "'STATUS' INTEGER NOT NULL ," + // 2: status
+                "'DOWNLOAD_DATE' INTEGER NOT NULL );"); // 3: downloadDate
     }
 
     /** Drops the underlying database table. */
@@ -62,6 +64,7 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         stmt.bindString(1, entity.getComicName());
         stmt.bindLong(2, entity.getChapterNum());
         stmt.bindLong(3, entity.getStatus());
+        stmt.bindLong(4, entity.getDownloadDate().getTime());
     }
 
     @Override
@@ -82,7 +85,8 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         ComicDownload entity = new ComicDownload( //
             cursor.getString(offset + 0), // comicName
             cursor.getInt(offset + 1), // chapterNum
-            cursor.getInt(offset + 2) // status
+            cursor.getInt(offset + 2), // status
+            new java.util.Date(cursor.getLong(offset + 3)) // downloadDate
         );
         return entity;
     }
@@ -93,6 +97,7 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         entity.setComicName(cursor.getString(offset + 0));
         entity.setChapterNum(cursor.getInt(offset + 1));
         entity.setStatus(cursor.getInt(offset + 2));
+        entity.setDownloadDate(new java.util.Date(cursor.getLong(offset + 3)));
      }
     
     /** @inheritdoc */

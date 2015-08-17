@@ -1,5 +1,6 @@
 package com.zhr.findcomic;
 
+import java.io.File;
 import java.util.List;
 
 import com.tencent.bugly.crashreport.CrashReport;
@@ -50,7 +51,12 @@ public class WelcomeActivity extends Activity{
 		DBNewsHelper.getInstance(getApplicationContext()).deleteAllNews();
 		DBComicDownloadHelper.getInstance(getApplicationContext());
 		
-		
+		//创建初始化文件夹
+		File saveFile = new File(AppSetting.getInstance(this).getDownloadPath());
+		if(!saveFile.exists())
+		{
+			saveFile.mkdirs();
+		}
 		
 
 		Handler handler = new Handler();
