@@ -72,4 +72,10 @@ public class DBComicDownloadHelper {
 		return comicDownload;
 	}
 	
+	public List<ComicDownload> getComicDownloads()
+	{
+		QueryBuilder<ComicDownload> qBuilder = comicDownloadDao.queryBuilder();
+		return qBuilder.list();
+	}
+	
 }

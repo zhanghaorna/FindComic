@@ -9,6 +9,7 @@
     <string name="setting">设置</string>
     
     <string name="soft_setting">软件设置</string>
+    <string name="download_manage">下载管理</string>
     <string name="local_comic">本地漫画</string>
     <string name="check_update">检测升级</string>
 	<string name="about_find_comic">关于找漫画</string>
@@ -68,6 +69,11 @@
 	    <item>经典</item>
 	    <item>欧美</item>
 	    <item>日文</item>
+	</string-array>
+	
+	<string-array name="dialog_item">
+	    <item>章节管理</item>
+	    
 	</string-array>
 	
 	<string name="network_error">联网失败,请重试</string>

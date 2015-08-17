@@ -1,7 +1,8 @@
 package com.zhr.setting;
 
-import com.zhr.comic.ComicReadActivity;
+
 import com.zhr.customview.CustomWaitDialog;
+import com.zhr.download.DownloadManageActivity;
 import com.zhr.download.UpdateService;
 import com.zhr.findcomic.R;
 import com.zhr.util.LocalDirActivity;
@@ -25,6 +26,7 @@ public class SettingFragment extends Fragment implements OnClickListener,
 		UpdateVersion.OnUpdateListener
 {
 	private TextView softSettingTextView;
+	private TextView downloadManageTextView;
 	private TextView localComicTextView;
 	private TextView checkUpdateTextView;
 	private TextView aboutFindComicTextView;
@@ -50,10 +52,12 @@ public class SettingFragment extends Fragment implements OnClickListener,
 	private void initView()
 	{
 		softSettingTextView = (TextView)getView().findViewById(R.id.soft_setting);
+		downloadManageTextView = (TextView)getView().findViewById(R.id.download_manage);
 		localComicTextView = (TextView)getView().findViewById(R.id.local_comic);
 		checkUpdateTextView = (TextView)getView().findViewById(R.id.check_update);
 		aboutFindComicTextView = (TextView)getView().findViewById(R.id.about_find_comic);
 		softSettingTextView.setOnClickListener(this);
+		downloadManageTextView.setOnClickListener(this);
 		localComicTextView.setOnClickListener(this);
 		checkUpdateTextView.setOnClickListener(this);
 		aboutFindComicTextView.setOnClickListener(this);
@@ -69,6 +73,11 @@ public class SettingFragment extends Fragment implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.soft_setting:
 			intent = new Intent(SettingFragment.this.getActivity(),SoftSettingActivity.class);
+			startActivity(intent);
+			getActivity().overridePendingTransition(R.anim.slide_right_in,R.anim.slide_left_out);
+			break;
+		case R.id.download_manage:
+			intent = new Intent(SettingFragment.this.getActivity(),DownloadManageActivity.class);
 			startActivity(intent);
 			getActivity().overridePendingTransition(R.anim.slide_right_in,R.anim.slide_left_out);
 			break;

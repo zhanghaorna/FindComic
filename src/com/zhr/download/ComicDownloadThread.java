@@ -7,9 +7,11 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.http.Header;
 
+import android.R.integer;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
@@ -18,7 +20,9 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
 import com.tencent.bugly.crashreport.common.strategy.c;
 import com.zhr.database.DBComicDownloadDetailHelper;
+import com.zhr.database.DBComicDownloadHelper;
 import com.zhr.setting.AppSetting;
+import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
@@ -59,6 +63,7 @@ public class ComicDownloadThread implements Runnable{
 			{
 				isRunning = true;
 				cDetail.setStatus(Constants.DOWNLOADING);
+				setDownloadStatus(cDetail.getComicName(), Constants.DOWNLOADING);
 				int i = 0;
 				for(;i < urls.length;i++)
 				{
@@ -110,6 +115,10 @@ public class ComicDownloadThread implements Runnable{
 				if(isRunning&&i < urls.length)
 					cDetail.setStatus(Constants.PAUSED);
 				cDetail.setStatus(Constants.FINISHED);
+				if(checkDownloadStatus(cDetail.getComicName()))
+				{
+					setDownloadStatus(cDetail.getComicName(), Constants.FINISHED);
+				}
 				if(context != null)
 				{
 					DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
@@ -132,6 +141,32 @@ public class ComicDownloadThread implements Runnable{
 		{
 			context = null;
 		}
+	}
+	
+	private boolean checkDownloadStatus(String comicName)
+	{
+		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper.getInstance(context).getComicDownloadDetails(comicName);
+		if(cDetails != null&&cDetails.size() != 0)
+		{
+			for(int i = 0;i < cDetails.size();i++)
+			{
+				if(cDetails.get(i).getStatus() != Constants.FINISHED)
+					return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	private void setDownloadStatus(String comicName,int status)
+	{
+		ComicDownload cDownload = DBComicDownloadHelper.getInstance(context).getComicDownload(comicName);
+		if(cDownload != null&&cDownload.getStatus() != status)
+		{
+			cDownload.setStatus(status);
+			DBComicDownloadHelper.getInstance(context).saveComicDownload(cDownload);
+		}
+
 	}
 	
 	//清除一些变量，释放内存空间

@@ -91,6 +91,11 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Light.NoTitleBar"
             ></activity>          
+        <activity 
+            android:name="com.zhr.download.DownloadManageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            ></activity>
         <service android:name="com.zhr.download.UpdateService"></service> 
         <service android:name="com.zhr.download.DownloadService"></service> 
         <receiver android:name="com.zhr.download.ComicInstallReceiver">

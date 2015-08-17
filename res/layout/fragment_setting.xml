@@ -23,6 +23,12 @@
         android:text="@string/soft_setting"/>
     
     <TextView 
+        android:id="@+id/download_manage"
+        style="@style/setting_textview"
+        android:drawableLeft="@drawable/download_s"
+        android:text="@string/download_manage"/>
+    
+    <TextView 
         android:id="@+id/local_comic"
         style="@style/setting_textview"
         android:drawableLeft="@drawable/localcomic_s"

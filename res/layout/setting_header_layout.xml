@@ -6,6 +6,7 @@
     android:background="@color/silver_gray"
     android:layout_gravity="center_vertical">
     <ImageView
+        android:layout_centerVertical="true"
         android:id="@+id/back"
         android:layout_alignParentLeft="true"
         android:layout_width="wrap_content"
