@@ -63,4 +63,13 @@ public class DBComicDownloadDetailHelper {
 		qBuilder.where(ComicDownloadDetailDao.Properties.Status.eq(Constants.PAUSED)).orderAsc(Properties.Chapter);
 		return qBuilder.list();
 	}
+	
+	public void deleteDownloadDetails(String comicName)
+	{
+		List<ComicDownloadDetail> cDetails = getComicDownloadDetails(comicName);
+		if(cDetails != null&&cDetails.size() != 0)
+		{
+			comicDownloadDetailDao.deleteInTx(cDetails);
+		}
+	}
 }

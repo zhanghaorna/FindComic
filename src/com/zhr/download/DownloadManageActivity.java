@@ -3,6 +3,7 @@ package com.zhr.download;
 import java.io.File;
 import java.util.List;
 
+import android.R.integer;
 import android.R.menu;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.zhr.database.DBComicDownloadDetailHelper;
 import com.zhr.database.DBComicDownloadHelper;
 import com.zhr.findcomic.R;
 import com.zhr.setting.AppSetting;
@@ -88,6 +90,7 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 	private void showMenuDialog(ComicDownload cDownload)
 	{
 		choosedDownload = cDownload;
+		builder.setTitle(cDownload.getComicName());
 		switch (cDownload.getStatus()) {
 		case Constants.WAITING:
 		case Constants.DOWNLOADING:
@@ -162,7 +165,27 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 	
 	private void deleteComic(String comicName)
 	{
-		
+		DBComicDownloadHelper.getInstance(getApplicationContext())
+					.deleteComicDownload(comicName);
+		DBComicDownloadDetailHelper.getInstance(getApplicationContext())
+					.deleteDownloadDetails(comicName);
+		File file = new File(AppSetting.getInstance(getApplicationContext())
+				.getDownloadPath() + File.separator + comicName);
+		removeFile(file);
+	}
+	
+	private void removeFile(File file)
+	{
+		if(!file.exists())
+			return;
+		if(file.isFile())
+			file.delete();
+		else {
+			File[] files = file.listFiles();
+			for(int i = 0;i < files.length;i++)
+				removeFile(files[i]);
+			file.delete();
+		}
 	}
 	
 	

@@ -78,4 +78,9 @@ public class DBComicDownloadHelper {
 		return qBuilder.list();
 	}
 	
+	public void deleteComicDownload(String comicName)
+	{
+		comicDownloadDao.deleteByKey(comicName);
+	}
+	
 }

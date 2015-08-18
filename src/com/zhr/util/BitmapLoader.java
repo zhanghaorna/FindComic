@@ -183,7 +183,8 @@ public class BitmapLoader
 			{
 				 cache = AppSetting.getInstance().getComicCache();
 			}
-			else {
+			else
+			{
 				cache = AppSetting.getInstance().getCache();
 			}
 			Bitmap bitmap = null;

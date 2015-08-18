@@ -142,9 +142,9 @@ public class LoadAndDisplayTask implements Runnable{
 		}
 		finally
 		{
-			targetView = null;
-			bitmap = null;
-			handler = null;
+//			targetView = null;
+//			bitmap = null;
+//			handler = null;
 		}
 	}
 	

@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="40dp"
+        android:padding="10dp"
         android:background="@color/silver_gray" >
 
         <ImageView
@@ -17,7 +18,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:padding="10dp"
             android:src="@drawable/icon_back" />
 		
         
@@ -28,7 +28,6 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:gravity="center"
-            android:padding="6dp"
             android:text="@string/download"
             android:textColor="@drawable/textview_color_click"
             android:textSize="18sp" />
