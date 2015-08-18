@@ -3,6 +3,7 @@ package com.zhr.download;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +31,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -59,10 +61,20 @@ public class DownloadService extends Service{
 	private DownloadBroadcast downloadBroadcast;
 	
 	public static final String CHAPTER_FINISHING_OR_PAUSED = "download_chapter_finished_or_paused";
-
+	
+	private final IBinder mBinder = new LocalBinder();
+	
+	public class LocalBinder extends Binder
+	{
+		DownloadService getService()
+		{
+			return DownloadService.this;
+		}
+	}
+	
 	@Override
 	public IBinder onBind(Intent intent) {
-		return null;
+		return mBinder;
 	}
 	
 	@Override
@@ -95,12 +107,50 @@ public class DownloadService extends Service{
 		nManager.notify(notifyId, downloadNotification);
 	}
 	
+	public void startDownload(String comicName)
+	{
+		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper.getInstance(getApplicationContext())
+				.getUnfinishedDownloadDetails(comicName);
+		if(cDetails != null&&cDetails.size() != 0)
+		{
+			for(ComicDownloadDetail cDetail:cDetails)
+			{
+				cDetail.setStatus(Constants.WAITING);
+				ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, DownloadService.this);
+				downloadComics.add(downloadThread);
+				singleThreadPool.submit(downloadThread);
+				//是否保存，待验证
+				
+			}
+		}
+	}
+	
+	public void pauseDownload(String comicName)
+	{
+		int size = downloadComics.size();
+		for(int i = 0;i < size;i++)
+		{
+			ComicDownloadThread cThread = downloadComics.poll();
+			if(cThread.getDownloadDetail().getComicName().equals(comicName))
+			{
+				cThread.pauseDownload();
+				cThread.getDownloadDetail().setStatus(Constants.PAUSED);
+				//是否保存，待验证
+			}
+			else 
+			{
+				downloadComics.add(cThread);
+			}
+		}
+	}
+	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		if(intent != null)
 		{
 			Bundle bundle = intent.getExtras();
-			if(bundle != null)
+			//直接从漫画页选择下载
+			if(bundle != null&&bundle.getString("from") == null)
 			{
 				String comicName = bundle.getString("comicName");
 				int downloadChapterNum = bundle.getInt("downloadChapterNum",0);
@@ -133,7 +183,7 @@ public class DownloadService extends Service{
 						cDetail.setStatus(Constants.WAITING);
 						comicDownload.getComicDownloadDetailList().add(cDetail);
 						details.add(cDetail);
-						ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, getBaseContext());
+						ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, DownloadService.this);
 						downloadComics.add(downloadThread);
 						singleThreadPool.submit(downloadThread);
 					}
@@ -151,6 +201,8 @@ public class DownloadService extends Service{
 					}
 				}								
 			}
+			//从漫画也
+//			else if(bundle != null&&bundle.getString("from").equals("download_manage"))
 		}
 	
 		return START_STICKY;

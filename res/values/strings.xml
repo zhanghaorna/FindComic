@@ -71,12 +71,27 @@
 	    <item>日文</item>
 	</string-array>
 	
-	<string-array name="dialog_item">
+	<string-array name="dm_pause">
 	    <item>章节管理</item>
-	    
+	    <item>开始</item>
+	    <item>删除</item>
+	</string-array>
+	
+	<string-array name="dm_downloading">
+	    <item>章节管理</item>
+	    <item>暂停</item>
+	</string-array>
+	
+	<string-array name="dm_finished">
+	   	<item>章节管理</item>
+	    <item>删除</item>
 	</string-array>
 	
 	<string name="network_error">联网失败,请重试</string>
 	<string name="re_get">重新获取</string>
+	
+	<item 
+	    type="id"
+	    name="dm_adapter_convertview"></item>
 	
 </resources>

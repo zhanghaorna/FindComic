@@ -103,6 +103,9 @@ public class LoadAndDisplayTask implements Runnable{
 				//从本地获取图片
 				else if(imagePath != "")
 				{
+					File file = new File(imagePath);
+					if(!file.exists())
+						return;
 					BitmapFactory.Options options = new BitmapFactory.Options();
 					options.inJustDecodeBounds = true;
 					if(thumbnail)
@@ -137,7 +140,12 @@ public class LoadAndDisplayTask implements Runnable{
 			bitmap = null;
 			Log.d("BitMapError", "Bitmap is too big to load");
 		}
-
+		finally
+		{
+			targetView = null;
+			bitmap = null;
+			handler = null;
+		}
 	}
 	
 	private void loadImage()

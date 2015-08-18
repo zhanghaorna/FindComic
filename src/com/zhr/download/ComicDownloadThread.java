@@ -35,8 +35,6 @@ import com.zhr.util.Util;
  */
 public class ComicDownloadThread implements Runnable{
 	
-	
-	private int status;
 	private String[] urls = null;
 	
 	private ComicDownloadDetail cDetail;
@@ -44,7 +42,8 @@ public class ComicDownloadThread implements Runnable{
 	
 	private String dirPath;
 	
-	private boolean isRunning = false;
+	private boolean isRunning = true;
+
 	
 	public ComicDownloadThread(ComicDownloadDetail cDetail,Context context)
 	{
@@ -53,18 +52,23 @@ public class ComicDownloadThread implements Runnable{
 		createDirs();
 	}	
 	
+	public ComicDownloadDetail getDownloadDetail()
+	{
+		return cDetail;
+	}
 	
 	public void run() 
 	{
+		if(!isRunning)
+			return;
 		getImageUrl();
 		try 
 		{
-			if(urls != null)
+			if(urls != null&&isRunning)
 			{
-				isRunning = true;
 				cDetail.setStatus(Constants.DOWNLOADING);
 				setDownloadStatus(cDetail.getComicName(), Constants.DOWNLOADING);
-				int i = 0;
+				int i = cDetail.getFinishNum() + 1;
 				for(;i < urls.length;i++)
 				{
 					if(isRunning)
@@ -108,13 +112,15 @@ public class ComicDownloadThread implements Runnable{
 							else {
 								outputStream.flush();
 								outputStream.close();
+								cDetail.setFinishNum(i);
 							}								
 						}
 					}
 				}
-				if(isRunning&&i < urls.length)
+				if(!isRunning&&i < urls.length)
 					cDetail.setStatus(Constants.PAUSED);
-				cDetail.setStatus(Constants.FINISHED);
+				else
+					cDetail.setStatus(Constants.FINISHED);
 				if(checkDownloadStatus(cDetail.getComicName()))
 				{
 					setDownloadStatus(cDetail.getComicName(), Constants.FINISHED);
@@ -174,6 +180,11 @@ public class ComicDownloadThread implements Runnable{
 	{
 		cDetail = null;
 		context = null;
+	}
+	
+	public void pauseDownload()
+	{
+		isRunning = false;
 	}
 	
 	public int getDownloadStatus()

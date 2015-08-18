@@ -6,8 +6,10 @@ import android.content.Context;
 
 import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.sqlitedao.ComicDownloadDetailDao;
+import com.zhr.sqlitedao.ComicDownloadDetailDao.Properties;
 import com.zhr.sqlitedao.DaoSession;
 import com.zhr.util.ComicApplication;
+import com.zhr.util.Constants;
 
 import de.greenrobot.dao.query.QueryBuilder;
 
@@ -55,5 +57,10 @@ public class DBComicDownloadDetailHelper {
 		return qBuilder.list();
 	}
 	
-	
+	public List<ComicDownloadDetail> getUnfinishedDownloadDetails(String comicName)
+	{
+		QueryBuilder<ComicDownloadDetail> qBuilder = comicDownloadDetailDao.queryBuilder();
+		qBuilder.where(ComicDownloadDetailDao.Properties.Status.eq(Constants.PAUSED)).orderAsc(Properties.Chapter);
+		return qBuilder.list();
+	}
 }

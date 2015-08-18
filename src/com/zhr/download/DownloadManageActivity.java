@@ -1,10 +1,19 @@
 package com.zhr.download;
 
+import java.io.File;
 import java.util.List;
 
+import android.R.menu;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,8 +26,10 @@ import android.widget.TextView;
 
 import com.zhr.database.DBComicDownloadHelper;
 import com.zhr.findcomic.R;
+import com.zhr.setting.AppSetting;
 import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.util.BaseActivity;
+import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
 
 public class DownloadManageActivity extends BaseActivity implements OnClickListener{
@@ -28,9 +39,15 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 	
 	private List<ComicDownload> comicInfos;
 	
-	private ListView comicInfosView;
+	private ComicDownload choosedDownload;
 	
-	private AlertDialog dialog;
+	private ListView comicInfosView;
+	private ComicInfoAdapter mAdapter;
+	
+	private AlertDialog.Builder builder;
+	private DownloadService dService;
+	
+	private String path;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,15 +70,114 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 		
 		comicInfosView = (ListView)findViewById(R.id.download_list);
 		
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//		builder.setItems(items, listener)
 		
+		builder = new AlertDialog.Builder(this);
+		builder.setNegativeButton("取消", null);
 	}
 	
 	private void initData()
 	{
 		comicInfos = DBComicDownloadHelper.getInstance(this).getComicDownloads();
+		mAdapter = new ComicInfoAdapter();
+		comicInfosView.setAdapter(mAdapter);
 		
+		path = AppSetting.getInstance(getApplicationContext()).getDownloadPath();
+		
+	}
+	
+	private void showMenuDialog(ComicDownload cDownload)
+	{
+		choosedDownload = cDownload;
+		switch (cDownload.getStatus()) {
+		case Constants.WAITING:
+		case Constants.DOWNLOADING:
+			builder.setItems(getResources().getStringArray(R.array.dm_downloading),
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							switch (which) {
+							case 0:
+								enterChapterManager(choosedDownload.getComicName());
+								break;
+							case 1:
+								dService.pauseDownload(choosedDownload.getComicName());
+								choosedDownload.setStatus(Constants.PAUSED);
+								mAdapter.notifyDataSetChanged();
+								break;
+							default:
+								break;
+							}
+							
+						}
+					});
+			break;
+		case Constants.PAUSED:
+			builder.setItems(getResources().getStringArray(R.array.dm_pause),
+					new DialogInterface.OnClickListener() {					
+						public void onClick(DialogInterface dialog, int which) {
+							switch (which) {
+							case 0:
+								enterChapterManager(choosedDownload.getComicName());
+								break;
+							case 1:
+								dService.startDownload(choosedDownload.getComicName());
+								choosedDownload.setStatus(Constants.WAITING);
+								mAdapter.notifyDataSetChanged();
+								break;
+							case 2:
+								deleteComic(choosedDownload.getComicName());
+							default:
+								break;
+							}
+							
+						}
+					});
+			break;
+		case Constants.FINISHED:
+			builder.setItems(getResources().getStringArray(R.array.dm_finished),
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							switch (which) {
+							case 0:
+								enterChapterManager(choosedDownload.getComicName());
+								break;
+							case 1:
+								deleteComic(choosedDownload.getComicName());
+							default:
+								break;
+							}							
+						}
+					});
+			break;
+		default:
+			break;
+		}
+		
+		builder.create().show();
+	}
+	
+	private void enterChapterManager(String comicName)
+	{
+		
+	}
+	
+	private void deleteComic(String comicName)
+	{
+		
+	}
+	
+	
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		bindService(new Intent(this,DownloadService.class), mConnection, BIND_AUTO_CREATE);
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		unbindService(mConnection);
 	}
 
 	@Override
@@ -77,6 +193,20 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 		}
 		
 	}
+	
+	private ServiceConnection mConnection = new ServiceConnection() {
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			dService = null;
+			
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {		
+			dService = ((DownloadService.LocalBinder)service).getService();
+		}
+	};
 	
 	
 	
@@ -113,6 +243,8 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 				viewHolder.statusView = (TextView)convertView.findViewById(R.id.comic_status);
 				viewHolder.menuButton = (Button) convertView.findViewById(R.id.comic_menu);
 				convertView.setTag(viewHolder);
+				viewHolder.menuButton.setOnClickListener(new OnMenuClickListener(convertView));
+				
 			}
 			else
 			{
@@ -130,7 +262,10 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 			else {
 				viewHolder.statusView.setText("已暂停");
 			}
-			final String comicName = comicInfos.get(position).getComicName();
+			BitmapLoader.getInstance().loadImageNoCache(viewHolder.imageView,
+					path + File.separator + comicInfos.get(position).getComicName()
+					+ File.separator + comicInfos.get(position).getComicName() + ".jpg" , false);
+			convertView.setTag(R.id.dm_adapter_convertview,position);
 			
 			
 			return convertView;
@@ -142,6 +277,22 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 			TextView titleView;
 			TextView statusView;
 			Button menuButton;
+		}
+		
+		private class OnMenuClickListener implements OnClickListener
+		{
+			View convertView;
+			public OnMenuClickListener(View convertView)
+			{
+				this.convertView = convertView;
+			}
+			
+			@Override
+			public void onClick(View v) {
+				int position = (Integer) convertView.getTag(R.id.dm_adapter_convertview);
+				showMenuDialog(comicInfos.get(position));
+			}
+			
 		}
 	}
 }

@@ -30,7 +30,6 @@ public class EditTextWithDel extends EditText{
 	
 
 	private Drawable mRightDrawable;
-	private boolean hasFocus;
 	
 	
 	public EditTextWithDel(Context context) {
