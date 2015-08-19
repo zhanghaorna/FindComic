@@ -6,25 +6,27 @@
     
    <RelativeLayout
     	android:layout_width="match_parent"
-    	android:layout_height="wrap_content" 
-    	android:layout_margin="10dp"
+    	android:layout_height="45dp" 
+    	android:padding="10dp"
     	android:layout_gravity="center_vertical">
     	<ImageView
         	android:id="@+id/back"
         	android:layout_alignParentLeft="true"
         	android:layout_width="wrap_content"
         	android:layout_height="wrap_content"
-        	android:src="@drawable/icon_back"/>
+        	android:src="@drawable/icon_back"
+        	android:layout_centerVertical="true"/>
         <TextView
             android:layout_marginLeft="10dp" 
             android:id="@+id/path"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:singleLine="true"
             android:ellipsize="middle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/back"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:layout_centerVertical="true"/>
 	</RelativeLayout>
 	
     <TextView 
@@ -35,15 +37,15 @@
     <RelativeLayout
         android:id="@+id/last_read" 
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_margin="5dp">
+        android:layout_height="45dp"
+        android:padding="5dp">
         <TextView
             android:id="@+id/had_read"
             android:layout_alignParentLeft="true" 
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="@string/had_read"
-            android:padding="10dp"
+            android:padding="2dp"
             android:gravity="center"/>
         <Button
             android:layout_alignParentRight="true" 
@@ -51,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textColor="@color/white"
-            android:padding="10dp"
+            android:padding="2dp"
             android:text="@string/continue_read"
             android:background="@drawable/button_background_selector"/>
         <TextView

@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.R.integer;
 import android.R.menu;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.ComponentName;
@@ -34,7 +35,7 @@ import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
 
-public class DownloadManageActivity extends BaseActivity implements OnClickListener{
+public class DownloadManageActivity extends Activity implements OnClickListener{
 	
 	private TextView titleTextView;
 	private ImageView back;
@@ -50,6 +51,10 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 	private DownloadService dService;
 	
 	private String path;
+	
+	private TextView statusView;
+	private ImageView statusImageView;
+	private int status;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +77,9 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 		
 		comicInfosView = (ListView)findViewById(R.id.download_list);
 		
+		statusImageView = (ImageView)findViewById(R.id.status_icon);
+		statusView = (TextView)findViewById(R.id.status);
+		statusImageView.setOnClickListener(this);
 		
 		builder = new AlertDialog.Builder(this);
 		builder.setNegativeButton("取消", null);
@@ -160,11 +168,16 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 	
 	private void enterChapterManager(String comicName)
 	{
-		
+		Intent intent = new Intent(this,ComicManageActivity.class);
+		intent.putExtra("comicName", comicName);
+		startActivity(intent);
+		overridePendingTransition(R.anim.slide_right_in,R.anim.slide_left_out);
 	}
 	
 	private void deleteComic(String comicName)
 	{
+		comicInfos.remove(choosedDownload);
+		mAdapter.notifyDataSetChanged();
 		DBComicDownloadHelper.getInstance(getApplicationContext())
 					.deleteComicDownload(comicName);
 		DBComicDownloadDetailHelper.getInstance(getApplicationContext())
@@ -172,6 +185,8 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 		File file = new File(AppSetting.getInstance(getApplicationContext())
 				.getDownloadPath() + File.separator + comicName);
 		removeFile(file);
+		
+		
 	}
 	
 	private void removeFile(File file)
@@ -210,7 +225,15 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 			finish();
 			overridePendingTransition(R.anim.slide_left_in, R.anim.slide_right_out);
 			break;
-
+		case R.id.status_icon:
+			if(status == Constants.PAUSED)
+			{
+				
+			}
+			else if(status == Constants.DOWNLOADING)
+			{
+				
+			}
 		default:
 			break;
 		}
@@ -228,6 +251,36 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {		
 			dService = ((DownloadService.LocalBinder)service).getService();
+			if(dService.isDownloading())
+			{
+				statusView.setText("下载中");
+				statusImageView.setVisibility(View.VISIBLE);
+				statusImageView.setImageResource(R.drawable.dm_paused_s);
+				status = Constants.DOWNLOADING;
+			}
+			else
+			{
+				status = Constants.FINISHED;
+				for(int i = 0;i < comicInfos.size();i++)
+				{
+					if(comicInfos.get(i).getStatus() != Constants.FINISHED)
+					{
+						status = Constants.PAUSED;
+						break;
+					}
+				}
+				if(status == Constants.FINISHED)
+				{
+					statusView.setText("已完成");
+					statusImageView.setVisibility(View.GONE);
+				}
+				else
+				{
+					statusView.setText("已暂停");
+					statusImageView.setVisibility(View.VISIBLE);
+					statusImageView.setImageResource(R.drawable.dm_resume_s);
+				}
+			}
 		}
 	};
 	
@@ -282,7 +335,12 @@ public class DownloadManageActivity extends BaseActivity implements OnClickListe
 			{
 				viewHolder.statusView.setText("下载完成(" + comicInfos.get(position).getChapterNum() + ")");
 			}
-			else {
+			else if(comicInfos.get(position).getStatus() == Constants.WAITING)
+			{
+				viewHolder.statusView.setText("等待中");
+			}
+			else
+			{
 				viewHolder.statusView.setText("已暂停");
 			}
 			BitmapLoader.getInstance().loadImageNoCache(viewHolder.imageView,

@@ -76,6 +76,8 @@ public class ComicDownloadThread implements Runnable{
 						URL url = new URL(urls[i]);
 						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 						connection.setDoInput(true);
+						connection.setConnectTimeout(5000);
+						connection.setReadTimeout(5000);
 						connection.setRequestProperty("User-Agent","Baiduspider+");
 						connection.connect();
 						InputStream inputStream = connection.getInputStream();

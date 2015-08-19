@@ -231,7 +231,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
 		
 		loadComicIntro();
-		
+		lbManager.registerReceiver(downloadBroadcast, intentFilter);
 		
 	}
 	
@@ -424,13 +424,20 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	@Override
 	protected void onResume() {		
 		super.onResume();
-		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+		
 	}
 	
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
+		
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
 		lbManager.unregisterReceiver(downloadBroadcast);
 	}
 
@@ -525,7 +532,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			String[] chapterNames = new String[chooseCount];
 			String[] urls = new String[chooseCount];
 			int index = 0;
-			for(int i = 0;i < chapters.size();i++)
+			for(int i = chapters.size() - 1;i >= 0;i--)
 			{
 				if(chapters.get(i).getChoose()&&chapters.get(i).getDownload_status() == -1)
 				{
@@ -686,12 +693,10 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				textView.setTextColor(getResources().getColor(R.color.black));
 				if(chapters.get(position).getDownload_status() != -1)
 				{
-//					button.setClickable(false);
 					textView.setBackgroundResource(R.drawable.chapter_button_background_unable_choose);
 				}
 				else
 				{
-//					button.setClickable(true);
 					if(chapters.get(position).getChoose())
 					{
 						textView.setBackgroundResource(R.drawable.chapter_button_background_choose);

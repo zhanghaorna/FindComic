@@ -34,7 +34,7 @@
         
         <TextView 
             android:layout_toLeftOf="@id/download"
-            android:layout_marginRight="2dp"
+            android:layout_marginRight="10dp"
             android:background="?android:attr/listDivider"
             android:layout_width="1dp"
             android:layout_height="wrap_content"
@@ -76,7 +76,7 @@
                 android:orientation="vertical" >
 				<RelativeLayout 
 				    android:layout_width="match_parent"
-				    android:layout_height="50dp"
+				    android:layout_height="40dp"
 				    android:background="@color/silver_gray"
 				    android:id="@+id/download_layout">
 				    <TextView 

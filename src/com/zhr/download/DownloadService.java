@@ -72,6 +72,11 @@ public class DownloadService extends Service{
 		}
 	}
 	
+	public boolean isDownloading()
+	{
+		return downloadComics.size() > 0;
+	}
+	
 	@Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
@@ -128,20 +133,33 @@ public class DownloadService extends Service{
 	public void pauseDownload(String comicName)
 	{
 		int size = downloadComics.size();
+		List<ComicDownloadDetail> cDetails = new ArrayList<ComicDownloadDetail>();
 		for(int i = 0;i < size;i++)
 		{
 			ComicDownloadThread cThread = downloadComics.poll();
+			if(cThread == null)
+				break;
+			
 			if(cThread.getDownloadDetail().getComicName().equals(comicName))
 			{
 				cThread.pauseDownload();
 				cThread.getDownloadDetail().setStatus(Constants.PAUSED);
-				//是否保存，待验证
+				cDetails.add(cThread.getDownloadDetail());
+				cThread.clear();
 			}
 			else 
 			{
 				downloadComics.add(cThread);
 			}
 		}
+		//统一保存
+		if(cDetails.size() > 0)
+			DBComicDownloadDetailHelper.getInstance(getApplicationContext())
+				.saveComicDownloadDetails(cDetails);
+		ComicDownload cDownload = DBComicDownloadHelper.getInstance(getApplicationContext())
+				.getComicDownload(comicName);
+		cDownload.setStatus(Constants.PAUSED);
+		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
 	}
 	
 	@Override
@@ -150,7 +168,7 @@ public class DownloadService extends Service{
 		{
 			Bundle bundle = intent.getExtras();
 			//直接从漫画页选择下载
-			if(bundle != null&&bundle.getString("from") == null)
+			if(bundle != null)
 			{
 				String comicName = bundle.getString("comicName");
 				int downloadChapterNum = bundle.getInt("downloadChapterNum",0);
@@ -213,6 +231,7 @@ public class DownloadService extends Service{
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		lbManager.unregisterReceiver(downloadBroadcast);
+		
 	}
 	
 	private class DownloadBroadcast extends BroadcastReceiver
@@ -229,6 +248,8 @@ public class DownloadService extends Service{
 					for(int i = 0;i < size;i++)
 					{
 						ComicDownloadThread cThread = downloadComics.poll();
+						if(cThread == null)
+							break;
 						int status = cThread.getDownloadStatus();
 						if(status != Constants.FINISHED)
 						{
