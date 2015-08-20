@@ -536,6 +536,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			{
 				if(chapters.get(i).getChoose()&&chapters.get(i).getDownload_status() == -1)
 				{
+					chapters.get(i).setDownload_status(Constants.WAITING);
 					chapterNames[index] = chapters.get(i).getChapter();
 					urls[index] = chapters.get(i).getUrl();
 					++index;

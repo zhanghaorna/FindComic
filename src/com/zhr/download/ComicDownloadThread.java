@@ -15,6 +15,7 @@ import android.R.integer;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.SyncHttpClient;
@@ -68,7 +69,7 @@ public class ComicDownloadThread implements Runnable{
 			{
 				cDetail.setStatus(Constants.DOWNLOADING);
 				setDownloadStatus(cDetail.getComicName(), Constants.DOWNLOADING);
-				int i = cDetail.getFinishNum() + 1;
+				int i = cDetail.getFinishNum();
 				for(;i < urls.length;i++)
 				{
 					if(isRunning)
@@ -78,7 +79,8 @@ public class ComicDownloadThread implements Runnable{
 						connection.setDoInput(true);
 						connection.setConnectTimeout(5000);
 						connection.setReadTimeout(5000);
-						connection.setRequestProperty("User-Agent","Baiduspider+");
+						connection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:7.0a1) Gecko/20110623 Firefox/7.0a1 Fennec/7.0a1");
+						connection.setRequestMethod("GET");
 						connection.connect();
 						InputStream inputStream = connection.getInputStream();
 						FileOutputStream outputStream = null;
@@ -114,7 +116,7 @@ public class ComicDownloadThread implements Runnable{
 							else {
 								outputStream.flush();
 								outputStream.close();
-								cDetail.setFinishNum(i);
+								cDetail.setFinishNum(i + 1);
 							}								
 						}
 					}
@@ -144,9 +146,15 @@ public class ComicDownloadThread implements Runnable{
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+			Toast.makeText(context, "无法下载" + cDetail.getComicName() + cDetail.getChapter()
+					+ "图片", Toast.LENGTH_SHORT).show();
+			cDetail.setStatus(Constants.PAUSED);
+			DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
+			
 		}
 		finally
 		{
+			
 			context = null;
 		}
 	}
@@ -231,6 +239,7 @@ public class ComicDownloadThread implements Runnable{
 				if(arg0 == 200)
 				{
 					urls = Util.getImageUrlsFromInternet(arg2);
+					cDetail.setPageNum(urls.length);
 				}					
 			}
 			

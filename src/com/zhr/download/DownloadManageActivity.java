@@ -1,6 +1,8 @@
 package com.zhr.download;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 
 import android.R.integer;
@@ -8,14 +10,17 @@ import android.R.menu;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,6 +61,10 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 	private ImageView statusImageView;
 	private int status;
 	
+	private DownloadBroadcast downloadBroadcast;
+	private LocalBroadcastManager lbManager;
+	private IntentFilter intentFilter;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -93,6 +102,13 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		
 		path = AppSetting.getInstance(getApplicationContext()).getDownloadPath();
 		
+		lbManager = LocalBroadcastManager.getInstance(getApplicationContext());
+		intentFilter = new IntentFilter();
+		intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+		
+		
+		bindService(new Intent(this,DownloadService.class), mConnection, BIND_AUTO_CREATE);
+		lbManager.registerReceiver(downloadBroadcast, intentFilter);
 	}
 	
 	private void showMenuDialog(ComicDownload cDownload)
@@ -186,7 +202,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 				.getDownloadPath() + File.separator + comicName);
 		removeFile(file);
 		
-		
+
 	}
 	
 	private void removeFile(File file)
@@ -195,7 +211,8 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 			return;
 		if(file.isFile())
 			file.delete();
-		else {
+		else 
+		{
 			File[] files = file.listFiles();
 			for(int i = 0;i < files.length;i++)
 				removeFile(files[i]);
@@ -208,14 +225,21 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		bindService(new Intent(this,DownloadService.class), mConnection, BIND_AUTO_CREATE);
+
 	}
 	
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
 		unbindService(mConnection);
+		lbManager.unregisterReceiver(downloadBroadcast);
 	}
 
 	@Override
@@ -240,6 +264,40 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		
 	}
 	
+	private void checkDownloadStatus()
+	{
+		if(dService.isDownloading())
+		{
+			statusView.setText("下载中");
+			statusImageView.setVisibility(View.VISIBLE);
+			statusImageView.setImageResource(R.drawable.dm_paused_s);
+			status = Constants.DOWNLOADING;
+		}
+		else
+		{
+			status = Constants.FINISHED;
+			for(int i = 0;i < comicInfos.size();i++)
+			{
+				if(comicInfos.get(i).getStatus() != Constants.FINISHED)
+				{
+					status = Constants.PAUSED;
+					break;
+				}
+			}
+			if(status == Constants.FINISHED)
+			{
+				statusView.setText("已完成");
+				statusImageView.setVisibility(View.GONE);
+			}
+			else
+			{
+				statusView.setText("已暂停");
+				statusImageView.setVisibility(View.VISIBLE);
+				statusImageView.setImageResource(R.drawable.dm_resume_s);
+			}
+		}
+	}
+	
 	private ServiceConnection mConnection = new ServiceConnection() {
 		
 		@Override
@@ -251,40 +309,27 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {		
 			dService = ((DownloadService.LocalBinder)service).getService();
-			if(dService.isDownloading())
-			{
-				statusView.setText("下载中");
-				statusImageView.setVisibility(View.VISIBLE);
-				statusImageView.setImageResource(R.drawable.dm_paused_s);
-				status = Constants.DOWNLOADING;
-			}
-			else
-			{
-				status = Constants.FINISHED;
-				for(int i = 0;i < comicInfos.size();i++)
-				{
-					if(comicInfos.get(i).getStatus() != Constants.FINISHED)
-					{
-						status = Constants.PAUSED;
-						break;
-					}
-				}
-				if(status == Constants.FINISHED)
-				{
-					statusView.setText("已完成");
-					statusImageView.setVisibility(View.GONE);
-				}
-				else
-				{
-					statusView.setText("已暂停");
-					statusImageView.setVisibility(View.VISIBLE);
-					statusImageView.setImageResource(R.drawable.dm_resume_s);
-				}
-			}
+			checkDownloadStatus();
 		}
 	};
 	
-	
+	private class DownloadBroadcast extends BroadcastReceiver
+	{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(intent != null)
+			{
+				if(intent.getAction().equals(DownloadService.CHAPTER_FINISHING_OR_PAUSED))
+				{
+					mAdapter.notifyDataSetChanged();
+					checkDownloadStatus();
+				}
+			}
+			
+		}
+		
+	}
 	
 	private class ComicInfoAdapter extends BaseAdapter
 	{

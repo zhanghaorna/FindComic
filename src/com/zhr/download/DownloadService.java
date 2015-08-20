@@ -61,6 +61,8 @@ public class DownloadService extends Service{
 	private DownloadBroadcast downloadBroadcast;
 	
 	public static final String CHAPTER_FINISHING_OR_PAUSED = "download_chapter_finished_or_paused";
+	public static final String NETWORK_ERROR = "network_error";
+	
 	
 	private final IBinder mBinder = new LocalBinder();
 	
@@ -94,6 +96,7 @@ public class DownloadService extends Service{
 		downloadBroadcast = new DownloadBroadcast();
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(CHAPTER_FINISHING_OR_PAUSED);
+		intentFilter.addAction(NETWORK_ERROR);
 		lbManager = LocalBroadcastManager.getInstance(getBaseContext());
 		lbManager.registerReceiver(downloadBroadcast, intentFilter);
 	}
@@ -241,6 +244,7 @@ public class DownloadService extends Service{
 		public void onReceive(Context context, Intent intent) {
 			if(intent != null)
 			{
+				//逻辑有问题
 				if(intent.getAction().equals(CHAPTER_FINISHING_OR_PAUSED))
 				{
 					int size = downloadComics.size();
@@ -251,14 +255,13 @@ public class DownloadService extends Service{
 						if(cThread == null)
 							break;
 						int status = cThread.getDownloadStatus();
-						if(status != Constants.FINISHED)
+						if(status != Constants.FINISHED&&status != Constants.PAUSED)
 						{
 							downloadComics.add(cThread);
-							if(status != Constants.PAUSED)
-								waiting_or_downloading++;
 						}
-						else
+						else 
 						{
+							if(status == Constants.PAUSED)
 							cThread.clear();
 						}
 						
@@ -273,6 +276,7 @@ public class DownloadService extends Service{
 						remoteViews.setTextViewText(R.id.content, "下载已暂停");
 						nManager.notify(notifyId, downloadNotification);
 					}
+					
 				}
 			}
 			
