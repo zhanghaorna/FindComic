@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -201,7 +202,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		File file = new File(AppSetting.getInstance(getApplicationContext())
 				.getDownloadPath() + File.separator + comicName);
 		removeFile(file);
-		
+		checkDownloadStatus();
 
 	}
 	
@@ -252,12 +253,23 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		case R.id.status_icon:
 			if(status == Constants.PAUSED)
 			{
-				
+				for(int i = 0;i < comicInfos.size();i++)
+				{
+					if(comicInfos.get(i).getStatus() != Constants.FINISHED)
+						dService.startDownload(comicInfos.get(i).getComicName());
+				}				
 			}
 			else if(status == Constants.DOWNLOADING)
 			{
-				
+				for(int i = 0;i < comicInfos.size();i++)
+				{
+					if(comicInfos.get(i).getStatus() != Constants.FINISHED&&
+							comicInfos.get(i).getStatus() != Constants.PAUSED)
+						dService.pauseDownload(comicInfos.get(i).getComicName());
+				}	
 			}
+			checkDownloadStatus();
+			mAdapter.notifyDataSetChanged();
 		default:
 			break;
 		}
@@ -318,11 +330,12 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
+			Log.d("Comic", "dm finish");
 			if(intent != null)
 			{
 				if(intent.getAction().equals(DownloadService.CHAPTER_FINISHING_OR_PAUSED))
 				{
-					mAdapter.notifyDataSetChanged();
+//					mAdapter.notifyDataSetInvalidated();
 					checkDownloadStatus();
 				}
 			}

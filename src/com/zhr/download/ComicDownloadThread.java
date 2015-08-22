@@ -58,10 +58,22 @@ public class ComicDownloadThread implements Runnable{
 		return cDetail;
 	}
 	
+	
 	public void run() 
 	{
 		if(!isRunning)
+		{
+			cDetail.setStatus(Constants.PAUSED);
+			DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
+			Intent intent = new Intent();
+			intent.setAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+			intent.putExtra("comicName", cDetail.getComicName());
+			intent.putExtra("chapterName", cDetail.getChapter());
+			intent.putExtra("status", cDetail.getStatus());
+			LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
+			nManager.sendBroadcast(intent);
 			return;
+		}
 		getImageUrl();
 		try 
 		{
@@ -146,15 +158,21 @@ public class ComicDownloadThread implements Runnable{
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(context, "无法下载" + cDetail.getComicName() + cDetail.getChapter()
-					+ "图片", Toast.LENGTH_SHORT).show();
-			cDetail.setStatus(Constants.PAUSED);
-			DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
-			
 		}
 		finally
 		{
-			
+			if(cDetail.getStatus() == Constants.DOWNLOADING||cDetail.getStatus()
+					== Constants.WAITING)
+			{
+				cDetail.setStatus(Constants.PAUSED);
+				DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
+				Intent intent = new Intent();
+				intent.setAction(DownloadService.NETWORK_ERROR);
+				intent.putExtra("comicName", cDetail.getComicName());
+				intent.putExtra("chapterName", cDetail.getChapter());
+				LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
+				nManager.sendBroadcast(intent);
+			}
 			context = null;
 		}
 	}

@@ -13,7 +13,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import com.zhr.database.DBComicDownloadDetailHelper;
 import com.zhr.database.DBComicDownloadHelper;
+import com.zhr.database.DBNewsHelper;
 import com.zhr.findcomic.R;
+import com.zhr.findcomic.R.id;
 import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.util.Constants;
@@ -56,6 +58,8 @@ public class DownloadService extends Service{
 	private RemoteViews remoteViews;
 	//通知栏ID
 	private int notifyId = 2;
+	private int error_notifyId = 3;
+	
 	//接受一个章节下载完成的广播
 	private LocalBroadcastManager lbManager;
 	private DownloadBroadcast downloadBroadcast;
@@ -131,6 +135,10 @@ public class DownloadService extends Service{
 				
 			}
 		}
+		ComicDownload cDownload = DBComicDownloadHelper.getInstance(getApplicationContext())
+				.getComicDownload(comicName);
+		cDownload.setStatus(Constants.WAITING);
+		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
 	}
 	
 	public void pauseDownload(String comicName)
@@ -184,7 +192,7 @@ public class DownloadService extends Service{
 				if(comicDownload.getComicName() == null||comicDownload.getComicName().equals(""))
 				{
 					comicDownload.setComicName(comicName);
-					comicDownload.setChapterNum(downloadChapterNum);
+					comicDownload.setChapterNum(downloadChapterNum + comicDownload.getChapterNum());
 					comicDownload.setStatus(Constants.WAITING);
 					comicDownload.setDownloadDate(new Date());
 					DBComicDownloadHelper.getInstance(getBaseContext()).saveComicDownload(comicDownload);
@@ -229,6 +237,66 @@ public class DownloadService extends Service{
 		return START_STICKY;
 	}
 	
+	private int checkComicStatus(String comicName)
+	{
+		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper.getInstance(getApplicationContext()).getComicDownloadDetails(comicName);
+		boolean downloading = false;
+		boolean paused = false;
+		boolean waiting = false;
+		
+		if(cDetails != null&&cDetails.size() != 0)
+		{
+			for(int i = 0;i < cDetails.size();i++)
+			{
+				if(cDetails.get(i).getStatus() == Constants.DOWNLOADING)
+				{
+					downloading = true;
+					break;
+				}
+				else if(cDetails.get(i).getStatus() == Constants.PAUSED)
+				{
+					paused = true;
+				}
+				else if(cDetails.get(i).getStatus() == Constants.WAITING)
+				{
+					waiting = true;
+				}
+			}
+			
+		}
+		if(downloading)
+		{
+			setComicStatus(comicName, Constants.DOWNLOADING);
+			return Constants.DOWNLOADING;
+		}
+		else if(paused)
+		{
+			setComicStatus(comicName, Constants.PAUSED);
+			return Constants.PAUSED;
+		}
+		else if(waiting)
+		{
+			setComicStatus(comicName, Constants.WAITING);
+			return Constants.WAITING;
+		}
+		else
+		{
+			setComicStatus(comicName, Constants.FINISHED);
+			return Constants.FINISHED;
+		}		
+	}
+	
+	private void setComicStatus(String comicName,int status)
+	{
+		ComicDownload cDownload = DBComicDownloadHelper.getInstance(getApplicationContext()).getComicDownload(comicName);
+		if(cDownload != null&&cDownload.getStatus() != status)
+		{
+			cDownload.setStatus(status);
+			DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
+		}
+
+	}
+	
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
@@ -262,9 +330,11 @@ public class DownloadService extends Service{
 						else 
 						{
 							if(status == Constants.PAUSED)
-							cThread.clear();
-						}
-						
+							{
+								cThread.clear();
+							}
+							waiting_or_downloading++;
+						}						
 					}
 					if(downloadComics.size() == 0)
 					{
@@ -275,7 +345,36 @@ public class DownloadService extends Service{
 					{
 						remoteViews.setTextViewText(R.id.content, "下载已暂停");
 						nManager.notify(notifyId, downloadNotification);
+					}		
+					checkComicStatus(intent.getStringExtra("comicName"));
+				}
+				else if(intent.getAction().equals(NETWORK_ERROR))
+				{
+				
+					remoteViews.setTextViewText(R.id.content, intent.getStringExtra("comicName")
+							+ intent.getStringExtra("chapterName") + "下载失败");
+					nManager.notify(error_notifyId,downloadNotification);
+					
+					boolean downloading = false;
+					
+					Iterator<ComicDownloadThread> iterator = downloadComics.iterator();
+					while(iterator.hasNext())
+					{
+						int status = iterator.next().getDownloadStatus();
+						if(status == Constants.WAITING
+								||status == Constants.DOWNLOADING)
+						{
+							downloading = true;
+							break;
+						}
 					}
+					if(!downloading)
+					{
+						downloadComics.clear();
+						remoteViews.setTextViewText(R.id.content, "下载已停止");
+						nManager.notify(notifyId, downloadNotification);
+					}
+					checkComicStatus(intent.getStringExtra("comicName"));
 					
 				}
 			}
