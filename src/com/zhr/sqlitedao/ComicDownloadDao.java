@@ -29,8 +29,6 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         public final static Property DownloadDate = new Property(3, java.util.Date.class, "downloadDate", false, "DOWNLOAD_DATE");
     };
 
-    private DaoSession daoSession;
-
 
     public ComicDownloadDao(DaoConfig config) {
         super(config);
@@ -38,7 +36,6 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
     
     public ComicDownloadDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
-        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
@@ -65,12 +62,6 @@ public class ComicDownloadDao extends AbstractDao<ComicDownload, String> {
         stmt.bindLong(2, entity.getChapterNum());
         stmt.bindLong(3, entity.getStatus());
         stmt.bindLong(4, entity.getDownloadDate().getTime());
-    }
-
-    @Override
-    protected void attachEntity(ComicDownload entity) {
-        super.attachEntity(entity);
-        entity.__setDaoSession(daoSession);
     }
 
     /** @inheritdoc */

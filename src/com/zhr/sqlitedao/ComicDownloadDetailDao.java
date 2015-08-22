@@ -1,17 +1,12 @@
 package com.zhr.sqlitedao;
 
-import java.util.List;
-import java.util.ArrayList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
-import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
-import de.greenrobot.dao.query.Query;
-import de.greenrobot.dao.query.QueryBuilder;
 
 import com.zhr.sqlitedao.ComicDownloadDetail;
 
@@ -19,7 +14,7 @@ import com.zhr.sqlitedao.ComicDownloadDetail;
 /** 
  * DAO for table COMIC_DOWNLOAD_DETAIL.
 */
-public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, String> {
+public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Long> {
 
     public static final String TABLENAME = "COMIC_DOWNLOAD_DETAIL";
 
@@ -28,17 +23,15 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property ComicName = new Property(0, String.class, "comicName", true, "COMIC_NAME");
-        public final static Property Chapter = new Property(1, String.class, "chapter", false, "CHAPTER");
-        public final static Property PageNum = new Property(2, int.class, "pageNum", false, "PAGE_NUM");
-        public final static Property FinishNum = new Property(3, int.class, "finishNum", false, "FINISH_NUM");
-        public final static Property Status = new Property(4, int.class, "status", false, "STATUS");
-        public final static Property Url = new Property(5, String.class, "url", false, "URL");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
+        public final static Property ComicName = new Property(1, String.class, "comicName", false, "COMIC_NAME");
+        public final static Property Chapter = new Property(2, String.class, "chapter", false, "CHAPTER");
+        public final static Property PageNum = new Property(3, int.class, "pageNum", false, "PAGE_NUM");
+        public final static Property FinishNum = new Property(4, int.class, "finishNum", false, "FINISH_NUM");
+        public final static Property Status = new Property(5, int.class, "status", false, "STATUS");
+        public final static Property Url = new Property(6, String.class, "url", false, "URL");
     };
 
-    private DaoSession daoSession;
-
-    private Query<ComicDownloadDetail> comicDownload_ComicDownloadDetailListQuery;
 
     public ComicDownloadDetailDao(DaoConfig config) {
         super(config);
@@ -46,19 +39,19 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
     
     public ComicDownloadDetailDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
-        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'COMIC_DOWNLOAD_DETAIL' (" + //
-                "'COMIC_NAME' TEXT PRIMARY KEY NOT NULL ," + // 0: comicName
-                "'CHAPTER' TEXT NOT NULL ," + // 1: chapter
-                "'PAGE_NUM' INTEGER NOT NULL ," + // 2: pageNum
-                "'FINISH_NUM' INTEGER NOT NULL ," + // 3: finishNum
-                "'STATUS' INTEGER NOT NULL ," + // 4: status
-                "'URL' TEXT NOT NULL );"); // 5: url
+                "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
+                "'COMIC_NAME' TEXT NOT NULL ," + // 1: comicName
+                "'CHAPTER' TEXT NOT NULL ," + // 2: chapter
+                "'PAGE_NUM' INTEGER NOT NULL ," + // 3: pageNum
+                "'FINISH_NUM' INTEGER NOT NULL ," + // 4: finishNum
+                "'STATUS' INTEGER NOT NULL ," + // 5: status
+                "'URL' TEXT NOT NULL );"); // 6: url
     }
 
     /** Drops the underlying database table. */
@@ -72,39 +65,35 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
     protected void bindValues(SQLiteStatement stmt, ComicDownloadDetail entity) {
         stmt.clearBindings();
  
-        String comicName = entity.getComicName();
-        if (comicName != null) {
-            stmt.bindString(1, comicName);
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
         }
-        stmt.bindString(2, entity.getChapter());
-        stmt.bindLong(3, entity.getPageNum());
-        stmt.bindLong(4, entity.getFinishNum());
-        stmt.bindLong(5, entity.getStatus());
-        stmt.bindString(6, entity.getUrl());
-    }
-
-    @Override
-    protected void attachEntity(ComicDownloadDetail entity) {
-        super.attachEntity(entity);
-        entity.__setDaoSession(daoSession);
+        stmt.bindString(2, entity.getComicName());
+        stmt.bindString(3, entity.getChapter());
+        stmt.bindLong(4, entity.getPageNum());
+        stmt.bindLong(5, entity.getFinishNum());
+        stmt.bindLong(6, entity.getStatus());
+        stmt.bindString(7, entity.getUrl());
     }
 
     /** @inheritdoc */
     @Override
-    public String readKey(Cursor cursor, int offset) {
-        return cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0);
+    public Long readKey(Cursor cursor, int offset) {
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     /** @inheritdoc */
     @Override
     public ComicDownloadDetail readEntity(Cursor cursor, int offset) {
         ComicDownloadDetail entity = new ComicDownloadDetail( //
-            cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // comicName
-            cursor.getString(offset + 1), // chapter
-            cursor.getInt(offset + 2), // pageNum
-            cursor.getInt(offset + 3), // finishNum
-            cursor.getInt(offset + 4), // status
-            cursor.getString(offset + 5) // url
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
+            cursor.getString(offset + 1), // comicName
+            cursor.getString(offset + 2), // chapter
+            cursor.getInt(offset + 3), // pageNum
+            cursor.getInt(offset + 4), // finishNum
+            cursor.getInt(offset + 5), // status
+            cursor.getString(offset + 6) // url
         );
         return entity;
     }
@@ -112,25 +101,27 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, ComicDownloadDetail entity, int offset) {
-        entity.setComicName(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setChapter(cursor.getString(offset + 1));
-        entity.setPageNum(cursor.getInt(offset + 2));
-        entity.setFinishNum(cursor.getInt(offset + 3));
-        entity.setStatus(cursor.getInt(offset + 4));
-        entity.setUrl(cursor.getString(offset + 5));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
+        entity.setComicName(cursor.getString(offset + 1));
+        entity.setChapter(cursor.getString(offset + 2));
+        entity.setPageNum(cursor.getInt(offset + 3));
+        entity.setFinishNum(cursor.getInt(offset + 4));
+        entity.setStatus(cursor.getInt(offset + 5));
+        entity.setUrl(cursor.getString(offset + 6));
      }
     
     /** @inheritdoc */
     @Override
-    protected String updateKeyAfterInsert(ComicDownloadDetail entity, long rowId) {
-        return entity.getComicName();
+    protected Long updateKeyAfterInsert(ComicDownloadDetail entity, long rowId) {
+        entity.setId(rowId);
+        return rowId;
     }
     
     /** @inheritdoc */
     @Override
-    public String getKey(ComicDownloadDetail entity) {
+    public Long getKey(ComicDownloadDetail entity) {
         if(entity != null) {
-            return entity.getComicName();
+            return entity.getId();
         } else {
             return null;
         }
@@ -142,109 +133,4 @@ public class ComicDownloadDetailDao extends AbstractDao<ComicDownloadDetail, Str
         return true;
     }
     
-    /** Internal query to resolve the "comicDownloadDetailList" to-many relationship of ComicDownload. */
-    public List<ComicDownloadDetail> _queryComicDownload_ComicDownloadDetailList(String comicName) {
-        synchronized (this) {
-            if (comicDownload_ComicDownloadDetailListQuery == null) {
-                QueryBuilder<ComicDownloadDetail> queryBuilder = queryBuilder();
-                queryBuilder.where(Properties.ComicName.eq(null));
-                comicDownload_ComicDownloadDetailListQuery = queryBuilder.build();
-            }
-        }
-        Query<ComicDownloadDetail> query = comicDownload_ComicDownloadDetailListQuery.forCurrentThread();
-        query.setParameter(0, comicName);
-        return query.list();
-    }
-
-    private String selectDeep;
-
-    protected String getSelectDeep() {
-        if (selectDeep == null) {
-            StringBuilder builder = new StringBuilder("SELECT ");
-            SqlUtils.appendColumns(builder, "T", getAllColumns());
-            builder.append(',');
-            SqlUtils.appendColumns(builder, "T0", daoSession.getComicDownloadDao().getAllColumns());
-            builder.append(" FROM COMIC_DOWNLOAD_DETAIL T");
-            builder.append(" LEFT JOIN COMIC_DOWNLOAD T0 ON T.'COMIC_NAME'=T0.'COMIC_NAME'");
-            builder.append(' ');
-            selectDeep = builder.toString();
-        }
-        return selectDeep;
-    }
-    
-    protected ComicDownloadDetail loadCurrentDeep(Cursor cursor, boolean lock) {
-        ComicDownloadDetail entity = loadCurrent(cursor, 0, lock);
-        int offset = getAllColumns().length;
-
-        ComicDownload comicDownload = loadCurrentOther(daoSession.getComicDownloadDao(), cursor, offset);
-        entity.setComicDownload(comicDownload);
-
-        return entity;    
-    }
-
-    public ComicDownloadDetail loadDeep(Long key) {
-        assertSinglePk();
-        if (key == null) {
-            return null;
-        }
-
-        StringBuilder builder = new StringBuilder(getSelectDeep());
-        builder.append("WHERE ");
-        SqlUtils.appendColumnsEqValue(builder, "T", getPkColumns());
-        String sql = builder.toString();
-        
-        String[] keyArray = new String[] { key.toString() };
-        Cursor cursor = db.rawQuery(sql, keyArray);
-        
-        try {
-            boolean available = cursor.moveToFirst();
-            if (!available) {
-                return null;
-            } else if (!cursor.isLast()) {
-                throw new IllegalStateException("Expected unique result, but count was " + cursor.getCount());
-            }
-            return loadCurrentDeep(cursor, true);
-        } finally {
-            cursor.close();
-        }
-    }
-    
-    /** Reads all available rows from the given cursor and returns a list of new ImageTO objects. */
-    public List<ComicDownloadDetail> loadAllDeepFromCursor(Cursor cursor) {
-        int count = cursor.getCount();
-        List<ComicDownloadDetail> list = new ArrayList<ComicDownloadDetail>(count);
-        
-        if (cursor.moveToFirst()) {
-            if (identityScope != null) {
-                identityScope.lock();
-                identityScope.reserveRoom(count);
-            }
-            try {
-                do {
-                    list.add(loadCurrentDeep(cursor, false));
-                } while (cursor.moveToNext());
-            } finally {
-                if (identityScope != null) {
-                    identityScope.unlock();
-                }
-            }
-        }
-        return list;
-    }
-    
-    protected List<ComicDownloadDetail> loadDeepAllAndCloseCursor(Cursor cursor) {
-        try {
-            return loadAllDeepFromCursor(cursor);
-        } finally {
-            cursor.close();
-        }
-    }
-    
-
-    /** A raw-style query where you can pass any WHERE clause and arguments. */
-    public List<ComicDownloadDetail> queryDeep(String where, String... selectionArg) {
-        Cursor cursor = db.rawQuery(getSelectDeep() + where, selectionArg);
-        return loadDeepAllAndCloseCursor(cursor);
-    }
- 
 }

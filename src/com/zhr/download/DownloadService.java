@@ -203,14 +203,12 @@ public class DownloadService extends Service{
 					for(int i = 0;i < chapters.length;i++)
 					{
 						ComicDownloadDetail cDetail = new ComicDownloadDetail();
-						cDetail.setComicDownload(comicDownload);
 						cDetail.setChapter(chapters[i]);
 						cDetail.setComicName(comicName);
 						cDetail.setUrl(urls[0]);	
 						cDetail.setFinishNum(0);
 						cDetail.setPageNum(0);
 						cDetail.setStatus(Constants.WAITING);
-						comicDownload.getComicDownloadDetailList().add(cDetail);
 						details.add(cDetail);
 						ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, DownloadService.this);
 						downloadComics.add(downloadThread);
