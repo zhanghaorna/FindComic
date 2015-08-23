@@ -1,6 +1,6 @@
 package com.zhr.download;
 
-import java.io.BufferedInputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
@@ -63,7 +63,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 	private int status;
 	
 	private DownloadBroadcast downloadBroadcast;
-	private LocalBroadcastManager lbManager;
+//	private LocalBroadcastManager lbManager;
 	private IntentFilter intentFilter;
 	
 	@Override
@@ -103,13 +103,17 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		
 		path = AppSetting.getInstance(getApplicationContext()).getDownloadPath();
 		
-		lbManager = LocalBroadcastManager.getInstance(getApplicationContext());
+//		lbManager = LocalBroadcastManager.getInstance(getApplicationContext());
 		intentFilter = new IntentFilter();
 		intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+		intentFilter.addAction(DownloadService.NETWORK_ERROR);
+		intentFilter.setPriority(200);
 		
+		downloadBroadcast = new DownloadBroadcast();
 		
 		bindService(new Intent(this,DownloadService.class), mConnection, BIND_AUTO_CREATE);
-		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+//		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+		registerReceiver(downloadBroadcast, intentFilter);
 	}
 	
 	private void showMenuDialog(ComicDownload cDownload)
@@ -240,7 +244,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		unbindService(mConnection);
-		lbManager.unregisterReceiver(downloadBroadcast);
+		unregisterReceiver(downloadBroadcast);
 	}
 
 	@Override
@@ -333,9 +337,10 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 			Log.d("Comic", "dm finish");
 			if(intent != null)
 			{
-				if(intent.getAction().equals(DownloadService.CHAPTER_FINISHING_OR_PAUSED))
+				if(intent.getAction().equals(DownloadService.CHAPTER_FINISHING_OR_PAUSED)
+						||intent.getAction().equals(DownloadService.NETWORK_ERROR))
 				{
-//					mAdapter.notifyDataSetInvalidated();
+					mAdapter.notifyDataSetInvalidated();
 					checkDownloadStatus();
 				}
 			}

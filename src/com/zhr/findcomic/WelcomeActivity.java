@@ -2,7 +2,9 @@ package com.zhr.findcomic;
 
 import java.io.File;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import com.tencent.bugly.crashreport.CrashReport;
 import com.zhr.database.DBComicDownloadDetailHelper;
@@ -36,7 +38,6 @@ public class WelcomeActivity extends Activity{
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_welcome);
-		
 		//true表示在调试阶段
 		CrashReport.initCrashReport(getApplicationContext(),Constants.BUGLY_ID , true);
 		//只是为了顺利退出

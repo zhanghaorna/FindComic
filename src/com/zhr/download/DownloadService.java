@@ -61,12 +61,12 @@ public class DownloadService extends Service{
 	private int error_notifyId = 3;
 	
 	//接受一个章节下载完成的广播
-	private LocalBroadcastManager lbManager;
+//	private LocalBroadcastManager lbManager;
 	private DownloadBroadcast downloadBroadcast;
 	
 	public static final String CHAPTER_FINISHING_OR_PAUSED = "download_chapter_finished_or_paused";
 	public static final String NETWORK_ERROR = "network_error";
-	
+	public static final String DOWNLOAD_STATE_CHANGE = "download_state_change";
 	
 	private final IBinder mBinder = new LocalBinder();
 	
@@ -101,8 +101,10 @@ public class DownloadService extends Service{
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(CHAPTER_FINISHING_OR_PAUSED);
 		intentFilter.addAction(NETWORK_ERROR);
-		lbManager = LocalBroadcastManager.getInstance(getBaseContext());
-		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+		intentFilter.setPriority(1000);
+//		lbManager = LocalBroadcastManager.getInstance(getBaseContext());
+//		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+		registerReceiver(downloadBroadcast, intentFilter);
 	}
 	
 	private void showNotification()
@@ -299,7 +301,7 @@ public class DownloadService extends Service{
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		lbManager.unregisterReceiver(downloadBroadcast);
+		unregisterReceiver(downloadBroadcast);
 		
 	}
 	

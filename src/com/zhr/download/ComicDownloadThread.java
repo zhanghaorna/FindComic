@@ -70,8 +70,9 @@ public class ComicDownloadThread implements Runnable{
 			intent.putExtra("comicName", cDetail.getComicName());
 			intent.putExtra("chapterName", cDetail.getChapter());
 			intent.putExtra("status", cDetail.getStatus());
-			LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
-			nManager.sendBroadcast(intent);
+			context.sendOrderedBroadcast(intent, null);
+//			LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
+//			nManager.sendBroadcast(intent);
 			return;
 		}
 		getImageUrl();
@@ -149,8 +150,9 @@ public class ComicDownloadThread implements Runnable{
 					intent.putExtra("comicName", cDetail.getComicName());
 					intent.putExtra("chapterName", cDetail.getChapter());
 					intent.putExtra("status", cDetail.getStatus());
-					LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
-					nManager.sendBroadcast(intent);
+					context.sendOrderedBroadcast(intent, null);
+//					LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
+//					nManager.sendBroadcast(intent);
 				}
 			}
 		
@@ -170,8 +172,9 @@ public class ComicDownloadThread implements Runnable{
 				intent.setAction(DownloadService.NETWORK_ERROR);
 				intent.putExtra("comicName", cDetail.getComicName());
 				intent.putExtra("chapterName", cDetail.getChapter());
-				LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
-				nManager.sendBroadcast(intent);
+				context.sendOrderedBroadcast(intent, null);
+//				LocalBroadcastManager nManager = LocalBroadcastManager.getInstance(context);
+//				nManager.sendBroadcast(intent);
 			}
 			context = null;
 		}
