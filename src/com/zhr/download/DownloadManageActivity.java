@@ -107,6 +107,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		intentFilter = new IntentFilter();
 		intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
 		intentFilter.addAction(DownloadService.NETWORK_ERROR);
+		intentFilter.addAction(DownloadService.DOWNLOAD_STATE_CHANGE);
 		intentFilter.setPriority(200);
 		
 		downloadBroadcast = new DownloadBroadcast();
@@ -336,13 +337,9 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		public void onReceive(Context context, Intent intent) {
 			Log.d("Comic", "dm finish");
 			if(intent != null)
-			{
-				if(intent.getAction().equals(DownloadService.CHAPTER_FINISHING_OR_PAUSED)
-						||intent.getAction().equals(DownloadService.NETWORK_ERROR))
-				{
-					mAdapter.notifyDataSetInvalidated();
-					checkDownloadStatus();
-				}
+			{				
+				mAdapter.notifyDataSetInvalidated();
+				checkDownloadStatus();				
 			}
 			
 		}

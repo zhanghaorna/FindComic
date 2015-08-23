@@ -82,6 +82,11 @@ public class ComicDownloadThread implements Runnable{
 			{
 				cDetail.setStatus(Constants.DOWNLOADING);
 				setDownloadStatus(cDetail.getComicName(), Constants.DOWNLOADING);
+				//当状态变为下载后，发送广播，通知UI更新
+				Intent downloadIntent = new Intent();
+				downloadIntent.setAction(DownloadService.DOWNLOAD_STATE_CHANGE);
+				context.sendOrderedBroadcast(downloadIntent, null);
+				
 				int i = cDetail.getFinishNum();
 				for(;i < urls.length;i++)
 				{
