@@ -1,11 +1,17 @@
 package com.zhr.download;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.zhr.database.DBComicDownloadDetailHelper;
+import com.zhr.database.DBComicDownloadHelper;
 import com.zhr.findcomic.R;
+import com.zhr.setting.AppSetting;
+import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.sqlitedao.ComicDownloadDetail;
 import com.zhr.util.Constants;
+import com.zhr.util.Util;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,12 +37,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ComicManageActivity extends Activity implements OnClickListener{
 	
 	private final int UNFINISH_MODE = 0;
 	private final int FINISH_MODE = 1;
 	private final int EDIT_MODE = 2;
+	private final int NONE_MODE = 3;
 	private int mode = 0;
 	
 	private ImageView backView;
@@ -44,7 +52,8 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 	private TextView leftView;
 	private TextView middleView;
 	private TextView rightView;
-	private View divideView;
+	private View leftDivideView;
+	private View rightDivideView;
 	//删除text的color drawable
 	private ColorStateList delStateList;
 	private ColorStateList dirStateList;
@@ -79,7 +88,8 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		middleView.setOnClickListener(this);
 		rightView = (TextView)findViewById(R.id.right);
 		rightView.setOnClickListener(this);
-		divideView = (View)findViewById(R.id.divider_left);
+		leftDivideView = (View)findViewById(R.id.divider_left);
+		rightDivideView = (View)findViewById(R.id.divider_right);
 		
 		backView = (ImageView)findViewById(R.id.back);
 		backView.setOnClickListener(this);
@@ -121,7 +131,7 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 	private void changeModeView()
 	{
 		//如果mode不为EDIT_MODE则，自动查询所有下载检测一遍
-		if(mode != EDIT_MODE)
+		if(mode != EDIT_MODE&&mode != NONE_MODE)
 		{
 			mode = FINISH_MODE;
 			for(int i = 0;i < cDetails.size();i++)
@@ -139,13 +149,13 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 			leftView.setText("目录");
 			rightView.setText("编辑");
 			middleView.setVisibility(View.GONE);
-			divideView.setVisibility(View.GONE);
+			leftDivideView.setVisibility(View.GONE);
 			leftView.setTextColor(dirStateList);
 		}
 		else if(mode == UNFINISH_MODE)
 		{
 			middleView.setVisibility(View.VISIBLE);
-			divideView.setVisibility(View.VISIBLE);
+			leftDivideView.setVisibility(View.VISIBLE);
 			leftView.setText("目录");
 			leftView.setTextColor(dirStateList);
 			middleView.setText("全部开始");
@@ -155,13 +165,20 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		else if(mode == EDIT_MODE)
 		{
 			middleView.setVisibility(View.VISIBLE);
-			divideView.setVisibility(View.VISIBLE);
+			leftDivideView.setVisibility(View.VISIBLE);
 			leftView.setText("删除");
 			leftView.setTextColor(delStateList);
 			leftView.setEnabled(false);
 			middleView.setText("全选");
-			rightView.setText("完成");
-			
+			rightView.setText("完成");		
+		}
+		else if(mode == NONE_MODE)
+		{
+			leftView.setVisibility(View.GONE);
+			middleView.setVisibility(View.GONE);
+			rightView.setVisibility(View.GONE);
+			leftDivideView.setVisibility(View.GONE);
+			rightDivideView.setVisibility(View.GONE);
 		}
 	}
 	
@@ -170,9 +187,47 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		List<ComicDownloadDetail> delDetails = new ArrayList<ComicDownloadDetail>();
 		for(int i = 0;i < choose.length;i++)
 		{
-			
+			if(choose[i])
+			{
+				ComicDownloadDetail cDetail = cDetails.get(i);
+				delDetails.add(cDetail);
+				File file = new File(AppSetting.getInstance(getApplicationContext())
+						.getDownloadPath() + File.separator + comicName 
+						+ File.separator + cDetail.getChapter());
+				Util.removeFile(file);
+			}
 		}
+		DBComicDownloadDetailHelper.getInstance(getApplicationContext())
+				.deleteChooseDetails(delDetails);
+		cDetails = DBComicDownloadDetailHelper.getInstance(getApplicationContext())
+				.getComicDownloadDetails(comicName);
+		
+		ComicDownload comicDownload = DBComicDownloadHelper.getInstance(getApplicationContext())
+				.getComicDownload(comicName);
+		if(cDetails == null||cDetails.size() == 0)
+		{
+			mode = NONE_MODE;
+			DBComicDownloadHelper.getInstance(getApplicationContext())
+					.deleteComicDownload(comicName);
+			Toast.makeText(this, "该漫画已经全部删除", Toast.LENGTH_SHORT).show();
+		}
+		else
+		{
+			mode = UNFINISH_MODE;
+			choose = new boolean[cDetails.size()];
+			comicDownload.setChapterNum(comicDownload.getChapterNum() - chooseCount);
+			DBComicDownloadHelper.getInstance(getApplicationContext())
+					.saveComicDownload(comicDownload);
+		}	
+		
+		changeModeView();
+		mAdapter.notifyDataSetChanged();
+		
+
+
 	}
+	
+
 
 	@Override
 	public void onClick(View v) {
@@ -209,6 +264,7 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 			}
 			break;
 		case R.id.left:
+			//目录，暂时不好存储数据库记录，因此暂时并不跳转过去
 			if(mode != EDIT_MODE)
 			{
 				

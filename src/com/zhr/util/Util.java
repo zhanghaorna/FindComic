@@ -182,5 +182,21 @@ public class Util {
 		}
 		return path;
 	}
+	
+	//删除给定文件夹目录下的所有子文件夹和文件
+	public static void removeFile(File file)
+	{
+		if(!file.exists())
+			return;
+		if(file.isFile())
+			file.delete();
+		else 
+		{
+			File[] files = file.listFiles();
+			for(int i = 0;i < files.length;i++)
+				removeFile(files[i]);
+			file.delete();
+		}
+	}
 
 }

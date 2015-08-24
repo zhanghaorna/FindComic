@@ -40,6 +40,7 @@ import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
+import com.zhr.util.Util;
 
 public class DownloadManageActivity extends Activity implements OnClickListener{
 	
@@ -206,24 +207,9 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 					.deleteDownloadDetails(comicName);
 		File file = new File(AppSetting.getInstance(getApplicationContext())
 				.getDownloadPath() + File.separator + comicName);
-		removeFile(file);
+		Util.removeFile(file);
 		checkDownloadStatus();
 
-	}
-	
-	private void removeFile(File file)
-	{
-		if(!file.exists())
-			return;
-		if(file.isFile())
-			file.delete();
-		else 
-		{
-			File[] files = file.listFiles();
-			for(int i = 0;i < files.length;i++)
-				removeFile(files[i]);
-			file.delete();
-		}
 	}
 	
 	
