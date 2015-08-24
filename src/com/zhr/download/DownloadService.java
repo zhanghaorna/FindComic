@@ -67,6 +67,7 @@ public class DownloadService extends Service{
 	public static final String CHAPTER_FINISHING_OR_PAUSED = "download_chapter_finished_or_paused";
 	public static final String NETWORK_ERROR = "network_error";
 	public static final String DOWNLOAD_STATE_CHANGE = "download_state_change";
+	public static final String DOWNLOAD_PAGE_FINISHED = "download_page_finished";
 	
 	private final IBinder mBinder = new LocalBinder();
 	

@@ -72,4 +72,10 @@ public class DBComicDownloadDetailHelper {
 			comicDownloadDetailDao.deleteInTx(cDetails);
 		}
 	}
+	
+	public void deleteChooseDetails(List<ComicDownloadDetail> cDetails)
+	{
+		if(cDetails != null&&cDetails.size() > 0)
+			comicDownloadDetailDao.deleteInTx(cDetails);
+	}
 }

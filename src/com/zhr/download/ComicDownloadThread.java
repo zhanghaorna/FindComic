@@ -135,6 +135,11 @@ public class ComicDownloadThread implements Runnable{
 								outputStream.flush();
 								outputStream.close();
 								cDetail.setFinishNum(i + 1);
+								DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
+								Intent intent = new Intent();
+								intent.putExtra("comicName", cDetail.getComicName());
+								intent.setAction(DownloadService.DOWNLOAD_PAGE_FINISHED);
+								context.sendOrderedBroadcast(intent, null);
 							}								
 						}
 					}

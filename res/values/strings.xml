@@ -93,5 +93,8 @@
 	<item 
 	    type="id"
 	    name="dm_adapter_convertview"></item>
+	<item 
+	    type="id" 
+	    name="cm_adapter_convertview"></item>
 	
 </resources>
