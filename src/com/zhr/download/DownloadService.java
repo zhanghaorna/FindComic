@@ -131,17 +131,31 @@ public class DownloadService extends Service{
 			for(ComicDownloadDetail cDetail:cDetails)
 			{
 				cDetail.setStatus(Constants.WAITING);
-				ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, DownloadService.this);
+				ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, getApplicationContext());
 				downloadComics.add(downloadThread);
 				singleThreadPool.submit(downloadThread);
-				//是否保存，待验证
-				
+				//是否保存，待验证		
 			}
 		}
 		ComicDownload cDownload = DBComicDownloadHelper.getInstance(getApplicationContext())
 				.getComicDownload(comicName);
 		cDownload.setStatus(Constants.WAITING);
 		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
+	}
+	
+	public void startDownload(ComicDownloadDetail cDetail)
+	{
+		ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, getApplicationContext());
+		downloadComics.add(downloadThread);
+		singleThreadPool.submit(downloadThread);
+		ComicDownload cDownload = DBComicDownloadHelper.getInstance(getApplicationContext())
+				.getComicDownload(cDetail.getComicName());
+		if(cDownload.getStatus() == Constants.PAUSED)
+		{
+			cDownload.setStatus(Constants.WAITING);
+			DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
+		}
+		
 	}
 	
 	public void pauseDownload(String comicName)
@@ -159,7 +173,6 @@ public class DownloadService extends Service{
 				cThread.pauseDownload();
 				cThread.getDownloadDetail().setStatus(Constants.PAUSED);
 				cDetails.add(cThread.getDownloadDetail());
-				cThread.clear();
 			}
 			else 
 			{
@@ -174,6 +187,40 @@ public class DownloadService extends Service{
 				.getComicDownload(comicName);
 		cDownload.setStatus(Constants.PAUSED);
 		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
+	}
+	
+	//暂停单个下载线程
+	public void pauseDownload(ComicDownloadDetail cDetail)
+	{
+		Iterator<ComicDownloadThread> iterator = downloadComics.iterator();
+		while(iterator.hasNext())
+		{
+			ComicDownloadThread thread = iterator.next();
+			if(thread.getDownloadDetail() == cDetail)
+			{
+				thread.pauseDownload();
+				downloadComics.remove(thread);			
+			}
+		}
+		
+		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper
+				.getInstance(getApplicationContext()).getComicDownloadDetails(cDetail.getComicName());
+		int i = 0;
+		for(;i < cDetails.size();i++)
+		{
+			if(cDetails.get(i).getStatus() == Constants.WAITING
+					||cDetails.get(i).getStatus() == Constants.DOWNLOADING)
+			{
+				break;
+			}
+		}
+		if(i == cDetails.size())
+		{
+			ComicDownload cDownload = DBComicDownloadHelper.getInstance(getApplicationContext())
+					.getComicDownload(cDetail.getComicName());
+			cDownload.setStatus(Constants.PAUSED);
+			DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(cDownload);
+		}
 	}
 	
 	@Override
@@ -213,7 +260,7 @@ public class DownloadService extends Service{
 						cDetail.setPageNum(0);
 						cDetail.setStatus(Constants.WAITING);
 						details.add(cDetail);
-						ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, DownloadService.this);
+						ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, getApplicationContext());
 						downloadComics.add(downloadThread);
 						singleThreadPool.submit(downloadThread);
 					}
@@ -330,10 +377,6 @@ public class DownloadService extends Service{
 						}
 						else 
 						{
-							if(status == Constants.PAUSED)
-							{
-								cThread.clear();
-							}
 							waiting_or_downloading++;
 						}						
 					}

@@ -72,6 +72,10 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 	
 	private int chooseCount = 0;
 	
+	//检测是否在下载中
+	private boolean downloading = false;
+
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -111,6 +115,7 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 					.getComicDownloadDetails(comicName);
 			choose = new boolean[cDetails.size()];
 			changeModeView();
+			checkDownloadStatus();
 			mAdapter = new ComicDownloadDetailAdapter();
 			comicDetaiListView.setAdapter(mAdapter);
 			
@@ -118,6 +123,7 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 			intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
 			intentFilter.addAction(DownloadService.NETWORK_ERROR);
 			intentFilter.addAction(DownloadService.DOWNLOAD_PAGE_FINISHED);
+			intentFilter.addAction(DownloadService.DOWNLOAD_STATE_CHANGE);
 			intentFilter.setPriority(200);
 			
 			downloadBroadcast = new DownloadBroadcast();
@@ -126,8 +132,27 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		}
 	}
 	
+	//检测是否在下载
+	private void checkDownloadStatus()
+	{
+		downloading = false;
+		for(int i = 0;i < cDetails.size();i++)
+		{
+			if(cDetails.get(i).getStatus() == Constants.DOWNLOADING
+					||cDetails.get(i).getStatus() == Constants.WAITING)
+			{
+				downloading = true;
+				break;
+			}
+		}
+		if(downloading)
+			middleView.setText("全部暂停");
+		else 
+			middleView.setText("全部开始");
+		
+	}
 	
-	
+	//根据不同的mode显示不同的view
 	private void changeModeView()
 	{
 		//如果mode不为EDIT_MODE则，自动查询所有下载检测一遍
@@ -222,11 +247,30 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		
 		changeModeView();
 		mAdapter.notifyDataSetChanged();
-		
-
-
 	}
 	
+	private void startDownload(ComicDownloadDetail cDetail)
+	{
+		cDetail.setStatus(Constants.WAITING);
+		dService.startDownload(cDetail);
+	}
+	
+	private void pauseDownload(ComicDownloadDetail cDetail)
+	{
+		if(cDetail.getStatus() == Constants.DOWNLOADING)
+			cDetail.setStatus(Constants.PAUSEING);
+		else if(cDetail.getStatus() == Constants.WAITING) 
+			cDetail.setStatus(Constants.PAUSED);
+		dService.pauseDownload(cDetail);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		unbindService(mConnection);
+		unregisterReceiver(downloadBroadcast);
+	}
 
 
 	@Override
@@ -235,6 +279,14 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		case R.id.right:
 			if(mode != EDIT_MODE)
 			{
+				if(downloading)
+				{
+					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+					builder.setMessage("正在下载中，请先暂停")
+						   .setPositiveButton("确定", null)
+						   .create().show();
+					return;
+				}
 				mode = EDIT_MODE;
 				for(int i = 0;i < choose.length;i++)
 					choose[i] = false;
@@ -252,7 +304,30 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 		case R.id.middle:
 			if(mode != EDIT_MODE)
 			{
-				
+				//如在下载，则是暂停全部，否则是全部开始
+				if(downloading)
+				{
+					for(int i = 0;i < cDetails.size();i++)
+					{
+						if(cDetails.get(i).getStatus() == Constants.DOWNLOADING
+								||cDetails.get(i).getStatus() == Constants.WAITING)
+						{
+							pauseDownload(cDetails.get(i));
+						}
+					}
+				}
+				else
+				{
+					for(int i = 0;i < cDetails.size();i++)
+					{
+						if(cDetails.get(i).getStatus() == Constants.PAUSED)
+						{
+							startDownload(cDetails.get(i));
+						}
+					}
+				}
+				checkDownloadStatus();
+				mAdapter.notifyDataSetChanged();
 			}
 			else
 			{
@@ -313,7 +388,10 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 			if(intent != null)
 			{				
 				if(intent.getStringExtra("comicName").equals(comicName))
+				{
+					checkDownloadStatus();
 					mAdapter.notifyDataSetInvalidated();			
+				}
 			}			
 		}		
 	}
@@ -398,6 +476,11 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 					viewHolder.statusImageView.setImageResource(R.drawable.dm_paused_s);
 					viewHolder.statusTextView.setText("下载中");
 				}
+				else if(cDetails.get(position - 1).getStatus() == Constants.PAUSEING)
+				{
+					viewHolder.statusImageView.setImageResource(R.drawable.dm_resume_s);
+					viewHolder.statusTextView.setText("正在暂停...");
+				}
 				else {
 					viewHolder.statusImageView.setImageResource(R.drawable.dm_complete);
 					viewHolder.statusTextView.setText("已完成");
@@ -472,8 +555,16 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 				}
 				if(cDetails.get(position).getStatus() == Constants.DOWNLOADING)
 				{
-					
+
+					pauseDownload(cDetails.get(position));
+					mAdapter.notifyDataSetChanged();
 				}
+				else if(cDetails.get(position).getStatus() == Constants.PAUSED)
+				{
+					startDownload(cDetails.get(position));
+					mAdapter.notifyDataSetChanged();
+				}
+				checkDownloadStatus();
 				
 			}
 			

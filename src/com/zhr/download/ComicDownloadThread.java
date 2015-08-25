@@ -85,6 +85,7 @@ public class ComicDownloadThread implements Runnable{
 				//当状态变为下载后，发送广播，通知UI更新
 				Intent downloadIntent = new Intent();
 				downloadIntent.setAction(DownloadService.DOWNLOAD_STATE_CHANGE);
+				downloadIntent.putExtra("comicName", cDetail.getComicName());
 				context.sendOrderedBroadcast(downloadIntent, null);
 				
 				int i = cDetail.getFinishNum();
@@ -119,8 +120,7 @@ public class ComicDownloadThread implements Runnable{
 								if(!isRunning)
 									break;
 								outputStream.write(bytes,0,nums);
-							}
-							
+							}							
 						}
 						if(outputStream != null)
 						{
@@ -143,17 +143,21 @@ public class ComicDownloadThread implements Runnable{
 							}								
 						}
 					}
+					else
+					{
+						break;
+					}
 				}
-				if(!isRunning&&i < urls.length)
+				if(!isRunning)
 					cDetail.setStatus(Constants.PAUSED);
 				else
 					cDetail.setStatus(Constants.FINISHED);
-				if(checkDownloadStatus(cDetail.getComicName()))
-				{
-					setDownloadStatus(cDetail.getComicName(), Constants.FINISHED);
-				}
 				if(context != null)
 				{
+					if(checkDownloadStatus(cDetail.getComicName()))
+					{
+						setDownloadStatus(cDetail.getComicName(), Constants.FINISHED);
+					}
 					DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
 					Intent intent = new Intent();
 					intent.setAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
@@ -187,6 +191,7 @@ public class ComicDownloadThread implements Runnable{
 //				nManager.sendBroadcast(intent);
 			}
 			context = null;
+			cDetail = null;
 		}
 	}
 	
@@ -214,13 +219,6 @@ public class ComicDownloadThread implements Runnable{
 			DBComicDownloadHelper.getInstance(context).saveComicDownload(cDownload);
 		}
 
-	}
-	
-	//清除一些变量，释放内存空间
-	public void clear()
-	{
-		cDetail = null;
-		context = null;
 	}
 	
 	public void pauseDownload()

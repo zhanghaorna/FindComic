@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -26,6 +27,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -42,7 +45,9 @@ import com.zhr.util.BitmapLoader;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
 
-public class DownloadManageActivity extends Activity implements OnClickListener{
+public class DownloadManageActivity extends Activity implements OnClickListener
+		,OnItemClickListener
+{
 	
 	private TextView titleTextView;
 	private ImageView back;
@@ -101,6 +106,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		comicInfos = DBComicDownloadHelper.getInstance(this).getComicDownloads();
 		mAdapter = new ComicInfoAdapter();
 		comicInfosView.setAdapter(mAdapter);
+		comicInfosView.setOnItemClickListener(this);
 		
 		path = AppSetting.getInstance(getApplicationContext()).getDownloadPath();
 		
@@ -113,9 +119,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 		
 		downloadBroadcast = new DownloadBroadcast();
 		
-		bindService(new Intent(this,DownloadService.class), mConnection, BIND_AUTO_CREATE);
-//		lbManager.registerReceiver(downloadBroadcast, intentFilter);
-		registerReceiver(downloadBroadcast, intentFilter);
+
 	}
 	
 	private void showMenuDialog(ComicDownload cDownload)
@@ -217,21 +221,30 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-
+		bindService(new Intent(this,DownloadService.class), mConnection, BIND_AUTO_CREATE);
+		registerReceiver(downloadBroadcast, intentFilter);
+	}
+	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		mAdapter.notifyDataSetChanged();
 	}
 	
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		unbindService(mConnection);
+		unregisterReceiver(downloadBroadcast);
 	}
 	
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		unbindService(mConnection);
-		unregisterReceiver(downloadBroadcast);
+
 	}
 
 	@Override
@@ -421,5 +434,11 @@ public class DownloadManageActivity extends Activity implements OnClickListener{
 			}
 			
 		}
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		enterChapterManager(comicInfos.get(position).getComicName());		
 	}
 }

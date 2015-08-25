@@ -32,5 +32,6 @@ public class Constants {
 	public static final int DOWNLOADING = 1;
 	public static final int PAUSED = 2;
 	public static final int FINISHED = 3;
+	public static final int PAUSEING = 4;
 	
 }
