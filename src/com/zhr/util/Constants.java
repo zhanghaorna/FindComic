@@ -28,8 +28,9 @@ public class Constants {
 	
 	public static final int IMAGE_LOADED = 101;
 	
-	public static final int WAITING = 0;
-	public static final int DOWNLOADING = 1;
+	
+	public static final int DOWNLOADING = 0;
+	public static final int WAITING = 1;
 	public static final int PAUSED = 2;
 	public static final int FINISHED = 3;
 	public static final int PAUSEING = 4;

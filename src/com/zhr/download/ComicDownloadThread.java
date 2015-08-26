@@ -44,6 +44,9 @@ public class ComicDownloadThread implements Runnable{
 	private String dirPath;
 	
 	private boolean isRunning = true;
+	
+	//线程中cDetail的实时下载状态
+	private int status;
 
 	
 	public ComicDownloadThread(ComicDownloadDetail cDetail,Context context)
@@ -51,11 +54,17 @@ public class ComicDownloadThread implements Runnable{
 		this.cDetail = cDetail;	
 		this.context = context;
 		createDirs();
+		status = Constants.WAITING;
 	}	
 	
 	public ComicDownloadDetail getDownloadDetail()
 	{
 		return cDetail;
+	}
+	
+	public int getDownloadStatus()
+	{
+		return status;
 	}
 	
 	
@@ -64,9 +73,10 @@ public class ComicDownloadThread implements Runnable{
 		if(!isRunning)
 		{
 			cDetail.setStatus(Constants.PAUSED);
+			status = Constants.PAUSED;
 			DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
 			Intent intent = new Intent();
-			intent.setAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+			intent.setAction(DownloadService.CHAPTER_PAUSED);
 			intent.putExtra("comicName", cDetail.getComicName());
 			intent.putExtra("chapterName", cDetail.getChapter());
 			intent.putExtra("status", cDetail.getStatus());
@@ -81,6 +91,7 @@ public class ComicDownloadThread implements Runnable{
 			if(urls != null&&isRunning)
 			{
 				cDetail.setStatus(Constants.DOWNLOADING);
+				status = Constants.DOWNLOADING;
 				setDownloadStatus(cDetail.getComicName(), Constants.DOWNLOADING);
 				//当状态变为下载后，发送广播，通知UI更新
 				Intent downloadIntent = new Intent();
@@ -108,12 +119,12 @@ public class ComicDownloadThread implements Runnable{
 						String fileName = "";
 						if(inputStream != null)
 						{								
-							if(i < 10)
-								fileName = "00" + i + ".jpg";
-							else if(i < 100)
-								fileName = "0" + i + ".jpg";
+							if(i + 1 < 10)
+								fileName = "00" + (i + 1) + ".jpg";
+							else if(i + 1 < 100)
+								fileName = "0" + (i + 1) + ".jpg";
 							else
-								fileName = i + ".jpg";
+								fileName = (i + 1) + ".jpg";
 							outputStream = new FileOutputStream(new File(dirPath,fileName));
 							while((nums = inputStream.read(bytes)) != -1)
 							{
@@ -149,9 +160,15 @@ public class ComicDownloadThread implements Runnable{
 					}
 				}
 				if(!isRunning)
+				{
 					cDetail.setStatus(Constants.PAUSED);
+					status = Constants.PAUSED;
+				}
 				else
+				{
 					cDetail.setStatus(Constants.FINISHED);
+					status = Constants.FINISHED;
+				}
 				if(context != null)
 				{
 					if(checkDownloadStatus(cDetail.getComicName()))
@@ -160,7 +177,10 @@ public class ComicDownloadThread implements Runnable{
 					}
 					DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
 					Intent intent = new Intent();
-					intent.setAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+					if(status == Constants.PAUSED)
+						intent.setAction(DownloadService.CHAPTER_PAUSED);
+					else if(status == Constants.FINISHED)
+						intent.setAction(DownloadService.CHAPTER_FINISHED);
 					intent.putExtra("comicName", cDetail.getComicName());
 					intent.putExtra("chapterName", cDetail.getChapter());
 					intent.putExtra("status", cDetail.getStatus());
@@ -181,6 +201,7 @@ public class ComicDownloadThread implements Runnable{
 					== Constants.WAITING)
 			{
 				cDetail.setStatus(Constants.PAUSED);
+				status = Constants.PAUSED;
 				DBComicDownloadDetailHelper.getInstance(context).saveComicDownloadDetail(cDetail);
 				Intent intent = new Intent();
 				intent.setAction(DownloadService.NETWORK_ERROR);
@@ -226,10 +247,7 @@ public class ComicDownloadThread implements Runnable{
 		isRunning = false;
 	}
 	
-	public int getDownloadStatus()
-	{
-		return cDetail.getStatus();
-	}
+
 	
 	private void createDirs()
 	{

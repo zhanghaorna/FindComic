@@ -28,6 +28,7 @@ import android.R.integer;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -37,6 +38,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.RemoteViews;
 
@@ -64,7 +66,8 @@ public class DownloadService extends Service{
 //	private LocalBroadcastManager lbManager;
 	private DownloadBroadcast downloadBroadcast;
 	
-	public static final String CHAPTER_FINISHING_OR_PAUSED = "download_chapter_finished_or_paused";
+	public static final String CHAPTER_FINISHED = "chapter_finished";
+	public static final String CHAPTER_PAUSED = "chapter_paused";
 	public static final String NETWORK_ERROR = "network_error";
 	public static final String DOWNLOAD_STATE_CHANGE = "download_state_change";
 	public static final String DOWNLOAD_PAGE_FINISHED = "download_page_finished";
@@ -100,16 +103,15 @@ public class DownloadService extends Service{
 		nManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		downloadBroadcast = new DownloadBroadcast();
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(CHAPTER_FINISHING_OR_PAUSED);
+		intentFilter.addAction(CHAPTER_FINISHED);
+		intentFilter.addAction(CHAPTER_PAUSED);
 		intentFilter.addAction(NETWORK_ERROR);
 		intentFilter.setPriority(1000);
 //		lbManager = LocalBroadcastManager.getInstance(getBaseContext());
 //		lbManager.registerReceiver(downloadBroadcast, intentFilter);
 		registerReceiver(downloadBroadcast, intentFilter);
-	}
-	
-	private void showNotification()
-	{
+		
+		//初始化广播相关
 		remoteViews = new RemoteViews(getPackageName(), R.layout.comic_download_service);
 		remoteViews.setTextViewText(R.id.title, "漫画下载任务");
 		remoteViews.setTextViewText(R.id.content, "漫画下载中...");
@@ -118,12 +120,46 @@ public class DownloadService extends Service{
 			.setContent(remoteViews)
 			.setSmallIcon(R.drawable.ic_launcher)
 			.setTicker("漫画下载任务");
+		
+		//点击通知后进入DownloadManageActivity
+		Intent dmIntent = new Intent(this,DownloadManageActivity.class);
+		//点击返回后能返回原来的Activity
+		dmIntent.setAction(Intent.ACTION_MAIN);
+		dmIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+//		dmIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
+//				Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		PendingIntent dmPendingIntent = PendingIntent.getActivity(this,
+				0, dmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		
+		
+		
+//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+////		stackBuilder.addParentStack(DownloadManageActivity.class);
+//		stackBuilder.addNextIntent(dmIntent);
+//		PendingIntent dmPendingIntent = stackBuilder.getPendingIntent(0,
+//							PendingIntent.FLAG_UPDATE_CURRENT);
+		mBuilder.setContentIntent(dmPendingIntent);
 		downloadNotification = mBuilder.build();
+	}
+	
+	private void showStartNotification()
+	{
+		remoteViews.setTextViewText(R.id.content, "漫画下载中...");
+		nManager.notify(notifyId, downloadNotification);
+	}
+	
+	private void showPauseNotification()
+	{
+		remoteViews.setTextViewText(R.id.content, "下载已暂停");
 		nManager.notify(notifyId, downloadNotification);
 	}
 	
 	public void startDownload(String comicName)
 	{
+		if(downloadComics.size() == 0)
+		{
+			showStartNotification();
+		}
 		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper.getInstance(getApplicationContext())
 				.getUnfinishedDownloadDetails(comicName);
 		if(cDetails != null&&cDetails.size() != 0)
@@ -145,6 +181,10 @@ public class DownloadService extends Service{
 	
 	public void startDownload(ComicDownloadDetail cDetail)
 	{
+		if(downloadComics.size() == 0)
+		{
+			showStartNotification();
+		}
 		ComicDownloadThread downloadThread = new ComicDownloadThread(cDetail, getApplicationContext());
 		downloadComics.add(downloadThread);
 		singleThreadPool.submit(downloadThread);
@@ -169,15 +209,19 @@ public class DownloadService extends Service{
 				break;
 			
 			if(cThread.getDownloadDetail().getComicName().equals(comicName))
-			{
-				cThread.pauseDownload();
+			{		
 				cThread.getDownloadDetail().setStatus(Constants.PAUSED);
 				cDetails.add(cThread.getDownloadDetail());
+				cThread.pauseDownload();
 			}
 			else 
 			{
 				downloadComics.add(cThread);
 			}
+		}
+		if(downloadComics.size() == 0)
+		{
+			showPauseNotification();
 		}
 		//统一保存
 		if(cDetails.size() > 0)
@@ -203,6 +247,10 @@ public class DownloadService extends Service{
 			}
 		}
 		
+		if(downloadComics.size() == 0)
+		{
+			showPauseNotification();
+		}
 		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper
 				.getInstance(getApplicationContext()).getComicDownloadDetails(cDetail.getComicName());
 		int i = 0;
@@ -242,13 +290,25 @@ public class DownloadService extends Service{
 				if(comicDownload.getComicName() == null||comicDownload.getComicName().equals(""))
 				{
 					comicDownload.setComicName(comicName);
-					comicDownload.setChapterNum(downloadChapterNum + comicDownload.getChapterNum());
-					comicDownload.setStatus(Constants.WAITING);
-					comicDownload.setDownloadDate(new Date());
-					DBComicDownloadHelper.getInstance(getBaseContext()).saveComicDownload(comicDownload);
+					comicDownload.setStatus(Constants.WAITING);	
 				}
+				else
+				{
+					if(comicDownload.getStatus() == Constants.PAUSED
+							||comicDownload.getStatus() == Constants.FINISHED)
+						comicDownload.setStatus(Constants.WAITING);
+				}
+				comicDownload.setChapterNum(downloadChapterNum + comicDownload.getChapterNum());
+				comicDownload.setDownloadDate(new Date());
+				DBComicDownloadHelper.getInstance(getBaseContext()).saveComicDownload(comicDownload);
 				if(chapters != null&&urls != null)
 				{
+					//如果没有正在下载的则显示下载通知
+					if(chapters.length > 0&&downloadComics.size() == 0)
+					{
+						showStartNotification();
+					}
+					
 					List<ComicDownloadDetail> details = new ArrayList<ComicDownloadDetail>();
 					for(int i = 0;i < chapters.length;i++)
 					{
@@ -265,17 +325,6 @@ public class DownloadService extends Service{
 						singleThreadPool.submit(downloadThread);
 					}
 					DBComicDownloadDetailHelper.getInstance(getBaseContext()).saveComicDownloadDetails(details);
-					
-					//显示通知栏
-					if(downloadNotification == null)
-					{
-						showNotification();
-					}
-					else
-					{
-						remoteViews.setTextViewText(R.id.content, "漫画下载中...");
-						nManager.notify(notifyId, downloadNotification);
-					}
 				}								
 			}
 			//从漫画也
@@ -361,10 +410,11 @@ public class DownloadService extends Service{
 			if(intent != null)
 			{
 				//逻辑有问题
-				if(intent.getAction().equals(CHAPTER_FINISHING_OR_PAUSED))
+				if(intent.getAction().equals(CHAPTER_FINISHED)
+						||intent.getAction().equals(CHAPTER_PAUSED))
 				{
 					int size = downloadComics.size();
-					int waiting_or_downloading = 0;
+					boolean paused = false;
 					for(int i = 0;i < size;i++)
 					{
 						ComicDownloadThread cThread = downloadComics.poll();
@@ -375,21 +425,24 @@ public class DownloadService extends Service{
 						{
 							downloadComics.add(cThread);
 						}
-						else 
+						else if(status == Constants.PAUSED) 
 						{
-							waiting_or_downloading++;
+							paused = true;
 						}						
 					}
 					if(downloadComics.size() == 0)
 					{
-						remoteViews.setTextViewText(R.id.content, "漫画已下载完成!");
-						nManager.notify(notifyId, downloadNotification);
+						if(paused)
+						{
+							showPauseNotification();
+						}
+						else
+						{
+							remoteViews.setTextViewText(R.id.content, "下载已完成");
+							nManager.notify(notifyId, downloadNotification);
+						}
 					}
-					else if(waiting_or_downloading == 0)
-					{
-						remoteViews.setTextViewText(R.id.content, "下载已暂停");
-						nManager.notify(notifyId, downloadNotification);
-					}		
+					
 					checkComicStatus(intent.getStringExtra("comicName"));
 				}
 				else if(intent.getAction().equals(NETWORK_ERROR))
@@ -399,25 +452,25 @@ public class DownloadService extends Service{
 							+ intent.getStringExtra("chapterName") + "下载失败");
 					nManager.notify(error_notifyId,downloadNotification);
 					
-					boolean downloading = false;
 					
-					Iterator<ComicDownloadThread> iterator = downloadComics.iterator();
-					while(iterator.hasNext())
+					int size = downloadComics.size();
+					for(int i = 0;i < size;i++)
 					{
-						int status = iterator.next().getDownloadStatus();
-						if(status == Constants.WAITING
-								||status == Constants.DOWNLOADING)
-						{
-							downloading = true;
+						ComicDownloadThread cThread = downloadComics.poll();
+						if(cThread == null)
 							break;
-						}
+						int status = cThread.getDownloadStatus();
+						if(status != Constants.FINISHED&&status != Constants.PAUSED)
+						{
+							downloadComics.add(cThread);
+						}			
 					}
-					if(!downloading)
+					if(downloadComics.size() == 0)
 					{
-						downloadComics.clear();
 						remoteViews.setTextViewText(R.id.content, "下载已停止");
 						nManager.notify(notifyId, downloadNotification);
 					}
+					
 					checkComicStatus(intent.getStringExtra("comicName"));
 					
 				}

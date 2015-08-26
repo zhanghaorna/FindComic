@@ -50,37 +50,9 @@ public class WelcomeActivity extends Activity{
 		//确保存放缓存的文件夹存在
 		Util.createFile();
 		//初始化数据库
-		DBNewsHelper.getInstance(getApplicationContext()).deleteAllNews();
+//		DBNewsHelper.getInstance(getApplicationContext()).deleteAllNews();
 		DBComicDownloadHelper.getInstance(getApplicationContext());
-		
-//		ComicDownload comicDownload = new ComicDownload();
-//		comicDownload.setChapterNum(2);
-//		comicDownload.setComicName("woca");
-//		comicDownload.setDownloadDate(new Date());
-//		comicDownload.setStatus(1);
-//		DBComicDownloadHelper.getInstance(getApplicationContext()).saveComicDownload(comicDownload);
-//		
-//		ComicDownloadDetail comicDownloadDetail = new ComicDownloadDetail();
-//		comicDownloadDetail.setComicDownload(comicDownload);
-//		comicDownloadDetail.setChapter("1");
-//		comicDownloadDetail.setComicName("woca");
-//		comicDownloadDetail.setFinishNum(2);
-//		comicDownloadDetail.setPageNum(1);
-//		comicDownloadDetail.setUrl("1");
-//		comicDownloadDetail.setStatus(2);
-//		DBComicDownloadDetailHelper.getInstance(getApplicationContext()).saveComicDownloadDetail(comicDownloadDetail);
-//		ComicDownloadDetail comicDownloadDetail2 = new ComicDownloadDetail();
-//		comicDownloadDetail2.setComicDownload(comicDownload);
-//		comicDownloadDetail2.setChapter("2");
-//		comicDownloadDetail2.setComicName("woca");
-//		comicDownloadDetail2.setFinishNum(2);
-//		comicDownloadDetail2.setPageNum(1);
-//		comicDownloadDetail2.setUrl("1");
-//		comicDownloadDetail2.setStatus(2);
-//		DBComicDownloadDetailHelper.getInstance(getApplicationContext()).saveComicDownloadDetail(comicDownloadDetail2);
-		
-//		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper.getInstance(getApplicationContext()).getComicDownloadDetails("woca");
-		
+				
 		
 		//创建初始化文件夹
 		File saveFile = new File(AppSetting.getInstance(this).getDownloadPath());

@@ -4,12 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.zhr.comic.ComicReadActivity;
 import com.zhr.database.DBComicDownloadDetailHelper;
 import com.zhr.database.DBComicDownloadHelper;
+import com.zhr.database.DBComicRecordHelper;
 import com.zhr.findcomic.R;
 import com.zhr.setting.AppSetting;
 import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.sqlitedao.ComicDownloadDetail;
+import com.zhr.sqlitedao.ComicRecord;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
 
@@ -32,14 +35,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
-public class ComicManageActivity extends Activity implements OnClickListener{
+public class ComicManageActivity extends Activity implements OnClickListener,
+			OnItemClickListener
+{
 	
 	private final int UNFINISH_MODE = 0;
 	private final int FINISH_MODE = 1;
@@ -118,9 +125,12 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 			checkDownloadStatus();
 			mAdapter = new ComicDownloadDetailAdapter();
 			comicDetaiListView.setAdapter(mAdapter);
+			comicDetaiListView.setOnItemClickListener(this);
+			
 			
 			intentFilter = new IntentFilter();
-			intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+			intentFilter.addAction(DownloadService.CHAPTER_FINISHED);
+			intentFilter.addAction(DownloadService.CHAPTER_PAUSED);
 			intentFilter.addAction(DownloadService.NETWORK_ERROR);
 			intentFilter.addAction(DownloadService.DOWNLOAD_PAGE_FINISHED);
 			intentFilter.addAction(DownloadService.DOWNLOAD_STATE_CHANGE);
@@ -389,7 +399,9 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 			{				
 				if(intent.getStringExtra("comicName").equals(comicName))
 				{
-					checkDownloadStatus();
+					if(DownloadService.CHAPTER_FINISHED.equals(intent.getAction()))
+						changeModeView();
+					checkDownloadStatus();					
 					mAdapter.notifyDataSetInvalidated();			
 				}
 			}			
@@ -568,6 +580,39 @@ public class ComicManageActivity extends Activity implements OnClickListener{
 				
 			}
 			
+		}
+		
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		if(position > 0)
+		{
+			if(cDetails.get(position - 1).getStatus() == Constants.FINISHED)
+			{
+				//进入漫画阅读页
+				Intent intent = new Intent(this,ComicReadActivity.class);
+				intent.putExtra("comicName", comicName);
+				intent.putExtra("chapterName", cDetails.get(position - 1).getChapter());
+				String[] picPaths = new String[cDetails.get(position - 1).getPageNum()];
+				String fileName = "";
+				for(int i = 0;i < picPaths.length;i++)
+				{					
+					if(i + 1 < 10)
+						fileName = "00" + (i + 1) + ".jpg";
+					else if(i + 1 < 100)
+						fileName = "0" + (i + 1) + ".jpg";
+					else
+						fileName = (i + 1) + ".jpg";
+					picPaths[i] = AppSetting.getInstance(getApplicationContext())
+							.getDownloadPath() + File.separator + comicName
+							+ File.separator + cDetails.get(position - 1).getChapter()
+							+ File.separator + fileName;
+				}
+				intent.putExtra("picPaths", picPaths);
+				startActivity(intent);
+			}
 		}
 		
 	}

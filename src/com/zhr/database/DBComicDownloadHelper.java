@@ -75,6 +75,7 @@ public class DBComicDownloadHelper {
 	public List<ComicDownload> getComicDownloads()
 	{
 		QueryBuilder<ComicDownload> qBuilder = comicDownloadDao.queryBuilder();
+		qBuilder.orderDesc(ComicDownloadDao.Properties.DownloadDate);
 		return qBuilder.list();
 	}
 	

@@ -112,7 +112,8 @@ public class DownloadManageActivity extends Activity implements OnClickListener
 		
 //		lbManager = LocalBroadcastManager.getInstance(getApplicationContext());
 		intentFilter = new IntentFilter();
-		intentFilter.addAction(DownloadService.CHAPTER_FINISHING_OR_PAUSED);
+		intentFilter.addAction(DownloadService.CHAPTER_FINISHED);
+		intentFilter.addAction(DownloadService.CHAPTER_PAUSED);
 		intentFilter.addAction(DownloadService.NETWORK_ERROR);
 		intentFilter.addAction(DownloadService.DOWNLOAD_STATE_CHANGE);
 		intentFilter.setPriority(200);
@@ -229,6 +230,14 @@ public class DownloadManageActivity extends Activity implements OnClickListener
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		for(int i = 0;i < comicInfos.size();i++)
+		{
+			if(comicInfos.get(i) == null)
+			{
+				comicInfos.remove(i);
+				break;
+			}
+		}
 		mAdapter.notifyDataSetChanged();
 	}
 	
@@ -276,8 +285,7 @@ public class DownloadManageActivity extends Activity implements OnClickListener
 			mAdapter.notifyDataSetChanged();
 		default:
 			break;
-		}
-		
+		}		
 	}
 	
 	private void checkDownloadStatus()

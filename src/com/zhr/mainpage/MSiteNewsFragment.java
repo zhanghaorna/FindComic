@@ -124,7 +124,10 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 							if(pullToRefresh)
 								mPullToRefreshView.setRefreshing(false);
 							else
+							{
 								mListView.loadCompleted();
+								isLoadingMore = false;
+							}
 							mAdapter.notifyDataSetChanged();							
 						}
 					});
@@ -195,6 +198,11 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		if(position == newsItems.size())
+		{
+			onload();
+			return;
+		}
 		if(newsItems.get(position).getContentUrl() == null||
 				newsItems.get(position).getContentUrl() == "")
 			return;

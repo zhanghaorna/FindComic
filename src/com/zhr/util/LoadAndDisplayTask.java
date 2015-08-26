@@ -32,14 +32,13 @@ public class LoadAndDisplayTask implements Runnable{
 	private String imagePath = "";
 	private boolean thumbnail;
 	private boolean cacheToMemory;
-	private boolean cacheToDisk;
 	private boolean isComicPage;
 	private Handler handler;
 	
 	private Bitmap bitmap = null;
 	
 	public LoadAndDisplayTask(ImageView targetView,String imagePath
-			,boolean thumbnail,Handler handler,boolean cacheToMemory,boolean cacheToDisk
+			,boolean thumbnail,Handler handler,boolean cacheToMemory
 			,boolean isComicPage)
 	{
 		this.targetView = targetView;
@@ -47,7 +46,6 @@ public class LoadAndDisplayTask implements Runnable{
 		this.thumbnail = thumbnail;
 		this.cacheToMemory = cacheToMemory;		
 		this.handler = handler;
-		this.cacheToDisk = cacheToDisk;
 		this.isComicPage = isComicPage;
 	}
 	
@@ -103,6 +101,8 @@ public class LoadAndDisplayTask implements Runnable{
 				//从本地获取图片
 				else if(imagePath != "")
 				{
+					if(isViewReused())
+						return;
 					File file = new File(imagePath);
 					if(!file.exists())
 						return;
@@ -127,12 +127,17 @@ public class LoadAndDisplayTask implements Runnable{
 //						bitmap = Bitmap.createBitmap(bitmap, 0, 0, targetView.getMeasuredWidth()
 //								,targetView.getMeasuredHeight()); 
 					}
+					if(isViewReused())
+						return;
+				
 					loadImage();
 				}
 			}
 			//有缓存就直接加载
 			else
 			{
+				if(isViewReused())
+					return;
 				loadImage();
 			}
 			
@@ -179,31 +184,32 @@ public class LoadAndDisplayTask implements Runnable{
 				targetView.setImageBitmap(bitmap);
 			}
 		}
-		if(cacheToDisk&&imagePath.startsWith("http://"))
-		{
-			int sep = imagePath.lastIndexOf("/");
-			int point = imagePath.lastIndexOf(".");
-			if(sep != -1&&point != -1&&sep < point&&sep < imagePath.length() - 1)
-			{
-				String imageName = imagePath.substring(sep + 1,point);
-				imageName = Constants.DISKCACHE_FILENAME + File.separator + imageName;
-				File imageFile = new File(imageName);
-				if(imageFile.exists())
-					return;
-				try
-				{
-					FileOutputStream stream = new FileOutputStream(imageName);
-					
-					if(DBNewsHelper.getDbNewsHelper() != null)
-					{		
-						bitmap.compress(CompressFormat.JPEG, 30, stream);
-						DBNewsHelper.getDbNewsHelper().alertNews(imagePath,imageName);
-					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}				
-			}
-		}
+		//没有必要缓存图片到本地，导致问题
+//		if(cacheToDisk&&imagePath.startsWith("http://"))
+//		{
+//			int sep = imagePath.lastIndexOf("/");
+//			int point = imagePath.lastIndexOf(".");
+//			if(sep != -1&&point != -1&&sep < point&&sep < imagePath.length() - 1)
+//			{
+//				String imageName = imagePath.substring(sep + 1,point);
+//				imageName = Constants.DISKCACHE_FILENAME + File.separator + imageName;
+//				File imageFile = new File(imageName);
+//				if(imageFile.exists())
+//					return;
+//				try
+//				{
+//					FileOutputStream stream = new FileOutputStream(imageName);
+//					
+//					if(DBNewsHelper.getDbNewsHelper() != null)
+//					{		
+//						bitmap.compress(CompressFormat.JPEG, 30, stream);
+//						DBNewsHelper.getDbNewsHelper().alertNews(imagePath,imageName);
+//					}
+//				} catch (FileNotFoundException e) {
+//					e.printStackTrace();
+//				}				
+//			}
+//		}
 	}
 	
 	
@@ -233,9 +239,15 @@ public class LoadAndDisplayTask implements Runnable{
 		String currentPath = BitmapLoader.getInstance().getLoadingUriFromView(targetView);
 		//imagePath为""表示缓存任务,也返回false.
 		if(currentPath == null||currentPath.equals(imagePath)||imagePath.equals(""))
+		{
 			return false;
+		}
 		else 
 		{
+			targetView = null;
+			bitmap = null;
+			handler = null;
+			Log.d("Comic", "cache cache");
 			return true;
 		}
 

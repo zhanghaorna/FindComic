@@ -71,7 +71,8 @@ public class LoadMoreListView extends ListView implements OnScrollListener{
 					if(listener != null)
 						listener.onload();
 				}
-				else {
+				else
+				{
 					footBar.setVisibility(View.GONE);
 					footTextView.setText("网络问题，加载失败");
 				}

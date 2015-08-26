@@ -33,7 +33,7 @@ import android.widget.Toast;
  * @description
  */
 public class LocalDirActivity extends BaseActivity implements OnClickListener
-				,OnItemClickListener,OnScrollListener
+				,OnItemClickListener
 {
 
 	public static final int LAST_READ = 0;
@@ -48,9 +48,6 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 	//match_parent可解决此问题
 	private ListView file_listView;
 	
-	//listview是否在滚屏，在滚屏就不加载数据
-	private boolean isBusy;
-	private int visibleItemCount;
 	
 	private File[] files;
 	private File currentFile;
@@ -112,7 +109,6 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 		file_listView = (ListView)findViewById(R.id.file_listview);
 		file_listView.setAdapter(adapter);
 		file_listView.setOnItemClickListener(this);
-		file_listView.setOnScrollListener(this);
 		
 		last_readView = (TextView)findViewById(R.id.last_read_path);
 		last_readView.setText(AppSetting.getInstance(getApplicationContext()).getLastReadLocal());
@@ -242,11 +238,13 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 			holder.iconView.setImageResource(R.drawable.local_dir);
 			if(!files[position].isDirectory()&&(files[position].getAbsolutePath()
 					.endsWith(".jpg")||files[position].getAbsolutePath()
-					.endsWith(".png"))&&!isBusy)
+					.endsWith(".png")))
 			{
-				Log.d("File", files[position].getAbsolutePath());
-				BitmapLoader.getInstance().loadImageNoCache(holder.iconView,
-						files[position].getAbsolutePath(),true);
+//				Log.d("File", files[position].getAbsolutePath());
+//				BitmapLoader.getInstance().loadImageNoCache(holder.iconView,
+//						files[position].getAbsolutePath(),true);
+				BitmapLoader.getInstance().loadImage(holder.iconView,
+						files[position].getAbsolutePath(), true, true,false);
 			}
 
 					
@@ -270,7 +268,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				picPaths[i] = files[i].getAbsolutePath();
 			intent.putExtra("picPaths", picPaths);
 			intent.putExtra("position", position);
-			intent.putExtra("comicName", files[position].getParentFile().getName());
+			intent.putExtra("chapterName", files[position].getParentFile().getName());
 			startActivityForResult(intent, LAST_READ);
 			return;
 		}
@@ -301,40 +299,6 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 		}
 	}
 
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-		// TODO Auto-generated method stub
-		switch (scrollState) {
-		case OnScrollListener.SCROLL_STATE_IDLE:
-			isBusy = false;
-			Log.d("Comic", "scroll pause");
-			int first = view.getFirstVisiblePosition();
-			for(int i = 0;i <visibleItemCount;i++)
-			{
-				if(!files[first + i].isDirectory()&&(files[first + i].getAbsolutePath()
-						.endsWith(".jpg")||files[first + i].getAbsolutePath().endsWith(".png")))
-				{
-					View convertView = view.getChildAt(i);
-					BitmapLoader.getInstance().loadImageNoCache(((DirBaseAdapter.ViewHolder)convertView.getTag()).iconView,
-							files[first + i].getAbsolutePath(),true);
-				}				
-			}
-			break;
-		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-			isBusy = true;
-			break;
-		case OnScrollListener.SCROLL_STATE_FLING:
-			isBusy = true;
-			break;
-		default:
-			break;
-		}
-	}
-
-	public void onScroll(AbsListView view, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		// TODO Auto-generated method stub
-		this.visibleItemCount = visibleItemCount;
-	}
 
 
 }

@@ -28,6 +28,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author zhr
@@ -40,7 +41,7 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 	protected PullToRefreshView mPullToRefreshView;
 	protected LoadMoreListView mListView;
 	
-	
+	protected boolean isLoadingMore = false;
 	protected boolean pullToRefresh = true;
 	protected static Handler handler;
 	protected AsyncHttpClient client;
@@ -105,6 +106,15 @@ public class NewsFragment extends Fragment implements IRefreshListener{
 	}
 	
 	public void onload() {
+		if(!Util.isNetWorkConnect(getActivity()))
+		{
+			Toast.makeText(getActivity(), "无法加载，网络未连接", Toast.LENGTH_SHORT).show();
+		}
+		if(isLoadingMore)
+		{
+			return;
+		}
+		isLoadingMore = true;
 		pullToRefresh = false;
 		loadNewsFromInternet();		
 	}

@@ -54,17 +54,17 @@ public class DBNewsHelper{
 	
 	public long saveNews(News news)
 	{
-		if(newsDao.count() > 50)
+		if(newsDao.count() > 30)
 		{
-			deleteAllNews();
+			deleteAllNews(news.getFrom());
 		}
 		return newsDao.insert(news);
 	}
 	
 	public void saveAllNews(List<News> news)
 	{
-		if(newsDao.count() > 50)
-			deleteAllNews();
+		if(newsDao.count() > 30)
+			deleteAllNews(news.get(0).getFrom());
 		
 		newsDao.insertInTx(news);
 	}
@@ -72,7 +72,7 @@ public class DBNewsHelper{
 	public List<News> queryNews(String from)
 	{
 		QueryBuilder<News> qBuilder = newsDao.queryBuilder();
-		qBuilder.where(NewsDao.Properties.From.eq(from)).orderAsc(NewsDao.Properties.Time).limit(10);
+		qBuilder.where(NewsDao.Properties.From.eq(from)).orderDesc(NewsDao.Properties.Time).limit(10);
 		return qBuilder.list();
 	}
 	
@@ -89,9 +89,11 @@ public class DBNewsHelper{
 		}		
 	}
 	
-	public void deleteAllNews()
+	public void deleteAllNews(String from)
 	{
-		newsDao.deleteAll();
+		QueryBuilder<News> qBuilder = newsDao.queryBuilder();
+		qBuilder.where(NewsDao.Properties.From.eq(from));
+		newsDao.deleteInTx(qBuilder.list());
 	}
 	
 	

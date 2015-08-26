@@ -53,7 +53,9 @@ public class DBComicDownloadDetailHelper {
 	public List<ComicDownloadDetail> getComicDownloadDetails(String comicName)
 	{
 		QueryBuilder<ComicDownloadDetail> qBuilder = comicDownloadDetailDao.queryBuilder();
-		qBuilder.where(ComicDownloadDetailDao.Properties.ComicName.eq(comicName));
+		qBuilder.where(ComicDownloadDetailDao.Properties.ComicName.eq(comicName))
+				.orderAsc(ComicDownloadDetailDao.Properties.Status)
+				.orderAsc(ComicDownloadDetailDao.Properties.Chapter);
 		return qBuilder.list();
 	}
 	

@@ -100,7 +100,7 @@ public class BitmapLoader
 	
 	public void loadImageNoCache(ImageView imageView,String path,boolean thumbnail)
 	{
-		loadImage(imageView, path,false,thumbnail,false,false);
+		loadImage(imageView, path,false,thumbnail,false);
 	}
 	
 	public void loadImage(ImageView imageView,String path)
@@ -111,8 +111,9 @@ public class BitmapLoader
 	public void loadImage(ImageView imageView,String path,
 							boolean asyn)
 	{
-		loadImage(imageView, path,asyn,false,true,false);
+		loadImage(imageView, path,asyn,false,false);
 	}
+	
 	//加载漫画页，如imageView为null，则提前加载图片
 	public void loadComicImage(ImageView imageView,String path)
 	{
@@ -169,8 +170,7 @@ public class BitmapLoader
 	}
 	
 	public void loadImage(ImageView imageView,String path,
-							boolean asyn,boolean thumbnail,boolean cacheToDisk
-							,boolean isComicPage)
+							boolean asyn,boolean thumbnail,boolean isComicPage)
 	{
 		if(path == null||path.equals(""))
 			return;
@@ -205,10 +205,11 @@ public class BitmapLoader
 			{				
 				return;
 			}
-			else {
+			else 
+			{
 				prepareDisplayTask(imageView, path);
 			}
-			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,thumbnail != true,cacheToDisk
+			task = new LoadAndDisplayTask(imageView, path, thumbnail, handler,thumbnail != true
 					,isComicPage);
 		}
 			

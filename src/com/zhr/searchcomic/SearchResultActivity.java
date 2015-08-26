@@ -153,16 +153,20 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 					{
 						if(!search)
 							page++;
+						dialog.dismiss();
 						mSearchAdapter.notifyDataSetChanged();
 					}
 					if(search)
 						searchView.setText("已为你找到" + comicIntros.size() +
 								"部相关漫画");
 				}
+				else {
+					dialog.dismiss();
+				}
 //				else
 //					showNetError();
 				isLoading = false;				
-				dialog.dismiss();
+				
 			}
 			
 			@Override
@@ -173,14 +177,16 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 				Log.d("Failure", "fail");
 				isLoading = false;
 				
-				
+				dialog.dismiss();
 				if(comicIntros.size() > 0)
 				{
 					Toast.makeText(getBaseContext(), "网络问题,请重新加载", Toast.LENGTH_SHORT).show();
 				}
 				else
+				{
 					showNetError();
-				dialog.dismiss();
+				}
+				
 			}
 		});
 	}
@@ -345,7 +351,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 			}
 
 			BitmapLoader.getInstance().loadImage(viewHolder.coverView,
-					comicIntros.get(position).getImageUrl()	, true, false, false,false);
+					comicIntros.get(position).getImageUrl()	, true, false,false);
 			
 			return convertView;
 		}
