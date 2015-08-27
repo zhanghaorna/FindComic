@@ -40,6 +40,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 /**
@@ -399,6 +400,7 @@ public class DownloadService extends Service{
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		unregisterReceiver(downloadBroadcast);
+		Log.d("Comic", "service destory");
 		
 	}
 	
@@ -436,7 +438,7 @@ public class DownloadService extends Service{
 						{
 							showPauseNotification();
 						}
-						else
+						else if(intent.getAction().equals(CHAPTER_FINISHED))
 						{
 							remoteViews.setTextViewText(R.id.content, "下载已完成");
 							nManager.notify(notifyId, downloadNotification);

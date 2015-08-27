@@ -30,7 +30,8 @@
             android:gravity="center"
             android:text="@string/download"
             android:textColor="@drawable/textview_color_click"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:visibility="gone" />
         
         <TextView 
             android:layout_toLeftOf="@id/download"

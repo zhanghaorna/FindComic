@@ -73,6 +73,7 @@
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
         <activity 
             android:name="com.zhr.comic.ComicReadActivity"
+            android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation"
             android:theme="@android:style/Theme.Light"
             ></activity> 
@@ -89,6 +90,7 @@
         <activity 
             android:name="com.zhr.comic.ComicIntroActivity"
             android:screenOrientation="portrait"
+            android:launchMode="singleTask"
             android:theme="@android:style/Theme.Light.NoTitleBar"
             ></activity>          
         <activity 

@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -46,14 +48,18 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.zhr.customview.GridViewInScrollView;
 import com.zhr.customview.NoAutoScrollView;
 import com.zhr.customview.TextViewWithExpand;
+import com.zhr.database.DBChapterInfoHelper;
 import com.zhr.database.DBComicDownloadDetailHelper;
+import com.zhr.database.DBComicInfoHelper;
 import com.zhr.database.DBComicRecordHelper;
 import com.zhr.download.DownloadService;
 import com.zhr.findcomic.R;
 import com.zhr.findcomic.R.id;
 import com.zhr.searchcomic.ComicChapter;
 import com.zhr.setting.AppSetting;
+import com.zhr.sqlitedao.ChapterInfo;
 import com.zhr.sqlitedao.ComicDownloadDetail;
+import com.zhr.sqlitedao.ComicInfo;
 import com.zhr.sqlitedao.ComicRecord;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.BitmapLoader;
@@ -96,6 +102,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	private String imageUrl;
 	private String intro;
 	private String introUrl;
+	private String date;
 	//续看按钮的text，点击后,与所有进行比较，决定载入哪个url
 	private String continue_chapter = "";
 	
@@ -120,6 +127,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	//实际可下载的数量
 	private int realCount = 0;
 	
+	private ComicInfo comicInfo;
+	
 	
 	private ColorStateList textColorChangeList;
 	
@@ -130,7 +139,6 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	
 	//接收下载状态变化的广播
 	private DownloadBroadcast downloadBroadcast;
-	private LocalBroadcastManager lbManager;
 	private IntentFilter intentFilter;
 	
 	@Override
@@ -144,23 +152,55 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	}
 	
 	private void preData()
-	{
-		author = getIntent().getStringExtra("author");
-		if(author == null)
-			author = "";
-		comicName = getIntent().getStringExtra("title");
-		if(comicName == null)
-			comicName = "";
+	{	
+		chapters = new ArrayList<ComicChapter>();
+		if(getIntent().getStringExtra("comicName") != null)
+		{
+			comicName = getIntent().getStringExtra("comicName");
+			comicInfo = DBComicInfoHelper.getInstance(getApplicationContext())
+					.getComicInfo(comicName);
+			author = comicInfo.getComicAuthor();
+			intro = comicInfo.getComicIntro();
+			imageUrl = AppSetting.getInstance(getApplicationContext())
+					.getDownloadPath() + File.separator + comicName 
+					+ File.separator + comicName + ".jpg";
+			introUrl = "";
+			
+			date = "更新日期：" + Util.dateToString(comicInfo.getUpdateDate(), 
+					"yyyy-MM-dd");
+			List<ChapterInfo> cInfos = DBChapterInfoHelper.getInstance(getApplicationContext())
+					.getChapterInfos(comicName);
+			if(cInfos != null)
+			{
+				for(int i = 0;i < cInfos.size();i++)
+				{
+					ComicChapter comicChapter = new ComicChapter();
+					comicChapter.setChapter(cInfos.get(i).getChapterName());
+					comicChapter.setUrl(cInfos.get(i).getComicUrl());
+					chapters.add(comicChapter);
+				}
+			}
+			downloadView.setVisibility(View.VISIBLE);
+		}
+		else
+		{
+			author = getIntent().getStringExtra("author");
+			if(author == null)
+				author = "";
+			comicName = getIntent().getStringExtra("title");
+			if(comicName == null)
+				comicName = "";
+
+			imageUrl = getIntent().getStringExtra("imageUrl");
+			introUrl = getIntent().getStringExtra("introUrl");
+		}
 		//搜索数据库找阅读记录
 		if(!comicName.equals(""))
 		{
 			comicRecord = DBComicRecordHelper.getInstance(getBaseContext()).
-					getComicRecord(comicName);
-			
+					getComicRecord(comicName);			
 		}
-		imageUrl = getIntent().getStringExtra("imageUrl");
-		introUrl = getIntent().getStringExtra("introUrl");
-		chapters = new ArrayList<ComicChapter>();
+		
 		chapterAdapter = new ChapterAdapter();
 		
 
@@ -183,6 +223,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 		back.setOnClickListener(this);
 		downloadView = (TextView)findViewById(R.id.download);
 		downloadView.setOnClickListener(this);
+		
 		
 		coverView = (ImageView)findViewById(R.id.cover);
 		authorView = (TextView)findViewById(R.id.author);
@@ -210,27 +251,63 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	{
 		authorView.setText(author);
 		titleView.setText(comicName);
-		if(imageUrl != null)
+		if(imageUrl != null&&!imageUrl.equals(""))
 			BitmapLoader.getInstance().loadImage(coverView, imageUrl, true, false,false);
 		readButton.setText("开始阅读");
-
+		
 		
 		client = new AsyncHttpClient();
 		client.setUserAgent("Baiduspider+");
 		client.setTimeout(2000);
 		
 		downloadBroadcast = new DownloadBroadcast();
-		lbManager = LocalBroadcastManager.getInstance(this);
+		
 		intentFilter = new IntentFilter();
+		intentFilter.setPriority(200);
 		intentFilter.addAction(DownloadService.CHAPTER_FINISHED);
 		
 		loadComicIntro();
-		lbManager.registerReceiver(downloadBroadcast, intentFilter);
+		registerReceiver(downloadBroadcast, intentFilter);
 		
+	}
+	
+	private void checkComicDownloadStatus()
+	{
+		for(int i = 0;i < chapters.size();i++)
+		{
+			chapters.get(i).setDownload_status(-1);
+		}
+		List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper
+				.getInstance(getBaseContext()).getComicDownloadDetails(comicName);
+		realCount = chapters.size();
+		if(cDetails != null&&cDetails.size() != 0)
+		{							
+			for(int i = 0;i < cDetails.size();i++)
+			{
+				String chapterName = cDetails.get(i).getChapter();
+				for(ComicChapter chapter:chapters)
+				{
+					if(chapter.getChapter().equals(chapterName))
+					{
+						realCount--;
+						chapter.setDownload_status(cDetails.get(i).getStatus());
+						break;
+					}
+				}
+			}
+		}
 	}
 	
 	private void loadComicIntro()
 	{
+		if(introUrl == null||"".equals(introUrl))
+		{
+			introView.setText(intro);
+			lastUpdateView.setText(date);
+			progressBar.setVisibility(View.GONE);
+			scrollView.setVisibility(View.VISIBLE);		
+			return;
+		}
 		client.get(introUrl, new AsyncHttpResponseHandler() {
 			
 			@Override
@@ -244,28 +321,12 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 						showNetError();
 					else
 					{
-						List<ComicDownloadDetail> cDetails = DBComicDownloadDetailHelper
-								.getInstance(getBaseContext()).getComicDownloadDetails(comicName);
-						realCount = chapters.size();
-						if(cDetails != null&&cDetails.size() != 0)
-						{							
-							for(int i = 0;i < cDetails.size();i++)
-							{
-								String chapterName = cDetails.get(i).getChapter();
-								for(ComicChapter chapter:chapters)
-								{
-									if(chapter.getChapter().equals(chapterName))
-									{
-										realCount--;
-										chapter.setDownload_status(cDetails.get(i).getStatus());
-										break;
-									}
-								}
-							}
-						}
+						downloadView.setVisibility(View.VISIBLE);
+						checkComicDownloadStatus();
 						chapterAdapter.notifyDataSetChanged();
 					}
 				}
+				
 				progressBar.setVisibility(View.GONE);
 				scrollView.setVisibility(View.VISIBLE);				
 			}
@@ -278,6 +339,25 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 				showNetError();
 			}	
 		});
+	}
+	
+	private Date getUpdateDate()
+	{
+		String text = lastUpdateView.getText().toString();
+		text = text.replace("更新日期：", "");
+		text = text.trim();
+		if(text.contains("-"))
+		{
+			String[] dates = text.split("-");
+			Calendar calendar = Calendar.getInstance();
+			calendar.set(Integer.valueOf(dates[0]), Integer.valueOf(dates[1]) - 1,
+					Integer.valueOf(dates[2]));
+			return calendar.getTime();
+		}
+		else
+		{
+			return null;
+		}	
 	}
 	
 	private void handleIntroPage(byte[] response)
@@ -395,6 +475,8 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			readButton.setText("续看 " + comicRecord.getChapter());
 			readButton.setBackgroundColor(getResources().getColor(R.color.green));
 		}
+		checkComicDownloadStatus();
+		chapterAdapter.notifyDataSetChanged();
 	}
 	
 	@Override
@@ -408,7 +490,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		lbManager.unregisterReceiver(downloadBroadcast);
+		unregisterReceiver(downloadBroadcast);
 	}
 
 	@Override
@@ -493,6 +575,11 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			break;
 		//下载按钮点击后响应事件
 		case R.id.confirm_download:
+			if(!Util.isNetWorkConnect(getApplicationContext()))
+			{
+				Toast.makeText(this, "网络未连接", Toast.LENGTH_SHORT).show();
+				return ;
+			}
 			Intent downloadIntent = new Intent(ComicIntroActivity.this
 					,DownloadService.class);
 			String[] chapterNames = new String[chooseCount];
@@ -511,6 +598,58 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			
 			//下载图片缩略图进行保存
 			downloadThumb();
+			//将漫画信息保存想关数据库
+			ComicInfo comicInfo = DBComicInfoHelper.getInstance(getApplicationContext())
+						.getComicInfo(comicName);
+			if(comicInfo == null)
+			{
+				comicInfo = new ComicInfo();
+				comicInfo.setChapterNum(chapters.size());
+				comicInfo.setComicAuthor(author);
+				comicInfo.setComicIntro(intro);
+				comicInfo.setComicName(comicName);
+				Date date = getUpdateDate();
+				if(date == null)
+					date = new Date();
+				comicInfo.setUpdateDate(date);
+				List<ChapterInfo> cInfos = new ArrayList<ChapterInfo>();
+				for(int i = 0;i < chapters.size();i++)
+				{
+					ChapterInfo chapterInfo = new ChapterInfo();
+					chapterInfo.setComicName(comicName);
+					chapterInfo.setChapterName(chapters.get(i).getChapter());
+					chapterInfo.setComicUrl(chapters.get(i).getUrl());
+					cInfos.add(chapterInfo);
+				}
+				DBComicInfoHelper.getInstance(getApplicationContext())
+							.saveComicInfo(comicInfo);
+				DBChapterInfoHelper.getInstance(getApplicationContext())
+							.saveChapterInfo(cInfos);			
+			}
+			else
+			{
+				if(comicInfo.getChapterNum() < chapters.size())
+				{
+					int length = chapters.size() - comicInfo.getChapterNum();
+					comicInfo.setChapterNum(chapters.size());
+					Date date = getUpdateDate();
+					if(date == null)
+						date = new Date();
+					comicInfo.setUpdateDate(date);
+					List<ChapterInfo> cInfos = new ArrayList<ChapterInfo>();
+					for(int i = 0;i < length;i++)
+					{
+						ChapterInfo chapterInfo = new ChapterInfo();
+						chapterInfo.setComicName(comicName);
+						chapterInfo.setChapterName(chapters.get(i).getChapter());
+						chapterInfo.setComicUrl(chapters.get(i).getUrl());
+					}
+					DBComicInfoHelper.getInstance(getApplicationContext())
+							.saveComicInfo(comicInfo);
+					DBChapterInfoHelper.getInstance(getApplicationContext())
+							.saveChapterInfo(cInfos);
+				}			
+			}
 			
 			Bundle data = new Bundle();
 			data.putString("comicName", comicName);

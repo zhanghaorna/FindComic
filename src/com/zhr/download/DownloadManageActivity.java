@@ -35,8 +35,10 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.zhr.database.DBChapterInfoHelper;
 import com.zhr.database.DBComicDownloadDetailHelper;
 import com.zhr.database.DBComicDownloadHelper;
+import com.zhr.database.DBComicInfoHelper;
 import com.zhr.findcomic.R;
 import com.zhr.setting.AppSetting;
 import com.zhr.sqlitedao.ComicDownload;
@@ -213,6 +215,11 @@ public class DownloadManageActivity extends Activity implements OnClickListener
 		File file = new File(AppSetting.getInstance(getApplicationContext())
 				.getDownloadPath() + File.separator + comicName);
 		Util.removeFile(file);
+		DBComicInfoHelper.getInstance(getApplicationContext())
+					.deleteComicInfo(comicName);
+		DBChapterInfoHelper.getInstance(getApplicationContext())
+					.deleteChapterInfos(comicName);
+		
 		checkDownloadStatus();
 
 	}
@@ -230,13 +237,12 @@ public class DownloadManageActivity extends Activity implements OnClickListener
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		for(int i = 0;i < comicInfos.size();i++)
+		List<ComicDownload> cDownloads = DBComicDownloadHelper.getInstance(getApplicationContext())
+				.getComicDownloads();
+		if(cDownloads.size() != comicInfos.size())
 		{
-			if(comicInfos.get(i) == null)
-			{
-				comicInfos.remove(i);
-				break;
-			}
+			comicInfos.clear();
+			comicInfos = cDownloads;
 		}
 		mAdapter.notifyDataSetChanged();
 	}

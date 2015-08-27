@@ -4,14 +4,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.zhr.comic.ComicIntroActivity;
 import com.zhr.comic.ComicReadActivity;
+import com.zhr.database.DBChapterInfoHelper;
 import com.zhr.database.DBComicDownloadDetailHelper;
 import com.zhr.database.DBComicDownloadHelper;
+import com.zhr.database.DBComicInfoHelper;
 import com.zhr.database.DBComicRecordHelper;
 import com.zhr.findcomic.R;
 import com.zhr.setting.AppSetting;
 import com.zhr.sqlitedao.ComicDownload;
 import com.zhr.sqlitedao.ComicDownloadDetail;
+import com.zhr.sqlitedao.ComicInfo;
 import com.zhr.sqlitedao.ComicRecord;
 import com.zhr.util.Constants;
 import com.zhr.util.Util;
@@ -244,6 +248,10 @@ public class ComicManageActivity extends Activity implements OnClickListener,
 			mode = NONE_MODE;
 			DBComicDownloadHelper.getInstance(getApplicationContext())
 					.deleteComicDownload(comicName);
+			DBComicInfoHelper.getInstance(getApplicationContext())
+					.deleteComicInfo(comicName);
+			DBChapterInfoHelper.getInstance(getApplicationContext())
+					.deleteChapterInfos(comicName);
 			Toast.makeText(this, "该漫画已经全部删除", Toast.LENGTH_SHORT).show();
 		}
 		else
@@ -352,7 +360,19 @@ public class ComicManageActivity extends Activity implements OnClickListener,
 			//目录，暂时不好存储数据库记录，因此暂时并不跳转过去
 			if(mode != EDIT_MODE)
 			{
-				
+				ComicInfo comicInfo = DBComicInfoHelper.getInstance(getApplicationContext())
+						.getComicInfo(comicName);
+				if(comicInfo == null)
+				{
+					Toast.makeText(this, "该漫画未保存", Toast.LENGTH_SHORT).show();
+				}
+				else
+				{
+					Intent intent = new Intent(this,ComicIntroActivity.class);
+					intent.putExtra("comicName", comicInfo.getComicName());
+					startActivity(intent);
+					overridePendingTransition(R.anim.slide_right_in,R.anim.slide_left_out);
+				}
 			}
 			else
 			{
