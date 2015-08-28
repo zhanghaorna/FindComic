@@ -11,9 +11,11 @@ import android.R.integer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -23,6 +25,7 @@ import com.zhr.customview.WaitProgressBar;
 import com.zhr.findcomic.R;
 import com.zhr.util.BaseActivity;
 import com.zhr.util.Constants;
+import com.zhr.util.Util;
 
 /**
  * @author zhr
@@ -30,7 +33,7 @@ import com.zhr.util.Constants;
  * @date 2015年5月31日
  * @description
  */
-public class NewsWebviewActivity extends BaseActivity{
+public class NewsWebviewActivity extends BaseActivity implements OnClickListener{
 	
 	private WebView mWebView;
 	private WaitProgressBar progressBar;
@@ -39,6 +42,8 @@ public class NewsWebviewActivity extends BaseActivity{
 	private AsyncHttpClient client;
 	
 	private String from;
+	
+	private Button reloadButton;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -53,6 +58,9 @@ public class NewsWebviewActivity extends BaseActivity{
 	{
 		progressBar = (WaitProgressBar) findViewById(R.id.progressBar);
 		
+		reloadButton = (Button)findViewById(R.id.reload);
+		reloadButton.setOnClickListener(this);
+		
 		mWebView = (WebView)findViewById(R.id.webview);	
 		mWebView.setWebViewClient(new WebViewClient(){
 			//新请求的网址也由本webview处理
@@ -65,8 +73,18 @@ public class NewsWebviewActivity extends BaseActivity{
 			public void onPageFinished(WebView view, String url) {
 				// TODO Auto-generated method stub
 				progressBar.setVisibility(View.GONE);
-				mWebView.setVisibility(View.VISIBLE);
+				if(!Util.isNetWorkConnect(getApplicationContext()))
+				{
+					Toast.makeText(NewsWebviewActivity.this, "网络未连接", Toast.LENGTH_SHORT).show();	
+					reloadButton.setVisibility(View.VISIBLE);
+				}
+				else
+				{
+					mWebView.setVisibility(View.VISIBLE);	
+				}			
 			}
+			
+			
 		});
 		mWebView.setWebChromeClient(new WebChromeClient(){
 			@Override
@@ -98,6 +116,17 @@ public class NewsWebviewActivity extends BaseActivity{
 	
 	private void initData()
 	{
+
+		client = new AsyncHttpClient();
+		client.addHeader("User-Agent", "MQQBrowser/26 Mozilla/5.0 (Linux; U; Android 2.3.7; zh-cn; MB200 Build/GRJ22; CyanogenMod-7) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
+		loadPageFromInternet();
+	}
+	
+	private void loadPageFromInternet()
+	{
+		progressBar.setVisibility(View.VISIBLE);
+		mWebView.setVisibility(View.GONE);
+		reloadButton.setVisibility(View.GONE);
 		//目前MSite的网站不转码
 		if(from.equals(Constants.MSITE))
 		{
@@ -105,8 +134,6 @@ public class NewsWebviewActivity extends BaseActivity{
 			
 			return;
 		}
-		client = new AsyncHttpClient();
-		client.addHeader("User-Agent", "MQQBrowser/26 Mozilla/5.0 (Linux; U; Android 2.3.7; zh-cn; MB200 Build/GRJ22; CyanogenMod-7) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
 		client.get(URL, new AsyncHttpResponseHandler() {
 			
 			@Override
@@ -136,8 +163,12 @@ public class NewsWebviewActivity extends BaseActivity{
 			
 			@Override
 			public void onFailure(int arg0, Header[] arg1, byte[] arg2, Throwable arg3) {
-				Toast.makeText(NewsWebviewActivity.this, "该新闻无法显示", Toast.LENGTH_SHORT).show();				
+				Toast.makeText(NewsWebviewActivity.this, "网络未连接", Toast.LENGTH_SHORT).show();	
+				progressBar.setVisibility(View.GONE);
+				reloadButton.setVisibility(View.VISIBLE);
+				
 			}
+			
 		});
 	}
 	
@@ -164,7 +195,16 @@ public class NewsWebviewActivity extends BaseActivity{
 	@Override
 	public void onBackPressed() {
 		if(mWebView.canGoBack())
-			mWebView.goBack();
+		{
+			if(from.equals(Constants.MSITE))
+			{
+				super.onBackPressed();
+			}
+			else
+			{
+				mWebView.goBack();
+			}
+		}
 		else
 			super.onBackPressed();
 	}
@@ -178,6 +218,19 @@ public class NewsWebviewActivity extends BaseActivity{
 			mWebView.clearHistory();
 			mWebView.clearCache(true);
 			mWebView.destroy();
+		}
+		
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.reload:
+			loadPageFromInternet();
+			break;
+
+		default:
+			break;
 		}
 		
 	}
