@@ -18,6 +18,8 @@ public class ComicChapter{
 	//下载状态，默认为-1，代表未下载,从数据库中获取，或者广播更改数据
 	//其他状态与Sql中保持一致
 	private int download_status = -1;
+	//页面数，从广播接收数据(章节页面数)
+	private int page = 0;
 
 	
 

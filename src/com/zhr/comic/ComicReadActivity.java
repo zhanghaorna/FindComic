@@ -1,6 +1,7 @@
 package com.zhr.comic;
 
 
+import java.lang.reflect.Field;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -40,6 +41,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Message;
 
@@ -128,7 +130,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 
 	//开源服务
 	//友盟分享
-	private UMSocialService mController;
+	private UMSocialService mController = null;
 	
 	
 	@Override
@@ -180,9 +182,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		if(picPaths == null||picPaths.length == 0)
 			picPaths = new String[]{""};
 		
-		
+//		lp.type = 3;
 		lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-		
+//		lp.flags |= WindowManager.LayoutParams.LAST_SUB_WINDOW;
 
 		
 		mAdapter = new PictureAdapter();
@@ -192,7 +194,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		{
 			mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		}
-		else {
+		else 
+		{
 			mLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
 		}
 		//翻页方向
@@ -201,7 +204,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
 		
-		mPopWindowHolder = new PopWindowHolder();
+		
 		handler = new ComicLoadHandler(this);
 		
 		if(intent.getStringExtra("comicUrl") != null)
@@ -234,7 +237,9 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				comicRecord.setPage(0);
 				viewPosition = 0;
 			}					
-		}		
+		}
+		
+		mPopWindowHolder = new PopWindowHolder();
 	}
 	
 	private void initView()
@@ -264,11 +269,19 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 	}
 	
 	private void initData()
-	{
+	{	
+		batteryFilter = new IntentFilter();
+		batteryFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+		batteryFilter.addAction(Intent.ACTION_TIME_TICK);
+		batteryFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 		
-		mController = UMServiceFactory.getUMSocialService("com.umeng.share");
-		//配置友盟分享相关设置
-		mController.getConfig().setSsoHandler(new SinaSsoHandler());
+		if(Util.isNetWorkConnect(getApplicationContext()))
+		{
+			mController = UMServiceFactory.getUMSocialService("com.umeng.share");
+			//配置友盟分享相关设置
+			mController.getConfig().setSsoHandler(new SinaSsoHandler());
+		}
+
 		if(!fromInternet)
 		{
 //			timer.cancel();
@@ -401,7 +414,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			BitmapLoader.getInstance().loadComicImage(holder.imageView,
 						picPaths[poistion]);
 			preLoadComicPage(poistion);
-			Log.d("Comic", "load" + poistion);						
+			Log.d("Comic", "load " + poistion);						
 			viewPosition = poistion;
 			if(comicRecord != null&&comicRecord.getPage() != viewPosition)
 			{
@@ -434,6 +447,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			topWindow = new PopupWindow(topView,LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT,false);
 			topWindow.setTouchable(true);
+			
 			topWindow.setOnDismissListener(this);
 			topWindow.setAnimationStyle(R.style.popupwindow_top_anim);
 			setupTopWindowListener(topWindow.getContentView());
@@ -447,6 +461,24 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 					LinearLayout.LayoutParams.WRAP_CONTENT,false);
 			bottomWindow.setTouchable(true);
 			bottomWindow.setAnimationStyle(R.style.popupwindow_bottom_anim);
+			
+			//将popupWindow 的type设为TYPE_SYSTEM_ALERT，可以置于最顶层
+			try
+			{
+				Field filed = bottomWindow.getClass().getDeclaredField("mWindowLayoutType");
+				filed.setAccessible(true);
+				filed.set(bottomWindow, android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+			} catch (NoSuchFieldException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			setupBottomWindowListener(bottomWindow.getContentView());
 		}
 		//设置topWindow监听
@@ -469,6 +501,12 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			TextView share = (TextView)view.findViewById(R.id.share);
 			share.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
+					if(mController == null)
+					{
+						Toast.makeText(ComicReadActivity.this, "网络未连接，无法分享",
+								Toast.LENGTH_SHORT).show();
+						return;
+					}
 					mController.getConfig().setPlatforms(SHARE_MEDIA.SINA);
 					mController.setShareMedia(new UMImage(ComicReadActivity.this, picPaths[viewPosition]));
 					mController.openShare(ComicReadActivity.this, false);
@@ -802,7 +840,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		}		
 	}
 	
-	//电量改变监听器，获取手机电量
+	private IntentFilter batteryFilter;
+	//电量改变监听器，获取手机电量,(同时获取网络状态)
 	private BroadcastReceiver batteryChangeReceiver = new BroadcastReceiver() {
 		
 		@Override
@@ -814,13 +853,26 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 				int level = intent.getIntExtra("level", 0);
 				int scale = intent.getIntExtra("scale", 100);
 				battery = level * 100 / scale;
-				if(readerHintView != null)
+				if(readerHintView != null&&mPopWindowHolder != null)
 					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 			}
 			else if(Intent.ACTION_TIME_TICK.equals(intent.getAction()))
 			{
-				if(readerHintView != null)
+				if(readerHintView != null&&mPopWindowHolder != null)
 					readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
+			}
+			else if(ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction()))
+			{
+				if(Util.isNetWorkConnect(getApplicationContext()))
+				{
+					//当有网络时就可以初始化
+					if(mController == null)
+					{
+						mController = UMServiceFactory.getUMSocialService("com.umeng.share");
+						//配置友盟分享相关设置
+						mController.getConfig().setSsoHandler(new SinaSsoHandler());
+					}
+				}
 			}
 		}
 	};
@@ -897,11 +949,8 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			changeSetting();
 		if(mAdapter != null)
 			mAdapter.notifyItemChanged(viewPosition);
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-		intentFilter.addAction(Intent.ACTION_TIME_TICK);
-		if(batteryChangeReceiver != null)
-			registerReceiver(batteryChangeReceiver, intentFilter);
+		if(batteryChangeReceiver != null&&batteryFilter != null)
+			registerReceiver(batteryChangeReceiver, batteryFilter);
 		if(!AppSetting.getInstance(getApplicationContext()).isKeep_screen_on())
 			lp.flags &= ~WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 		else 
@@ -926,7 +975,7 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		{
 			mPopWindowHolder.dismiss(); 
 		}
-		if(batteryChangeReceiver != null)
+		if(batteryChangeReceiver != null&&batteryFilter != null)
 			unregisterReceiver(batteryChangeReceiver);
 		AppSetting.getInstance(getApplicationContext()).commitAllAlter();
 		if(comicRecord != null)

@@ -79,7 +79,10 @@ public class Util {
 		ConnectivityManager cManager = (ConnectivityManager)context.getSystemService(
 				Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = cManager.getActiveNetworkInfo();
-		return networkInfo.getTypeName();
+		if(networkInfo == null)
+			return "";
+		else
+			return networkInfo.getTypeName();
 	}
 	
 	public static boolean isNetWorkConnect(Context context)

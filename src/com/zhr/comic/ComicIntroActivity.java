@@ -180,7 +180,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 					chapters.add(comicChapter);
 				}
 			}
-			downloadView.setVisibility(View.VISIBLE);
+
 		}
 		else
 		{
@@ -249,6 +249,11 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	
 	private void initData()
 	{
+		if(getIntent().getStringExtra("comicName") != null)
+		{
+			downloadView.setVisibility(View.VISIBLE);
+		}
+		
 		authorView.setText(author);
 		titleView.setText(comicName);
 		if(imageUrl != null&&!imageUrl.equals(""))
@@ -393,7 +398,31 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			Intent intent = new Intent(this,ComicReadActivity.class);
 			intent.putExtra("comicName",comicName);
 			intent.putExtra("chapterName", chapters.get(position).getChapter());
-			intent.putExtra("comicUrl", chapters.get(position).getUrl());
+			if(chapters.get(position).getDownload_status() == Constants.FINISHED)
+			{
+				ComicDownloadDetail cDetail = DBComicDownloadDetailHelper.getInstance(getApplicationContext())
+						.getComicDownloadDetail(comicName, chapters.get(position).getChapter());
+				String[] picPaths = new String[cDetail.getPageNum()];
+				String fileName = "";
+				for(int i = 0;i < picPaths.length;i++)
+				{					
+					if(i + 1 < 10)
+						fileName = "00" + (i + 1) + ".jpg";
+					else if(i + 1 < 100)
+						fileName = "0" + (i + 1) + ".jpg";
+					else
+						fileName = (i + 1) + ".jpg";
+					picPaths[i] = AppSetting.getInstance(getApplicationContext())
+							.getDownloadPath() + File.separator + comicName
+							+ File.separator + chapters.get(position).getChapter()
+							+ File.separator + fileName;
+				}	
+				intent.putExtra("picPaths", picPaths);
+			}
+			else
+			{
+				intent.putExtra("comicUrl", chapters.get(position).getUrl());
+			}
 			startActivity(intent);
 		}
 		else if(mode == DOWNLOAD_MODE)

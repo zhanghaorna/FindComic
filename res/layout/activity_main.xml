@@ -30,6 +30,7 @@
             android:layout_height="wrap_content"
             android:text="@string/recommend"
 			style="@style/main_tab_textview"
+			android:visibility="gone"
             android:drawableTop="@drawable/icon_tab_recommend_selector"/>
         <TextView
             android:id="@+id/main_search" 

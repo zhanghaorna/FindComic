@@ -41,6 +41,7 @@ public class UpdateVersion {
 	{
 		mContext = context;
 		client = new AsyncHttpClient();
+		client.setConnectTimeout(3000);
 		cur_version = getVersionName();
 	}
 	

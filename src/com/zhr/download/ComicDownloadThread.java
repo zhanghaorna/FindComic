@@ -180,7 +180,9 @@ public class ComicDownloadThread implements Runnable{
 					if(status == Constants.PAUSED)
 						intent.setAction(DownloadService.CHAPTER_PAUSED);
 					else if(status == Constants.FINISHED)
+					{
 						intent.setAction(DownloadService.CHAPTER_FINISHED);
+					}
 					intent.putExtra("comicName", cDetail.getComicName());
 					intent.putExtra("chapterName", cDetail.getChapter());
 					intent.putExtra("status", cDetail.getStatus());

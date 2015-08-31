@@ -6,6 +6,7 @@ import com.zhr.download.DownloadManageActivity;
 import com.zhr.download.UpdateService;
 import com.zhr.findcomic.R;
 import com.zhr.util.LocalDirActivity;
+import com.zhr.util.Util;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -87,6 +88,11 @@ public class SettingFragment extends Fragment implements OnClickListener,
 			getActivity().overridePendingTransition(R.anim.slide_right_in,R.anim.slide_left_out);
 			break;
 		case R.id.check_update:
+			if(!Util.isNetWorkConnect(getActivity()))
+			{
+				Toast.makeText(getActivity(), "网络未连接，无法查询服务器", Toast.LENGTH_SHORT).show();
+				return;
+			}
 			waitDialog.setText("查询服务器。。。");
 			waitDialog.show();
 			updateVersion.checkUpdate();			
@@ -128,7 +134,10 @@ public class SettingFragment extends Fragment implements OnClickListener,
 
 	@Override
 	public void onWithOutUpdate() {
-		Toast.makeText(getActivity(), "已是最新版本，无需更新", Toast.LENGTH_SHORT).show();
+		if(Util.isNetWorkConnect(getActivity()))
+			Toast.makeText(getActivity(), "已是最新版本，无需更新", Toast.LENGTH_SHORT).show();
+		else
+			Toast.makeText(getActivity(), "无法链接到服务器", Toast.LENGTH_SHORT).show();
 		waitDialog.dismiss();
 	}
 }

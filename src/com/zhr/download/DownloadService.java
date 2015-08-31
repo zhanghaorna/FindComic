@@ -316,7 +316,7 @@ public class DownloadService extends Service{
 						ComicDownloadDetail cDetail = new ComicDownloadDetail();
 						cDetail.setChapter(chapters[i]);
 						cDetail.setComicName(comicName);
-						cDetail.setUrl(urls[0]);	
+						cDetail.setUrl(urls[i]);	
 						cDetail.setFinishNum(0);
 						cDetail.setPageNum(0);
 						cDetail.setStatus(Constants.WAITING);

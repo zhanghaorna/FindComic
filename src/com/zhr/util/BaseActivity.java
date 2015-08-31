@@ -32,8 +32,8 @@ public class BaseActivity extends Activity{
 		
 		mWindowManager = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
 		lp = new WindowManager.LayoutParams(  
-				WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,  
-                WindowManager.LayoutParams.TYPE_APPLICATION,  
+				WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,               
+				WindowManager.LayoutParams.TYPE_APPLICATION,  
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  
                 PixelFormat.TRANSLUCENT);

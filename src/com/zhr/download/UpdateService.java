@@ -13,6 +13,7 @@ import com.zhr.findcomic.R;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -87,6 +88,8 @@ public class UpdateService extends IntentService{
 				url = new URL(intent.getStringExtra("apk_url"));
 				connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
+				connection.setConnectTimeout(3000);
+				connection.setReadTimeout(3000);
 				//模拟浏览器，否则github下载很慢
 				connection.setRequestProperty("User-Agent", 
 						"Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
@@ -126,8 +129,9 @@ public class UpdateService extends IntentService{
 				{
 					outputStream.flush();
 					outputStream.close();
-					update();					
+//					update();					
 					nManager.cancel(notifyId);
+					finishNotify();
 				}
 			}
 			catch (MalformedURLException e)
@@ -143,6 +147,31 @@ public class UpdateService extends IntentService{
 		
 	}
 	
+	private void finishNotify()
+	{
+		File file = new File(Environment.getExternalStorageDirectory(),"FindComic.apk");
+		if(file.exists())
+		{
+			Intent intent = new Intent(Intent.ACTION_VIEW);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.setDataAndType(Uri.fromFile(file), 
+					"application/vnd.android.package-archive");
+			
+			PendingIntent pIntent = PendingIntent.getService(getBaseContext(), 0, intent,
+					PendingIntent.FLAG_UPDATE_CURRENT);
+//			startActivity(intent);
+			
+			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext())
+				.setSmallIcon(R.drawable.ic_launcher)
+				.setTicker("下载完成")
+				.setContentTitle("下载完成，点击安装")
+				.setContentIntent(pIntent);
+			nManager.notify(notifyId, mBuilder.build());
+			
+		}
+				
+
+	}
 
 	
 	private void update()
