@@ -78,7 +78,10 @@ public class UpdateService extends IntentService{
 	protected void onHandleIntent(Intent intent) {
 		if(intent.getStringExtra("apk_url") != null)
 		{	
+			//实际文件长度
 			int max_progress = 0;
+			//目前已经下载文件长度
+			int progress = 0;
 			//notify太频繁导致通知栏卡顿，每过10%，发出一次更新通知
 			float notify_pre = 0.1f;
 			showNotification();
@@ -101,12 +104,11 @@ public class UpdateService extends IntentService{
 				FileOutputStream outputStream = null;
 				if(stream != null)
 				{
-					File file = new File(getCacheDir(),
+					File file = new File(getExternalCacheDir(),
 							"FindComic.apk");
 					outputStream = new FileOutputStream(file);
 					byte[] buf = new byte[10240];
 					int index = -1;
-					int progress = 0;
 					while((index = stream.read(buf)) != -1)
 					{
 						outputStream.write(buf, 0, index);
@@ -130,8 +132,8 @@ public class UpdateService extends IntentService{
 					outputStream.flush();
 					outputStream.close();
 //					update();					
-					nManager.cancel(notifyId);
-					finishNotify();
+					nManager.cancel(notifyId);		
+					finishNotify();		
 				}
 			}
 			catch (MalformedURLException e)
@@ -142,14 +144,20 @@ public class UpdateService extends IntentService{
 			{
 				e.printStackTrace();
 			}
-			
+			finally
+			{
+				if(max_progress > progress)
+				{
+					expectionNotify();
+				}
+			}
 		}
 		
 	}
-	
+	//顺利下载完成的通知
 	private void finishNotify()
 	{
-		File file = new File(Environment.getExternalStorageDirectory(),"FindComic.apk");
+		File file = new File(getExternalCacheDir(),"FindComic.apk");
 		if(file.exists())
 		{
 			Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -157,35 +165,32 @@ public class UpdateService extends IntentService{
 			intent.setDataAndType(Uri.fromFile(file), 
 					"application/vnd.android.package-archive");
 			
-			PendingIntent pIntent = PendingIntent.getService(getBaseContext(), 0, intent,
+			PendingIntent pIntent = PendingIntent.getActivity(getBaseContext(), 0, intent,
 					PendingIntent.FLAG_UPDATE_CURRENT);
-//			startActivity(intent);
 			
 			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext())
 				.setSmallIcon(R.drawable.ic_launcher)
 				.setTicker("下载完成")
 				.setContentTitle("下载完成，点击安装")
-				.setContentIntent(pIntent);
+				.setContentIntent(pIntent)
+				.setAutoCancel(true);
 			nManager.notify(notifyId, mBuilder.build());
 			
 		}
-				
-
 	}
-
-	
-	private void update()
+	//下载出现异常，进行通知
+	private void expectionNotify()
 	{
-		
-		File file = new File(Environment.getExternalStorageDirectory(),"FindComic.apk");
+		File file = new File(getExternalCacheDir(),"FindComic.apk");
 		if(file.exists())
-		{
-			Intent intent = new Intent(Intent.ACTION_VIEW);
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			intent.setDataAndType(Uri.fromFile(file), 
-					"application/vnd.android.package-archive");
-			startActivity(intent);
-		}
+			file.delete();
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext())
+			.setSmallIcon(R.drawable.ic_launcher)
+			.setTicker("下载暂停")
+			.setContentTitle("服务器连接故障，请重新更新");
+		nManager.notify(notifyId, mBuilder.build());
 	}
+	
+
 
 }
