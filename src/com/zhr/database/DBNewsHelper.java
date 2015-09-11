@@ -63,6 +63,8 @@ public class DBNewsHelper{
 	
 	public void saveAllNews(List<News> news)
 	{
+		if(news == null||news.size() == 0)
+			return;
 		if(newsDao.count() > 30)
 			deleteAllNews(news.get(0).getFrom());
 		

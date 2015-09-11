@@ -72,9 +72,10 @@
             android:name="com.zhr.util.LocalDirActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
+        <!--android:launchMode="singleTask"  -->
         <activity 
             android:name="com.zhr.comic.ComicReadActivity"
-            android:launchMode="singleTask"
+
             android:configChanges="keyboardHidden|orientation"
             android:theme="@android:style/Theme.Light"
             ></activity> 

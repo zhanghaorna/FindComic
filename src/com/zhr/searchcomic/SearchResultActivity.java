@@ -123,6 +123,8 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 	{		
 		client = new AsyncHttpClient();
 		client.setTimeout(2000);
+		client.setResponseTimeout(2000);
+		
 		client.setUserAgent("Baiduspider+");
 		comicIntros = new ArrayList<ComicIntro>();
 		mSearchAdapter = new SearchAdapter();
@@ -277,7 +279,7 @@ public class SearchResultActivity extends BaseActivity implements OnClickListene
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
-		if(firstVisibleItem + visibleItemCount == totalItemCount&&!isLoading)
+		if(firstVisibleItem + visibleItemCount == totalItemCount&&!isLoading&&comicIntros.size() > 0)
 		{
 			loadFromInternet();
 		}		

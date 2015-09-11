@@ -78,9 +78,12 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 					//第一次加载清空目前已经新闻，加载最新新闻
 					if(index == 1)
 					{
-						newsItems.clear();						
+						newsItems.clear();
+						index++;
 					}
-					index++;
+					
+					if(!pullToRefresh)
+						index++;
 					int currentItemSize = newsItems.size();
 					List<News> save_news = new ArrayList<News>();
 					for(int i = elements.size() - 1;i >= 0;i--)
@@ -97,6 +100,7 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 								break;
 							}								
 						}
+						
 						if(exist)
 							continue;					
 						item.setContentUrl(URL + element.select("div.newstitle > a").attr("href"));
@@ -127,8 +131,8 @@ public class MSiteNewsFragment extends NewsFragment implements OnItemClickListen
 							{
 								mListView.loadCompleted();
 								isLoadingMore = false;
-							}
-							mAdapter.notifyDataSetChanged();							
+							}			
+							mAdapter.notifyDataSetChanged();
 						}
 					});
 				}				

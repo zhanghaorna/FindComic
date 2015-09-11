@@ -497,6 +497,10 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 	@Override
 	protected void onResume() {		
 		super.onResume();
+		if(comicRecord == null)
+		{
+			comicRecord = DBComicRecordHelper.getInstance(getApplicationContext()).getComicRecord(comicName);
+		}
 		if(comicRecord != null)
 		{
 			continue_chapter = comicRecord.getChapter();
@@ -504,6 +508,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			readButton.setText("续看 " + comicRecord.getChapter());
 			readButton.setBackgroundColor(getResources().getColor(R.color.green));
 		}
+
 		checkComicDownloadStatus();
 		chapterAdapter.notifyDataSetChanged();
 	}
@@ -541,7 +546,7 @@ public class ComicIntroActivity extends BaseActivity implements OnClickListener
 			break;
 		//点击开始阅读或续看按钮
 		case R.id.read_button:
-			int position = 0;
+			int position = chapters.size() - 1;
 			Log.d("Comic","chapter" + continue_chapter);
 			if(!continue_chapter.equals(""))
 			{

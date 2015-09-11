@@ -1,6 +1,7 @@
 package com.zhr.util;
 
 import java.lang.ref.WeakReference;
+import java.net.SocketException;
 
 import org.apache.http.Header;
 
@@ -112,6 +113,8 @@ public class ComicLoadTask implements Runnable{
 		} catch (OutOfMemoryError Error) {
 			bitmap = null;
 			Log.d("Comic", "Bitmap is too big to load");
+			//直接重新加载一次
+			run();		
 		}		
 	}
 	

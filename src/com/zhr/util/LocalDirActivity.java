@@ -36,7 +36,7 @@ public class LocalDirActivity extends BaseActivity implements OnClickListener
 				,OnItemClickListener
 {
 
-	public static final int LAST_READ = 0;
+	public static final int LAST_READ = 1;
 	
 	private ImageView back;
 	private TextView file_pathView;

@@ -739,10 +739,10 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 			readerHintView.setStatusText(battery,mPopWindowHolder.getPageHint().getText().toString());
 		}
 	}
-	//提前预加载5张图片(当前页，以及上下各两页)
+	//提前预加载3张图片(当前页，以及上下各两页),暂时修改为只加载下一页
 	private void preLoadComicPage(int position)
 	{
-		for(int i = position - 1;i <= position + 1;i++)
+		for(int i = position + 1;i <= position + 1;i++)
 		{
 			if(i >= 0&&i <= picPaths.length - 1&&i != position)
 			{
@@ -1005,14 +1005,16 @@ public class ComicReadActivity extends BaseActivity implements OnTouchClick
 		Intent intent = new Intent();
 		if(fromInternet)
 		{
-			
+			super.onBackPressed();
 		}
 		else
 		{
 			intent.putExtra("last_read_path", picPaths[viewPosition]);
+			setResult(RESULT_OK,intent);	
+			finish();
 		}
-		setResult(RESULT_OK,intent);	
-		super.onBackPressed();
+		
+		
 	}
 	
 	@Override

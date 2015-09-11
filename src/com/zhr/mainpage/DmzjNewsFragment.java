@@ -89,9 +89,11 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 					//第一次加载清空目前已经新闻，加载最新新闻
 					if(index == 1)
 					{
-						newsItems.clear();						
+						newsItems.clear();	
+						index++;
 					}
-					index++;
+					if(!pullToRefresh)
+						index++;
 					int currentItemSize = newsItems.size();
 					List<News> save_news = new ArrayList<News>();
 					for(int i = elements.size() - 1;i >= 0;i--)
@@ -140,7 +142,9 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 						save_news.add(item);
 						
 					}
-					DBNewsHelper.getInstance(getActivity()).saveAllNews(save_news);
+					//如果是loadmore则没有必要存入数据库
+					if(pullToRefresh)
+						DBNewsHelper.getInstance(getActivity()).saveAllNews(save_news);
 					handler.post(new Runnable() {
 						public void run() {
 							if(pullToRefresh)
@@ -150,7 +154,9 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 								mListView.loadCompleted();
 								isLoadingMore = false;
 							}
-							mAdapter.notifyDataSetChanged();							
+//                          如果调用后，则会出现加载完成后屏幕闪一下的状态
+//							mAdapter.notifyDataSetChanged();
+							
 						}
 					});
 				}				
@@ -195,7 +201,7 @@ public class DmzjNewsFragment extends NewsFragment implements OnItemClickListene
 				BitmapLoader.getInstance().loadImage(((NewsAdapter.ViewHolder)convertView.getTag()).image, 
 						newsItems.get(first + i).getImagePath(),true, false,false);				
 			}
-			mAdapter.notifyDataSetInvalidated();
+			mAdapter.notifyDataSetChanged();
 			break;
 		case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
 			isScroll = false;

@@ -46,6 +46,7 @@
         style="@style/setting_textview"
         android:drawableLeft="@drawable/info_s"
         android:text="@string/about_find_comic"
+        android:visibility="gone"
         />
 
 </LinearLayout>

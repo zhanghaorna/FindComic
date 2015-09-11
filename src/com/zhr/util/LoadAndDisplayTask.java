@@ -144,6 +144,8 @@ public class LoadAndDisplayTask implements Runnable{
 		} catch (OutOfMemoryError e) {
 			bitmap = null;
 			Log.d("BitMapError", "Bitmap is too big to load");
+			//直接重新加载一次
+			run();
 		}
 		finally
 		{
